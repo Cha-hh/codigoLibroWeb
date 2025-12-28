@@ -8,9 +8,9 @@ export default function Home() {
             <img src="/portada-libro.jpg" alt="Portada del libro" className="w-64 mx-auto md:mx-0 rounded-lg shadow-lg" />
           </div>
           <div className="md:w-1/2 text-center md:text-left">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">Frase principal de alto impacto narrativo</h1>
-            <p className="text-xl mb-6">Subtítulo tipo confesión / advertencia</p>
-            <a href="#oferta" className="bg-yellow-500 text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-yellow-400 transition">Comprar el libro físico</a>
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 animate__animated animate__fadeInDown">Frase principal de alto impacto narrativo</h1>
+            <p className="text-xl mb-6 animate__animated animate__fadeInDown">Subtítulo tipo confesión / advertencia</p>
+            <a href="#oferta" className="bg-yellow-500 text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-yellow-400 transition animate__animated animate__fadeInDown">Comprar el libro físico</a>
           </div>
         </div>
       </section>
