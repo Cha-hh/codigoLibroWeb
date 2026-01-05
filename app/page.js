@@ -1,4 +1,73 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
 export default function Home() {
+  const [faq, setFaq] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [question, setQuestion] = useState('');
+  const [email, setEmail] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/faq')
+      .then(res => res.json())
+      .then(data => setFaq(data));
+  }, []);
+
+  const handleSubmitQuestion = (e) => {
+    e.preventDefault();
+    // Aquí puedes enviar la pregunta a una API o procesarla
+    alert('Pregunta enviada: ' + question + ' desde ' + email);
+    setQuestion('');
+    setEmail('');
+    setIsModalOpen(false);
+  };
+
+  const nextSlide = () => {
+    if (currentIndex < faq.length - 3) {
+      setCurrentIndex((prevIndex) => prevIndex + 1);
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex((prevIndex) => prevIndex - 1);
+    }
+  };
+
+  const FaqCarousel = () => (
+    <div className="relative max-w-6xl mx-auto overflow-hidden">
+      <div
+        className="flex transition-transform duration-300 ease-in-out"
+        style={{ width: `${(faq.length / 3) * 100}%`, transform: `translateX(-${currentIndex * (100 / 3)}%)` }}
+      >
+        {faq.map((item) => (
+          <div key={item.id} className="w-[33.33%] px-2 flex-shrink-0">
+            <div className="bg-white p-6 rounded-lg shadow-md min-h-[200px]">
+              <h3 className="text-xl font-semibold mb-2 break-words">{item.question}</h3>
+              <p className="break-words">{item.answer}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={prevSlide}
+        disabled={currentIndex === 0}
+        className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 disabled:opacity-50"
+      >
+        ‹
+      </button>
+      <button
+        onClick={nextSlide}
+        disabled={currentIndex >= faq.length - 3}
+        className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 disabled:opacity-50"
+      >
+        ›
+      </button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -77,6 +146,60 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section className="py-16 bg-gray-100">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Preguntas Frecuentes sobre el Libro</h2>
+          <div className="max-w-6xl mx-auto">
+            <FaqCarousel />
+            <div className="text-center mt-8">
+              <button onClick={() => setIsModalOpen(true)} className="bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition">
+                Hacer una pregunta
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Modal para hacer pregunta */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h3 className="text-2xl font-bold mb-4">Haz tu pregunta</h3>
+            <form onSubmit={handleSubmitQuestion}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Pregunta</label>
+                <textarea
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  rows="4"
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                  Cancelar
+                </button>
+                <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                  Enviar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Atención y dudas */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
@@ -93,31 +216,6 @@ export default function Home() {
             <textarea placeholder="Tu mensaje" className="w-full p-2 mb-4 border rounded" rows="4"></textarea>
             <button type="submit" className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Enviar</button>
           </form>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-16 bg-gray-100">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">FAQ</h2>
-          <div className="max-w-3xl mx-auto">
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-2">¿Son veraces los relatos?</h3>
-              <p>Sí, todos los relatos están basados en hechos reales.</p>
-            </div>
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-2">¿Qué formato tiene el libro?</h3>
-              <p>Es un libro físico en formato tapa dura con X páginas.</p>
-            </div>
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-2">¿Cuánto tardan los envíos?</h3>
-              <p>Los envíos se realizan en 5-7 días hábiles.</p>
-            </div>
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-2">¿Para qué público está recomendado?</h3>
-              <p>Recomendado para lectores interesados en historias reales y emocionantes.</p>
-            </div>
-          </div>
         </div>
       </section>
 

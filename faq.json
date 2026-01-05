@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "question": "¿Cuántos capítulos tiene el libro?",
+    "answer": "El libro consta de 12 capítulos, cada uno dedicado a una experiencia diferente."
+  },
+  {
+    "id": 2,
+    "question": "¿Los capítulos están basados en hechos reales?",
+    "answer": "Sí, todos los capítulos están inspirados en acontecimientos reales vividos por el autor."
+  },
+  {
+    "id": 3,
+    "question": "¿Puedo leer un capítulo de muestra?",
+    "answer": "Actualmente, no ofrecemos capítulos de muestra, pero puedes leer reseñas y testimonios en la sección de relatos destacados."
+  },
+  {
+    "id": 4,
+    "question": "¿El libro incluye ilustraciones?",
+    "answer": "Sí, el libro incluye ilustraciones y fotografías relacionadas con los lugares y sucesos descritos."
+  }
+]
