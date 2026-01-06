@@ -7,7 +7,6 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [email, setEmail] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     fetch('/api/faq')
@@ -24,52 +23,39 @@ export default function Home() {
     setIsModalOpen(false);
   };
 
-  const nextSlide = () => {
-    if (currentIndex < faq.length - 3) {
-      setCurrentIndex((prevIndex) => prevIndex + 1);
-    }
-  };
-
-  const prevSlide = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prevIndex) => prevIndex - 1);
-    }
-  };
-
-  const FaqCarousel = () => (
-    <div className="relative max-w-6xl mx-auto overflow-hidden">
-      <div
-        className="flex transition-transform duration-300 ease-in-out"
-        style={{ width: `${(faq.length / 3) * 100}%`, transform: `translateX(-${currentIndex * (100 / 3)}%)` }}
-      >
-        {faq.map((item) => (
-          <div key={item.id} className="w-[33.33%] px-2 flex-shrink-0">
-            <div className="bg-white p-6 rounded-lg shadow-md min-h-[200px]">
-              <h3 className="text-xl font-semibold mb-2 break-words">{item.question}</h3>
-              <p className="break-words">{item.answer}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <button
-        onClick={prevSlide}
-        disabled={currentIndex === 0}
-        className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 disabled:opacity-50"
-      >
-        ‹
-      </button>
-      <button
-        onClick={nextSlide}
-        disabled={currentIndex >= faq.length - 3}
-        className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 disabled:opacity-50"
-      >
-        ›
-      </button>
+  const FaqGrid = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {faq.map((item) => (
+        <div key={item.id} className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold mb-2 break-words">{item.question}</h3>
+          <p className="break-words">{item.answer}</p>
+        </div>
+      ))}
     </div>
   );
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
+      <nav className="bg-white shadow-md">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex space-x-6">
+              <a href="/admin/login" className="text-blue-600 hover:text-blue-800 font-medium">Admin</a>
+              <a href="/" className="text-gray-700 hover:text-gray-800 font-medium">Libro</a>
+              <a href="#" className="text-gray-700 hover:text-gray-800 font-medium">Monturas</a>
+            </div>
+            <div className="flex items-center space-x-4">
+              <a href="#" className="text-gray-700 hover:text-gray-800">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 13l-1.1 5H19M7 13l-1.1 5M7 13h10m0 0v8a2 2 0 01-2 2H9a2 2 0 01-2-2v-8z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-20">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
@@ -151,7 +137,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Preguntas Frecuentes sobre el Libro</h2>
           <div className="max-w-6xl mx-auto">
-            <FaqCarousel />
+            <FaqGrid />
             <div className="text-center mt-8">
               <button onClick={() => setIsModalOpen(true)} className="bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition">
                 Hacer una pregunta
