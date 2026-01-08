@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const filePath = path.join(process.cwd(), 'faq.json');
+const filePath = path.join(process.cwd(), '../../../faq.json');
 
 function readFaq() {
   const fileContents = fs.readFileSync(filePath, 'utf8');
