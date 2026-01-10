@@ -7,32 +7,71 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [orderName, setOrderName] = useState('');
+  const [orderEmail, setOrderEmail] = useState('');
 
   useEffect(() => {
     fetch('/api/faq')
       .then(res => res.json())
       .then(data => setFaq(data));
+
+    // Verificar si hay confirmación de pedido
+    const orderConfirmed = localStorage.getItem('orderConfirmed');
+    if (orderConfirmed) {
+      const { name, email } = JSON.parse(orderConfirmed);
+      setOrderName(name);
+      setOrderEmail(email);
+      setShowOrderModal(true);
+      localStorage.removeItem('orderConfirmed');
+    }
   }, []);
 
   const handleSubmitQuestion = (e) => {
     e.preventDefault();
-    // Aquí puedes enviar la pregunta a una API o procesarla
-    alert('Pregunta enviada: ' + question + ' desde ' + email);
-    setQuestion('');
+    if (!name || !email || !question) return;
+
+    const newQuestion = {
+      id: Date.now(),
+      name,
+      email,
+      question,
+      type: 'pregunta',
+      status: 'abierto',
+      createdAt: new Date().toISOString()
+    };
+
+    const existingQuestions = JSON.parse(localStorage.getItem('bookQuestions') || '[]');
+    existingQuestions.push(newQuestion);
+    localStorage.setItem('bookQuestions', JSON.stringify(existingQuestions));
+
+    // Limpiar formulario
+    setName('');
     setEmail('');
+    setQuestion('');
     setIsModalOpen(false);
+
+    alert('Pregunta enviada correctamente. Te responderemos pronto.');
   };
 
-  const FaqGrid = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {faq.map((item) => (
-        <div key={item.id} className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-2 break-words">{item.question}</h3>
-          <p className="break-words">{item.answer}</p>
-        </div>
-      ))}
-    </div>
-  );
+  const FaqGrid = () => {
+    // Ordenar por fecha descendente y tomar las últimas 6
+    const recentFaq = faq
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 6)
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {recentFaq.map((item) => (
+          <div key={item.id} className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold mb-2 break-words">{item.question}</h3>
+            <p className="break-words">{item.answer}</p>
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -44,13 +83,6 @@ export default function Home() {
               <a href="/admin/login" className="text-blue-600 hover:text-blue-800 font-medium">Admin</a>
               <a href="/" className="text-gray-700 hover:text-gray-800 font-medium">Libro</a>
               <a href="#" className="text-gray-700 hover:text-gray-800 font-medium">Monturas</a>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="#" className="text-gray-700 hover:text-gray-800">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 13l-1.1 5H19M7 13l-1.1 5M7 13h10m0 0v8a2 2 0 01-2 2H9a2 2 0 01-2-2v-8z" />
-                </svg>
-              </a>
             </div>
           </div>
         </div>
@@ -128,7 +160,7 @@ export default function Home() {
           <p className="text-xl mb-4">Precio: $XX.XX</p>
           <p className="text-lg mb-4">Qué incluye la compra: Libro físico, envío gratuito.</p>
           <p className="text-lg mb-8">Información clara de envíos: Entrega en 5-7 días hábiles.</p>
-          <a href="/checkout/redirect" className="bg-yellow-500 text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-yellow-400 transition">Comprar Ahora</a>
+          <a href="/checkout" className="bg-yellow-500 text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-yellow-400 transition">Comprar Ahora</a>
         </div>
       </section>
 
@@ -138,10 +170,15 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-center mb-12">Preguntas Frecuentes sobre el Libro</h2>
           <div className="max-w-6xl mx-auto">
             <FaqGrid />
-            <div className="text-center mt-8">
+            <div className="text-center mt-8 space-y-4">
               <button onClick={() => setIsModalOpen(true)} className="bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition">
                 Hacer una pregunta
               </button>
+              <div>
+                <a href="/faq" className="text-blue-600 hover:text-blue-800 underline">
+                  Ver todas las preguntas frecuentes
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -154,12 +191,24 @@ export default function Home() {
             <h3 className="text-2xl font-bold mb-4">Haz tu pregunta</h3>
             <form onSubmit={handleSubmitQuestion}>
               <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Nombre</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  placeholder="Tu nombre completo"
+                  required
+                />
+              </div>
+              <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full p-2 border rounded"
+                  placeholder="tu@email.com"
                   required
                 />
               </div>
@@ -182,6 +231,28 @@ export default function Home() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de pedido */}
+      {showOrderModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
+            <h3 className="text-2xl font-bold mb-4 text-green-600">¡Compra Confirmada!</h3>
+            <p className="text-lg mb-4">
+              Gracias por tu compra <strong>{orderName}</strong>.<br />
+              Te llegará un correo a <strong>{orderEmail}</strong> con información de tu compra.
+            </p>
+            <p className="text-lg font-semibold text-blue-600">¡Gracias!</p>
+            <div className="mt-6">
+              <button
+                onClick={() => setShowOrderModal(false)}
+                className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

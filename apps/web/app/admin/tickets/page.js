@@ -1,81 +1,249 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+
 export default function Tickets() {
+  const [questions, setQuestions] = useState([])
+  const [faqs, setFaqs] = useState([])
+  const [filterType, setFilterType] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
+  const [showAnswerModal, setShowAnswerModal] = useState(false)
+  const [selectedQuestion, setSelectedQuestion] = useState(null)
+  const [answer, setAnswer] = useState('')
+
+  useEffect(() => {
+    loadQuestions()
+    loadFaqs()
+  }, [])
+
+  const loadQuestions = () => {
+    const storedQuestions = localStorage.getItem('bookQuestions')
+    if (storedQuestions) {
+      setQuestions(JSON.parse(storedQuestions))
+    }
+  }
+
+  const loadFaqs = () => {
+    const storedFaqs = localStorage.getItem('faq')
+    if (storedFaqs) {
+      setFaqs(JSON.parse(storedFaqs))
+    }
+  }
+
+  const updateQuestionStatus = (id, newStatus) => {
+    const updatedQuestions = questions.map(q =>
+      q.id === id ? { ...q, status: newStatus } : q
+    )
+    setQuestions(updatedQuestions)
+    localStorage.setItem('bookQuestions', JSON.stringify(updatedQuestions))
+  }
+
+  const openAnswerModal = (question) => {
+    setSelectedQuestion(question)
+    setAnswer('')
+    setShowAnswerModal(true)
+  }
+
+  const submitAnswer = () => {
+    if (!selectedQuestion || !answer.trim()) return
+
+    // Agregar a FAQs
+    const newFaq = {
+      id: Date.now(),
+      question: selectedQuestion.question,
+      answer: answer.trim(),
+      createdAt: new Date().toISOString()
+    }
+    const updatedFaqs = [...faqs, newFaq]
+    setFaqs(updatedFaqs)
+    localStorage.setItem('faq', JSON.stringify(updatedFaqs))
+
+    // Actualizar estado de la pregunta
+    updateQuestionStatus(selectedQuestion.id, 'respondido')
+
+    // Cerrar modal
+    setShowAnswerModal(false)
+    setSelectedQuestion(null)
+    setAnswer('')
+  }
+
+  const updateFaqAnswer = (id, newAnswer) => {
+    const updatedFaqs = faqs.map(faq =>
+      faq.id === id ? { ...faq, answer: newAnswer } : faq
+    )
+    setFaqs(updatedFaqs)
+    localStorage.setItem('faq', JSON.stringify(updatedFaqs))
+  }
+
+  const deleteFaq = (id) => {
+    const updatedFaqs = faqs.filter(faq => faq.id !== id)
+    setFaqs(updatedFaqs)
+    localStorage.setItem('faq', JSON.stringify(updatedFaqs))
+  }
+
+  const filteredQuestions = questions.filter(q => {
+    const matchesType = !filterType || q.type === filterType
+    const matchesStatus = !filterStatus || q.status === filterStatus
+    return matchesType && matchesStatus
+  })
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'abierto': return 'bg-red-100 text-red-800'
+      case 'respondido': return 'bg-yellow-100 text-yellow-800'
+      case 'cerrado': return 'bg-gray-100 text-gray-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Gestión de Tickets y Preguntas</h1>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Gestión de Preguntas del Libro</h1>
 
-      {/* Filtros */}
-      <div className="mb-6 flex space-x-4">
-        <select className="border border-gray-300 rounded px-4 py-2">
-          <option value="">Todos los tipos</option>
-          <option value="pregunta">Pregunta sobre el libro</option>
-          <option value="duda">Duda general</option>
-          <option value="soporte">Soporte técnico</option>
-        </select>
-        <select className="border border-gray-300 rounded px-4 py-2">
-          <option value="">Todos los estados</option>
-          <option value="abierto">Abierto</option>
-          <option value="respondido">Respondido</option>
-          <option value="cerrado">Cerrado</option>
-        </select>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Filtrar</button>
-      </div>
+      {/* Sección de Preguntas */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4">Preguntas Recibidas</h2>
 
-      {/* Lista de tickets */}
-      <div className="space-y-4">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-lg font-semibold">Ticket #001 - Pregunta sobre veracidad de relatos</h3>
-              <p className="text-gray-600">De: María García - maria@example.com</p>
-              <p className="text-sm text-gray-500">2025-12-27 14:30</p>
-            </div>
-            <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm">Abierto</span>
-          </div>
-          <p className="mb-4">¿Son realmente ciertos todos los relatos del libro? Me gustaría saber más sobre la investigación detrás de las historias.</p>
-          <div className="flex space-x-2">
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Responder</button>
-            <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Marcar como Respondido</button>
-            <button className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cerrar</button>
-          </div>
+        {/* Filtros */}
+        <div className="mb-6 flex space-x-4">
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="border border-gray-300 rounded px-4 py-2"
+          >
+            <option value="">Todos los tipos</option>
+            <option value="pregunta">Pregunta sobre el libro</option>
+            <option value="duda">Duda general</option>
+            <option value="soporte">Soporte técnico</option>
+          </select>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="border border-gray-300 rounded px-4 py-2"
+          >
+            <option value="">Todos los estados</option>
+            <option value="abierto">Abierto</option>
+            <option value="respondido">Respondido</option>
+            <option value="cerrado">Cerrado</option>
+          </select>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-lg font-semibold">Ticket #002 - Duda sobre envío</h3>
-              <p className="text-gray-600">De: Carlos López - carlos@example.com</p>
-              <p className="text-sm text-gray-500">2025-12-26 09:15</p>
-            </div>
-            <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">Respondido</span>
-          </div>
-          <p className="mb-4">¿Cuánto tiempo tarda el envío del libro físico? Vivo en una zona rural.</p>
-          <div className="bg-gray-50 p-4 rounded mb-4">
-            <p className="text-sm"><strong>Tu respuesta (2025-12-26 10:00):</strong> El envío estándar tarda 5-7 días hábiles. Para zonas rurales, puede tomar hasta 10 días. Te mantendremos informado del progreso.</p>
-          </div>
-          <div className="flex space-x-2">
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Responder de nuevo</button>
-            <button className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cerrar</button>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-lg font-semibold">Ticket #003 - Pregunta sobre formato PDF</h3>
-              <p className="text-gray-600">De: Ana Rodríguez - ana@example.com</p>
-              <p className="text-sm text-gray-500">2025-12-25 16:45</p>
-            </div>
-            <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Cerrado</span>
-          </div>
-          <p className="mb-4">¿El PDF incluye imágenes a color o es solo texto?</p>
-          <div className="bg-gray-50 p-4 rounded mb-4">
-            <p className="text-sm"><strong>Tu respuesta (2025-12-25 17:00):</strong> El PDF incluye todas las imágenes en color, manteniendo la calidad del libro original.</p>
-          </div>
-          <div className="flex space-x-2">
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Reabrir</button>
-          </div>
+        {/* Lista de preguntas */}
+        <div className="space-y-4">
+          {filteredQuestions.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No hay preguntas que coincidan con los filtros.</p>
+          ) : (
+            filteredQuestions.map((q) => (
+              <div key={q.id} className="bg-white p-6 rounded-lg shadow">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold">{q.name} - {q.question}</h3>
+                    <p className="text-gray-600">Email: {q.email}</p>
+                    <p className="text-sm text-gray-500">{new Date(q.createdAt).toLocaleString()}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded text-sm ${getStatusColor(q.status)}`}>
+                    {q.status === 'abierto' ? 'Abierto' : q.status === 'respondido' ? 'Respondido' : 'Cerrado'}
+                  </span>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => openAnswerModal(q)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  >
+                    Responder y Agregar a FAQ
+                  </button>
+                  <button
+                    onClick={() => updateQuestionStatus(q.id, 'respondido')}
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                  >
+                    Marcar como Respondido
+                  </button>
+                  <button
+                    onClick={() => updateQuestionStatus(q.id, 'cerrado')}
+                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
+
+      {/* Sección de FAQs */}
+      <div>
+        <h2 className="text-2xl font-semibold mb-4">Preguntas Frecuentes (FAQ)</h2>
+        <div className="space-y-4">
+          {faqs.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No hay preguntas frecuentes aún.</p>
+          ) : (
+            faqs.map((faq) => (
+              <div key={faq.id} className="bg-white p-6 rounded-lg shadow">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold mb-2">{faq.question}</h3>
+                  <textarea
+                    value={faq.answer}
+                    onChange={(e) => updateFaqAnswer(faq.id, e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded"
+                    rows="3"
+                    placeholder="Escribe la respuesta..."
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Creado: {new Date(faq.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => deleteFaq(faq.id)}
+                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  >
+                    Eliminar FAQ
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Modal para responder pregunta */}
+      {showAnswerModal && selectedQuestion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full mx-4">
+            <h3 className="text-2xl font-bold mb-4">Responder Pregunta</h3>
+            <div className="mb-4">
+              <h4 className="font-semibold mb-2">Pregunta de {selectedQuestion.name}:</h4>
+              <p className="bg-gray-100 p-3 rounded">{selectedQuestion.question}</p>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Tu Respuesta:</label>
+              <textarea
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded"
+                rows="6"
+                placeholder="Escribe una respuesta detallada..."
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowAnswerModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={submitAnswer}
+                disabled={!answer.trim()}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+              >
+                Agregar a FAQ y Responder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
