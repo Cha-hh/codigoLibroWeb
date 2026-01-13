@@ -6,10 +6,12 @@ export default function FAQ() {
   const [faq, setFaq] = useState([])
 
   useEffect(() => {
-    const storedFaq = localStorage.getItem('faq')
-    if (storedFaq) {
-      setFaq(JSON.parse(storedFaq))
+    const fetchFaq = async () => {
+      const res = await fetch('/api/faq')
+      const data = await res.json()
+      setFaq(data)
     }
+    fetchFaq()
   }, [])
 
   return (
@@ -38,9 +40,11 @@ export default function FAQ() {
               <div key={item.id} className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold mb-3 text-blue-600">{item.question}</h3>
                 <p className="text-gray-700">{item.answer}</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Respondido el {new Date(item.createdAt).toLocaleDateString()}
-                </p>
+                {item.createdAt && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Respondido el {new Date(item.createdAt).toLocaleDateString()}
+                  </p>
+                )}
               </div>
             ))}
           </div>

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "animate.css": "^4.1.1",
+    "daisyui": "^5.5.14",
     "next": "^16.1.1",
     "react": "^18",
     "react-dom": "^18"
