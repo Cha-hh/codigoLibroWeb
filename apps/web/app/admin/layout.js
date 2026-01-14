@@ -25,6 +25,7 @@ export default function AdminLayout({ children }) {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-800">Panel de Administración</h1>
             <div className="space-x-4">
+              <a href="/admin/inventory" className="text-blue-600 hover:text-blue-800">Inventario</a>
               <a href="/admin/orders" className="text-blue-600 hover:text-blue-800">Pedidos</a>
               <a href="/admin/tickets" className="text-blue-600 hover:text-blue-800">Tickets</a>
               <a href="/admin/change-password" className="text-blue-600 hover:text-blue-800">Cambiar Contraseña</a>

@@ -99,28 +99,31 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <nav className="bg-white shadow-md">
+      <nav className="bg-black shadow-md">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex space-x-6">
-              <a href="/admin/login" className="text-blue-600 hover:text-blue-800 font-medium">Admin</a>
-              <a href="/" className="text-gray-700 hover:text-gray-800 font-medium">Libro</a>
-              <a href="#" className="text-gray-700 hover:text-gray-800 font-medium">Monturas</a>
+              <a href="/admin/login" className="text-white hover:text-gray-300 font-medium">Admin</a>
+              <a href="/" className="text-white hover:text-gray-300 font-medium">Libro</a>
+              <a href="#" className="text-white hover:text-gray-300 font-medium">Monturas</a>
             </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-20">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 mb-8 md:mb-0">
-            <img src="/portada-libro.jpg" alt="Portada del libro" className="w-64 mx-auto md:mx-0 rounded-lg shadow-lg" />
+      <section className="bg-black text-white py-20">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-4">
+          <div className="md:w-1/2 mb-8 md:mb-0 flex justify-center">
+            <img src="/images/autor-libro.jpg" alt="Autor del libro" className="w-80 rounded-lg shadow-lg" />
           </div>
-          <div className="md:w-1/2 text-center md:text-left">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 animate__animated animate__fadeInDown">Frase principal de alto impacto narrativo</h1>
-            <p className="text-xl mb-6 animate__animated animate__fadeInDown">Subtítulo tipo confesión / advertencia</p>
-            <a href="#oferta" className="bg-yellow-500 text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-yellow-400 transition animate__animated animate__fadeInDown">Comprar el libro físico</a>
+          <div className="md:w-1/2 text-center md:text-left relative">
+            <div className="absolute inset-0 rounded-lg overflow-hidden" style={{backgroundImage: 'url(/images/fondo-agua.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.4, zIndex: 0}}></div>
+            <div className="relative z-10 p-6">
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 animate__animated animate__fadeInDown uppercase">En el agua oscura</h1>
+              <p className="text-base mb-6 animate__animated animate__fadeInDown">No te encuentras solo.</p>
+              <a href="#oferta" className="bg-gray-600 bg-opacity-40 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-opacity-60 transition animate__animated animate__fadeInDown inline-flex items-center gap-2 mt-6">COMPRA EL LIBRO <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white bg-opacity-20 text-xs">→</span></a>
+            </div>
           </div>
         </div>
       </section>
@@ -128,7 +131,7 @@ export default function Home() {
       {/* Esto ocurrió de verdad */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8">Esto ocurrió de verdad</h2>
+          <h2 className="text-2xl font-bold mb-8">Esto ocurrió de verdad</h2>
           <p className="text-lg max-w-3xl mx-auto">Texto introductorio del autor. Enfoque en hechos reales. Construcción de credibilidad (sin sensacionalismo).</p>
         </div>
       </section>
@@ -136,7 +139,7 @@ export default function Home() {
       {/* Relatos y experiencias destacadas */}
       <section className="py-16 bg-gray-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Relatos y experiencias destacadas</h2>
+          <h2 className="text-2xl font-bold text-center mb-12">Relatos y experiencias destacadas</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-xl font-semibold mb-4">Experiencia 1</h3>
@@ -157,7 +160,7 @@ export default function Home() {
       {/* El autor */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8">El autor</h2>
+          <h2 className="text-2xl font-bold mb-8">El autor</h2>
           <p className="text-lg max-w-3xl mx-auto">Presentación personal. Relación del autor con los lugares y sucesos. Motivo de escritura del libro.</p>
         </div>
       </section>
@@ -169,7 +172,7 @@ export default function Home() {
             <img src="/libro-fisico.jpg" alt="Libro físico" className="w-64 mx-auto md:mx-0 rounded-lg shadow-lg" />
           </div>
           <div className="md:w-1/2">
-            <h2 className="text-3xl font-bold mb-6">El libro físico</h2>
+            <h2 className="text-2xl font-bold mb-6">El libro físico</h2>
             <p className="text-lg mb-4">Enfoque visual y descriptivo del objeto físico. Detalles: formato, páginas, encuadernación.</p>
             <p className="text-lg">Valor diferencial del formato impreso.</p>
           </div>
@@ -177,28 +180,28 @@ export default function Home() {
       </section>
 
       {/* Oferta y compra */}
-      <section id="oferta" className="py-16 bg-blue-600 text-white">
+      <section id="oferta" className="py-16 text-white" style={{backgroundColor: '#132940'}}>
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8">Oferta y compra</h2>
+          <h2 className="text-2xl font-bold mb-8">Oferta y compra</h2>
           <p className="text-xl mb-4">Precio: $XX.XX</p>
           <p className="text-lg mb-4">Qué incluye la compra: Libro físico, envío gratuito.</p>
           <p className="text-lg mb-8">Información clara de envíos: Entrega en 5-7 días hábiles.</p>
-          <a href="/checkout" className="bg-yellow-500 text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-yellow-400 transition">Comprar Ahora</a>
+          <a href="/checkout" className="bg-[#006888] text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-[#0e5a70] transition">Comprar Ahora</a>
         </div>
       </section>
 
       {/* FAQ */}
       <section className="py-16 bg-gray-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Preguntas Frecuentes sobre el Libro</h2>
+          <h2 className="text-2xl font-bold text-center mb-12">Preguntas Frecuentes sobre el Libro</h2>
           <div className="max-w-6xl mx-auto">
             <FaqGrid />
             <div className="text-center mt-8 space-y-4">
-              <button onClick={() => setIsModalOpen(true)} className="bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition">
+              <button onClick={() => setIsModalOpen(true)} className="bg-[#006888] text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-[#0e5a70] transition">
                 Hacer una pregunta
               </button>
               <div>
-                <a href="/faq" className="text-blue-600 hover:text-blue-800 underline">
+                <a href="/faq" className="text-[#006888] hover:text-[#0e5a70] underline">
                   Ver todas las preguntas frecuentes
                 </a>
               </div>
@@ -249,7 +252,7 @@ export default function Home() {
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
                   Cancelar
                 </button>
-                <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                <button type="submit" className="px-4 py-2 bg-[#006888] text-white rounded hover:bg-[#0e5a70]">
                   Enviar
                 </button>
               </div>
@@ -271,7 +274,7 @@ export default function Home() {
             <div className="mt-6">
               <button
                 onClick={() => setShowOrderModal(false)}
-                className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-6 py-2 bg-[#006888] text-white rounded hover:bg-[#0e5a70]"
               >
                 Cerrar
               </button>
@@ -283,30 +286,30 @@ export default function Home() {
       {/* Atención y dudas */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8">Atención y dudas</h2>
+          <h2 className="text-2xl font-bold mb-8">Atención y dudas</h2>
           <p className="text-lg mb-6">Bot de atención con respuestas predeterminadas:</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <button 
               onClick={() => { setSelectedTopic('Envíos'); setContactMessage('Pregunta sobre envíos: '); }}
-              className={`px-4 py-2 rounded hover:bg-blue-600 ${selectedTopic === 'Envíos' ? 'bg-blue-700' : 'bg-blue-500'} text-white`}
+              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Envíos' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
             >
               Envíos
             </button>
             <button 
               onClick={() => { setSelectedTopic('Pagos'); setContactMessage('Pregunta sobre pagos: '); }}
-              className={`px-4 py-2 rounded hover:bg-blue-600 ${selectedTopic === 'Pagos' ? 'bg-blue-700' : 'bg-blue-500'} text-white`}
+              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Pagos' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
             >
               Pagos
             </button>
             <button 
               onClick={() => { setSelectedTopic('Disponibilidad'); setContactMessage('Pregunta sobre disponibilidad: '); }}
-              className={`px-4 py-2 rounded hover:bg-blue-600 ${selectedTopic === 'Disponibilidad' ? 'bg-blue-700' : 'bg-blue-500'} text-white`}
+              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Disponibilidad' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
             >
               Disponibilidad
             </button>
             <button 
               onClick={() => { setSelectedTopic('Facturación'); setContactMessage('Pregunta sobre facturación: '); }}
-              className={`px-4 py-2 rounded hover:bg-blue-600 ${selectedTopic === 'Facturación' ? 'bg-blue-700' : 'bg-blue-500'} text-white`}
+              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Facturación' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
             >
               Facturación
             </button>
@@ -328,7 +331,7 @@ export default function Home() {
               onChange={(e) => setContactMessage(e.target.value)}
               required
             />
-            <button type="submit" className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Enviar</button>
+            <button type="submit" className="bg-[#006888] text-white px-6 py-2 rounded hover:bg-[#0e5a70]">Enviar</button>
           </form>
         </div>
       </section>

@@ -34,17 +34,5 @@
     "question": "Prueba Prueba?",
     "answer": "SI SI",
     "createdAt": "2026-01-13T22:52:03.084Z"
-  },
-  {
-    "id": 8,
-    "question": "Prueba Prueba?",
-    "answer": "SI SI",
-    "createdAt": "2026-01-13T22:52:35.241Z"
-  },
-  {
-    "id": 9,
-    "question": "Pregunta sobre pagos: ",
-    "answer": "",
-    "createdAt": "2026-01-13T23:33:17.359Z"
   }
 ]

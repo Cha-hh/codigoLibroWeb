@@ -1,0 +1,19 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/change-password/page": "app/admin/change-password/page.js",
+  "/admin/faq/page": "app/admin/faq/page.js",
+  "/admin/login/page": "app/admin/login/page.js",
+  "/admin/orders/[id]/page": "app/admin/orders/[id]/page.js",
+  "/admin/orders/page": "app/admin/orders/page.js",
+  "/admin/tickets/page": "app/admin/tickets/page.js",
+  "/api/faq/route": "app/api/faq/route.js",
+  "/checkout/page": "app/checkout/page.js",
+  "/checkout/redirect/page": "app/checkout/redirect/page.js",
+  "/checkout/shipping/page": "app/checkout/shipping/page.js",
+  "/failure/page": "app/failure/page.js",
+  "/faq/page": "app/faq/page.js",
+  "/page": "app/page.js",
+  "/pending/page": "app/pending/page.js",
+  "/success/page": "app/success/page.js"
+}

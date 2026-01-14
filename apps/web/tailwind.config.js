@@ -6,7 +6,13 @@ module.exports = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'serif': ['Cormorant Garamond', 'Georgia', 'serif'],
+        'sans': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+      },
+    },
   },
   plugins: [],
 }
