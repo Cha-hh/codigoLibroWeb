@@ -28,7 +28,7 @@ export default function Shipping() {
     return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase()
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!name || !email || !address || !city || !postalCode) return
 
@@ -54,6 +54,23 @@ export default function Shipping() {
     const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]')
     existingOrders.push(completeOrder)
     localStorage.setItem('orders', JSON.stringify(existingOrders))
+
+    // Reducir stock si hay libros físicos
+    if (order.physical > 0) {
+      try {
+        const stockRes = await fetch('/api/stock')
+        const stock = await stockRes.json()
+        const currentQuantity = stock.book?.quantity || 0
+        const newQuantity = Math.max(0, currentQuantity - order.physical)
+        await fetch('/api/stock', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: 'book', quantity: newQuantity }),
+        })
+      } catch (error) {
+        console.error('Error al reducir stock:', error)
+      }
+    }
 
     // Limpiar orden actual
     localStorage.removeItem('currentOrder')

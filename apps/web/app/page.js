@@ -11,6 +11,9 @@ export default function Home() {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [orderName, setOrderName] = useState('');
   const [orderEmail, setOrderEmail] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
 
   useEffect(() => {
     fetch('/api/faq')
@@ -53,6 +56,26 @@ export default function Home() {
     setIsModalOpen(false);
 
     alert('Pregunta enviada correctamente. Te responderemos pronto.');
+  };
+
+  const handleSubmitContact = (e) => {
+    e.preventDefault();
+    if (!contactEmail || !contactMessage) return;
+
+    // Enviar directamente a FAQs con respuesta vacía
+    fetch('/api/faq', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: contactMessage, answer: '' }),
+    })
+    .then(() => {
+      // Limpiar formulario
+      setContactEmail('');
+      setContactMessage('');
+      setSelectedTopic('');
+      alert('Mensaje enviado correctamente. Te responderemos pronto.');
+    })
+    .catch(() => alert('Error al enviar el mensaje.'));
   };
 
   const FaqGrid = () => {
@@ -263,14 +286,48 @@ export default function Home() {
           <h2 className="text-3xl font-bold mb-8">Atención y dudas</h2>
           <p className="text-lg mb-6">Bot de atención con respuestas predeterminadas:</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Envíos</button>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Pagos</button>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Disponibilidad</button>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Facturación</button>
+            <button 
+              onClick={() => { setSelectedTopic('Envíos'); setContactMessage('Pregunta sobre envíos: '); }}
+              className={`px-4 py-2 rounded hover:bg-blue-600 ${selectedTopic === 'Envíos' ? 'bg-blue-700' : 'bg-blue-500'} text-white`}
+            >
+              Envíos
+            </button>
+            <button 
+              onClick={() => { setSelectedTopic('Pagos'); setContactMessage('Pregunta sobre pagos: '); }}
+              className={`px-4 py-2 rounded hover:bg-blue-600 ${selectedTopic === 'Pagos' ? 'bg-blue-700' : 'bg-blue-500'} text-white`}
+            >
+              Pagos
+            </button>
+            <button 
+              onClick={() => { setSelectedTopic('Disponibilidad'); setContactMessage('Pregunta sobre disponibilidad: '); }}
+              className={`px-4 py-2 rounded hover:bg-blue-600 ${selectedTopic === 'Disponibilidad' ? 'bg-blue-700' : 'bg-blue-500'} text-white`}
+            >
+              Disponibilidad
+            </button>
+            <button 
+              onClick={() => { setSelectedTopic('Facturación'); setContactMessage('Pregunta sobre facturación: '); }}
+              className={`px-4 py-2 rounded hover:bg-blue-600 ${selectedTopic === 'Facturación' ? 'bg-blue-700' : 'bg-blue-500'} text-white`}
+            >
+              Facturación
+            </button>
           </div>
-          <form className="max-w-md mx-auto">
-            <input type="email" placeholder="Tu email" className="w-full p-2 mb-4 border rounded" />
-            <textarea placeholder="Tu mensaje" className="w-full p-2 mb-4 border rounded" rows="4"></textarea>
+          <form className="max-w-md mx-auto" onSubmit={handleSubmitContact}>
+            <input 
+              type="email" 
+              placeholder="Tu email" 
+              className="w-full p-2 mb-4 border rounded" 
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              required
+            />
+            <textarea 
+              placeholder="Tu mensaje" 
+              className="w-full p-2 mb-4 border rounded" 
+              rows="4"
+              value={contactMessage}
+              onChange={(e) => setContactMessage(e.target.value)}
+              required
+            />
             <button type="submit" className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Enviar</button>
           </form>
         </div>

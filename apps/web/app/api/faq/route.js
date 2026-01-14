@@ -26,7 +26,7 @@ export async function POST(request) {
   const { question, answer } = await request.json();
   const faq = readFaq();
   const newId = faq.length > 0 ? Math.max(...faq.map(item => item.id)) + 1 : 1;
-  faq.push({ id: newId, question, answer });
+  faq.push({ id: newId, question, answer, createdAt: new Date().toISOString() });
   writeFaq(faq);
   return new Response(JSON.stringify({ message: 'FAQ added' }), { status: 201 });
 }
@@ -36,7 +36,7 @@ export async function PUT(request) {
   const faq = readFaq();
   const index = faq.findIndex(item => item.id === id);
   if (index !== -1) {
-    faq[index] = { id, question, answer };
+    faq[index] = { ...faq[index], question, answer };
     writeFaq(faq);
     return new Response(JSON.stringify({ message: 'FAQ updated' }), { status: 200 });
   }

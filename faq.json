@@ -1,22 +1,50 @@
 [
   {
-    "id": 1,
-    "question": "¿Cuántos capítulos tiene el libro?",
-    "answer": "El libro consta de 12 capítulos, cada uno dedicado a una experiencia diferente."
-  },
-  {
     "id": 2,
     "question": "¿Los capítulos están basados en hechos reales?",
-    "answer": "Sí, todos los capítulos están inspirados en acontecimientos reales vividos por el autor."
+    "answer": "Sí, todos los capítulos están inspirados en acontecimientos reales vividos por el autor.",
+    "createdAt": "2024-01-02T00:00:00.000Z"
   },
   {
     "id": 3,
     "question": "¿Puedo leer un capítulo de muestra?",
-    "answer": "Actualmente, no ofrecemos capítulos de muestra, pero puedes leer reseñas y testimonios en la sección de relatos destacados."
+    "answer": "Actualmente, no ofrecemos capítulos de muestra, pero puedes leer reseñas y testimonios en la sección de relatos destacados.",
+    "createdAt": "2024-01-03T00:00:00.000Z"
   },
   {
     "id": 4,
     "question": "¿El libro incluye ilustraciones?",
-    "answer": "Sí, el libro incluye ilustraciones y fotografías relacionadas con los lugares y sucesos descritos."
+    "answer": "Sí, el libro incluye ilustraciones y fotografías relacionadas con los lugares y sucesos descritos.",
+    "createdAt": "2024-01-04T00:00:00.000Z"
+  },
+  {
+    "id": 5,
+    "question": "¿Cómo puedo contactar al autor?",
+    "answer": "Puedes contactar al autor a través del formulario de preguntas frecuentes o enviando un email a autor@ejemplo.com.",
+    "createdAt": "2024-12-15T10:00:00.000Z"
+  },
+  {
+    "id": 6,
+    "question": "¿Hay una versión digital disponible?",
+    "answer": "Actualmente, el libro solo está disponible en formato físico. No hay planes para una versión digital en este momento.",
+    "createdAt": "2024-12-16T10:00:00.000Z"
+  },
+  {
+    "id": 7,
+    "question": "Prueba Prueba?",
+    "answer": "SI SI",
+    "createdAt": "2026-01-13T22:52:03.084Z"
+  },
+  {
+    "id": 8,
+    "question": "Prueba Prueba?",
+    "answer": "SI SI",
+    "createdAt": "2026-01-13T22:52:35.241Z"
+  },
+  {
+    "id": 9,
+    "question": "Pregunta sobre pagos: ",
+    "answer": "",
+    "createdAt": "2026-01-13T23:33:17.359Z"
   }
 ]

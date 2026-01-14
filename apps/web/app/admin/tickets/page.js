@@ -112,6 +112,9 @@ export default function Tickets() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <div className="mb-4">
+        <a href="/admin/inventory" className="text-blue-600 hover:text-blue-800 underline">Ir a Gestión de Inventario</a>
+      </div>
       <h1 className="text-3xl font-bold mb-6">Gestión de Preguntas del Libro</h1>
 
       {/* Pestañas */}

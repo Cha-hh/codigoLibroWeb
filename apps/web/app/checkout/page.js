@@ -1,15 +1,42 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function Checkout() {
   const [physicalQuantity, setPhysicalQuantity] = useState(1)
   const [digitalQuantity, setDigitalQuantity] = useState(0)
+  const [stock, setStock] = useState(0)
   const router = useRouter()
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    // Cargar stock disponible
+    fetch('/api/stock')
+      .then(res => res.json())
+      .then(data => setStock(data.book?.quantity || 0))
+      .catch(() => setStock(0))
+  }, [])
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Verificar stock antes de proceder
+    if (physicalQuantity > 0) {
+      try {
+        const stockRes = await fetch('/api/stock')
+        const stock = await stockRes.json()
+        const availableStock = stock.book?.quantity || 0
+        if (physicalQuantity > availableStock) {
+          alert(`No hay suficiente stock. Disponible: ${availableStock} unidades.`)
+          return
+        }
+      } catch (error) {
+        console.error('Error al verificar stock:', error)
+        alert('Error al verificar stock. Inténtalo de nuevo.')
+        return
+      }
+    }
+
     // Aquí podrías guardar la selección en localStorage o enviar a una API
     const order = {
       physical: physicalQuantity,
@@ -50,15 +77,17 @@ export default function Checkout() {
                 <div>
                   <p className="text-gray-700">Precio: $20.00</p>
                   <p className="text-sm text-gray-500">Envío incluido</p>
+                  <p className="text-sm text-blue-600">Stock disponible: {stock} unidades</p>
                 </div>
                 <div className="flex items-center">
                   <label className="mr-2">Cantidad:</label>
                   <input
                     type="number"
                     value={physicalQuantity}
-                    onChange={(e) => setPhysicalQuantity(Math.max(0, parseInt(e.target.value) || 0))}
+                    onChange={(e) => setPhysicalQuantity(Math.max(0, Math.min(stock, parseInt(e.target.value) || 0)))}
                     className="w-20 p-2 border border-gray-300 rounded text-center"
                     min="0"
+                    max={stock}
                   />
                 </div>
               </div>
@@ -97,10 +126,10 @@ export default function Checkout() {
             {/* Botón de compra */}
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-600 transition"
-              disabled={physicalQuantity === 0 && digitalQuantity === 0}
+              className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-600 transition disabled:bg-gray-400"
+              disabled={physicalQuantity === 0 && digitalQuantity === 0 || physicalQuantity > stock}
             >
-              Proceder al Pago
+              {physicalQuantity > stock ? 'Stock insuficiente' : 'Proceder al Pago'}
             </button>
           </form>
         </div>
