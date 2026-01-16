@@ -1,4 +1,4 @@
-'use client'
+                                                    'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -7,6 +7,8 @@ export default function Checkout() {
   const [physicalQuantity, setPhysicalQuantity] = useState(1)
   const [digitalQuantity, setDigitalQuantity] = useState(0)
   const [stock, setStock] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [mercadoPagoReady, setMercadoPagoReady] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -15,11 +17,34 @@ export default function Checkout() {
       .then(res => res.json())
       .then(data => setStock(data.book?.quantity || 0))
       .catch(() => setStock(0))
+
+    // Cargar script de Mercado Pago
+    const script = document.createElement('script')
+    script.src = 'https://sdk.mercadopago.com/js/v2'
+    script.async = true
+    script.onload = () => {
+      if (window.MercadoPago) {
+        // La public key se configura directamente en el constructor
+        // o cuando se inicializa el cliente de Mercado Pago
+        setMercadoPagoReady(true)
+      }
+    }
+    document.body.appendChild(script)
   }, [])
+
+  const generateOrderId = () => {
+    return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
+    // Validar que haya al menos un producto seleccionado
+    if (physicalQuantity === 0 && digitalQuantity === 0) {
+      alert('Por favor, selecciona al menos un producto')
+      return
+    }
+
     // Verificar stock antes de proceder
     if (physicalQuantity > 0) {
       try {
@@ -37,15 +62,54 @@ export default function Checkout() {
       }
     }
 
-    // Aquí podrías guardar la selección en localStorage o enviar a una API
-    const order = {
-      physical: physicalQuantity,
-      digital: digitalQuantity,
-      total: (physicalQuantity * 20) + (digitalQuantity * 10) // Precios de ejemplo
+    setLoading(true)
+
+    try {
+      const orderId = generateOrderId()
+      const total = (physicalQuantity * 20) + (digitalQuantity * 10)
+
+      const order = {
+        physical: physicalQuantity,
+        digital: digitalQuantity,
+        total: total
+      }
+
+      // Guardar orden temporal en localStorage
+      localStorage.setItem('currentOrder', JSON.stringify(order))
+      localStorage.setItem('currentOrderId', orderId)
+
+      // Crear preferencia de pago en Mercado Pago
+      const paymentResponse = await fetch('/api/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          physical: physicalQuantity,
+          digital: digitalQuantity,
+          total: total,
+          orderId: orderId
+        })
+      })
+
+      const paymentData = await paymentResponse.json()
+
+      if (!paymentResponse.ok) {
+        console.error('Error de API:', paymentData)
+        throw new Error(paymentData.error || 'Error al crear preferencia de pago')
+      }
+
+      // Redirigir a Mercado Pago o abrir checkout modal
+      if (paymentData.init_point) {
+        window.location.href = paymentData.init_point
+      } else if (paymentData.sandbox_init_point) {
+        window.location.href = paymentData.sandbox_init_point
+      } else {
+        throw new Error('No se obtuvo la URL de pago')
+      }
+    } catch (error) {
+      console.error('Error al procesar pago:', error)
+      alert('Error al procesar el pago. Por favor, intenta de nuevo.')
+      setLoading(false)
     }
-    localStorage.setItem('currentOrder', JSON.stringify(order))
-    // Redirigir a la página de envío
-    router.push('/checkout/shipping')
   }
 
   const total = (physicalQuantity * 20) + (digitalQuantity * 10)
@@ -127,9 +191,9 @@ export default function Checkout() {
             <button
               type="submit"
               className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-600 transition disabled:bg-gray-400"
-              disabled={physicalQuantity === 0 && digitalQuantity === 0 || physicalQuantity > stock}
+              disabled={physicalQuantity === 0 && digitalQuantity === 0 || physicalQuantity > stock || loading}
             >
-              {physicalQuantity > stock ? 'Stock insuficiente' : 'Proceder al Pago'}
+              {loading ? 'Procesando...' : physicalQuantity > stock ? 'Stock insuficiente' : 'Proceder al Pago'}
             </button>
           </form>
         </div>

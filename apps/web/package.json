@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "animate.css": "^4.1.1",
+    "axios": "^1.13.2",
     "daisyui": "^5.5.14",
+    "mercadopago": "^2.12.0",
     "next": "^16.1.1",
     "react": "^18",
     "react-dom": "^18"
