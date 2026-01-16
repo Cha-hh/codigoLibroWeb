@@ -114,8 +114,8 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-black text-white py-20">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-4">
-          <div className="md:w-1/2 mb-8 md:mb-0 flex justify-center">
-            <img src="/images/autor-libro.jpg" alt="Autor del libro" className="w-80 rounded-lg shadow-lg" />
+          <div className="md:w-1/2 mb-8 md:mb-0 flex justify-end">
+            <img src="/images/autor-libro.jpg" alt="Autor del libro" className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg" />
           </div>
           <div className="md:w-1/2 text-center md:text-left relative">
             <div className="absolute inset-0 rounded-lg overflow-hidden" style={{backgroundImage: 'url(/images/fondo-agua.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.4, zIndex: 0}}></div>
@@ -128,30 +128,103 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Esto ocurrió de verdad */}
+      {/* Introducción */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-8">Esto ocurrió de verdad</h2>
-          <p className="text-lg max-w-3xl mx-auto">Texto introductorio del autor. Enfoque en hechos reales. Construcción de credibilidad (sin sensacionalismo).</p>
+          <h2 className="text-2xl font-bold mb-8">Introducción</h2>
+          <p className="text-lg max-w-3xl mx-auto leading-relaxed">
+            El mundo no se limita a lo que los ojos alcanzan a ver.<br />
+            Existe lo material: lo tangible, lo comprobable, aquello que se sostiene en la certeza de lo visible y, sin embargo, está condenado a desvanecerse con el tiempo.<br />
+            <br />
+            Pero hay otro mundo, uno que no se mide ni se pesa. El mundo espiritual.<br />
+            Un territorio invisible donde convergen fuerzas, creencias y voluntades; algunas deformadas por el error, otras aferradas a verdades que trascienden al hombre.<br />
+            No importa cómo se le nombre o desde dónde se le mire: está ahí. Silencioso, constante, más próximo de lo que quisiéramos admitir.<br />
+            <br />
+            No siempre se manifiesta con claridad. A veces se insinúa en la sombra, en el presentimiento, en el temor que no tiene explicación. Otras, se revelan con la contundencia de lo inevitable.<br />
+            <br />
+            Este libro no pretende revelarlo todo. Apenas abre una rendija, un instante fugaz, un susurro en medio de la oscuridad.<br />
+            Un suspiro breve, pero cargado de verdad; tan profundo y real como la respiración que, sin notarlo, nos mantiene con vida.
+          </p>
         </div>
       </section>
 
       {/* Relatos y experiencias destacadas */}
       <section className="py-16 bg-gray-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-12">Relatos y experiencias destacadas</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-4">Experiencia 1</h3>
-              <p>Descripción insinuada para generar intriga, sin spoilers.</p>
+          <h2 className="text-2xl font-bold text-center mb-12">RELATOS Y EXPERIENCIAS DESTACADAS</h2>
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Parte Uno: Distintas presencias */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style={{aspectRatio: '2 / 3'}}>
+              <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                <h3 className="text-xl font-semibold text-center">DISTINTAS PRESENCIAS</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 text-sm leading-relaxed">
+                <p className="mb-4">En mi opinión, la existencia no se limita a una sola forma de ser. Hay distintos seres, distintas presencias, distintos estados de conciencia.</p>
+                
+                <p className="mb-4">Comencemos por el ser humano, compuesto de cuerpo y alma, unidos mientras la vida persiste. El cuerpo habita lo material; el alma, aunque invisible, le da sentido, voluntad y propósito.</p>
+                
+                <p className="mb-4">Existen también las almas que ya no permanecen en su cuerpo. Aquellas que han cruzado el umbral y existen en otros planos: el cielo, el purgatorio o el limbo; y las desdichadas, que por sus actos o decisiones han quedado atrapadas en el infierno.</p>
+                
+                <p className="mb-4">Además, los ángeles. Seres que no pertenecen a la carne ni al tiempo. Algunos permanecen fieles al bien, inspirando, protegiendo, en el servicio a Dios. Otros, en cambio, eligieron la ruptura, rechazaron la luz y ahora buscan confundir, tentar y dañar.</p>
+                
+                <p className="mb-4">El ser humano se encuentra en medio de todo esto. Capaz tanto del bien como del mal. Puede elegir uno u otro camino, entregarse a la luz o a la oscuridad, consciente o inconscientemente. Nadie está exento de esa elección.</p>
+                
+                <p>Mientras vivimos, estamos sujetos al tiempo y al libre albedrío. El tiempo avanza sin detenerse; el libre albedrío decide el rumbo. Ambos son contundentes, inevitables y profundamente consecuentes.</p>
+              </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-4">Experiencia 2</h3>
-              <p>Descripción insinuada para generar intriga, sin spoilers.</p>
+
+            {/* Parte Dos: El miedo, un silencioso asesino */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style={{aspectRatio: '2 / 3'}}>
+              <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                <h3 className="text-xl font-semibold text-center">EL MIEDO, UN SILENCIOSO ASESINO</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 text-sm leading-relaxed">
+                <p className="mb-4">En el proceso de la vida, el miedo aparece como una sombra constante. No siempre grita; a veces susurra. Se disfraza de prudencia, de duda, de espera eterna. Pero su efecto es el mismo: detiene.</p>
+                
+                <p className="font-semibold mb-4">El miedo paraliza.</p>
+                
+                <p className="mb-4">Cuando se instala, inmoviliza la voluntad, nubla la razón y debilita la fe en uno mismo. Poco a poco va erosionando la confianza, hasta convertir cada decisión en una amenaza y cada paso en un riesgo insoportable.</p>
+                
+                <p className="font-semibold mb-4">El miedo destruye.</p>
+                
+                <p className="mb-4">No siempre de forma visible, pero sí profunda. Destruye sueños antes de que nazcan, rompe oportunidades antes de que se presenten, y convierte la posibilidad en renuncia. No necesita vencer; le basta con que no intentes.</p>
+                
+                <p className="mb-4">Enfrentar el miedo no significa no sentirlo. Significa avanzar a pesar de él. Reconocerlo, mirarlo de frente y decidir que no será quien gobierne el rumbo de nuestra vida.</p>
+                
+                <p className="mb-4">Porque todo momento que el miedo bloquea, es una oportunidad que nunca vuelve. Y toda vida dominada por el miedo, es una vida detenida en el tiempo.</p>
+                
+                <p className="font-semibold mb-4">El miedo nunca desaparece solo; se debilita únicamente cuando lo enfrentas.</p>
+                
+                <p className="mb-4">Si no lo haces, podrías perder la oportunidad que marque un antes y un después en tu vida, un instante único en toda tu existencia.</p>
+                
+                <p className="font-semibold">No temas más… confía y sigue adelante.</p>
+              </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-4">Experiencia 3</h3>
-              <p>Descripción insinuada para generar intriga, sin spoilers.</p>
+
+            {/* Parte Tres: Hoy es un buen día */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style={{aspectRatio: '2 / 3'}}>
+              <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                <h3 className="text-xl font-semibold text-center">HOY ES UN BUEN DÍA</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 text-sm leading-relaxed">
+                <p className="font-semibold mb-4">Hoy es un buen día.</p>
+                
+                <p className="mb-4">No porque todo esté en orden, ni porque la vida haya decidido concedernos una tregua. Es porque estamos aquí, respirando, conscientes, con la posibilidad intacta de elegir cómo enfrentarlo.</p>
+                
+                <p className="font-semibold mb-4">A pesar de las circunstancias.</p>
+                
+                <p className="mb-4">A pesar de los errores cometidos, de las decisiones que pesaron más de lo esperado, de las palabras que no se dijeron o de aquellas que se dijeron de más. El pasado no desaparece, pero tampoco gobierna este instante.</p>
+                
+                <p className="mb-4">La actitud positiva no consiste en negar el dolor ni en disfrazar la realidad con optimismo forzado. Consiste en reconocer la dificultad y, aun así, decidir no rendirse ante ella. Es una postura interior: mantenerse en pie cuando todo invita a bajar la cabeza.</p>
+                
+                <p className="mb-4">Hoy es un buen día porque aún hay margen para corregir, aprender, pedir perdón u otorgarlo. Porque mientras el tiempo siga avanzando, existe la oportunidad de hacer algo distinto, aunque sea pequeño, un solo paso.</p>
+                
+                <p className="mb-4">La actitud positiva no cambia el mundo de inmediato, pero transforma la forma en que caminamos dentro de él. Nos permite mirar el error sin quedar atrapados en la culpa, enfrentar la adversidad sin convertirla en condena.</p>
+                
+                <p className="font-semibold mb-4">Hoy es un buen día. Ha sido mi filosofía de vida, en ella he decidido cada paso, cada decisión.</p>
+                
+                <p className="font-semibold">Porque incluso en medio de la oscuridad, decidir avanzar ya es un acto de luz.</p>
+              </div>
             </div>
           </div>
         </div>
