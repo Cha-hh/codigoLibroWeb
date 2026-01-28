@@ -112,18 +112,20 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-black text-white py-20">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-4">
-          <div className="md:w-1/2 mb-8 md:mb-0 flex justify-end">
-            <img src="/images/autor-libro.jpg" alt="Autor del libro" className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg" />
-          </div>
-          <div className="md:w-1/2 text-center md:text-left relative">
-            <div className="absolute inset-0 rounded-lg overflow-hidden" style={{backgroundImage: 'url(/images/fondo-agua.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.4, zIndex: 0}}></div>
-            <div className="relative z-10 p-6">
+      <section className="relative bg-black text-white min-h-screen overflow-hidden flex items-center">
+        <div className="absolute inset-0 w-full h-full">
+          <img src="/images/Panel.jpg" alt="Panel de inicio" className="w-full h-full object-cover opacity-50" />
+        </div>
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-4 relative z-10">
+          <div className="md:w-1/2 text-center md:text-left">
+            <div className="p-6">
               <h1 className="text-5xl md:text-6xl font-bold mb-4 animate__animated animate__fadeInDown uppercase">En el agua oscura</h1>
               <p className="text-base mb-6 animate__animated animate__fadeInDown">No te encuentras solo.</p>
               <a href="#oferta" className="bg-gray-600 bg-opacity-40 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-opacity-60 transition animate__animated animate__fadeInDown inline-flex items-center gap-2 mt-6">COMPRA EL LIBRO <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white bg-opacity-20 text-xs">→</span></a>
             </div>
+          </div>
+          <div className="md:w-1/2 mb-8 md:mb-0 flex justify-center">
+            <img src="/images/autor-libro.jpg" alt="Autor del libro" className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg" />
           </div>
         </div>
       </section>
@@ -231,10 +233,19 @@ export default function Home() {
       </section>
 
       {/* El autor */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-8">El autor</h2>
-          <p className="text-lg max-w-3xl mx-auto">Presentación personal. Relación del autor con los lugares y sucesos. Motivo de escritura del libro.</p>
+      <section className="py-0" style={{ backgroundColor: '#132940' }}>
+        <div className="flex flex-col md:flex-row items-stretch">
+          <div className="md:w-1/3 flex-shrink-0">
+            <img src="/images/autor.jpg" alt="El autor" className="w-full h-full object-cover" />
+          </div>
+          <div className="md:w-2/3 py-16 px-4 flex flex-col justify-center">
+            <h2 className="text-2xl font-bold mb-8 text-white">EL AUTOR</h2>
+            <p className="text-lg text-gray-100">Presentación del autor.
+Conozco a Gerardo Romeh desde siempre. Es mi hermano, y he sido testigo de su historia, de sus luchas y de su perseverancia. Desde niño vivió experiencias extraordinarias que marcaron su sensibilidad y su manera de ver el mundo, encuentros con realidades que muchos no perciben y que, con el paso del tiempo, han dado forma a su identidad y a su camino de vida.
+Gerardo nunca ha dejado de luchar por sus sueños. Es un padre amoroso y comprometido, profesionista, emprendedor y artesano artífice, un hombre carismático, con una creatividad que se manifiesta en todo lo que hace. 
+Hoy se abre paso en una nueva faceta: La literaria, y nos presenta con gran entusiasmo su primera obra, en estas páginas comparte no solo su talento, sino también su don sensitivo. A través de sus vivencias, nos invita a asomarnos al mundo espiritual que ha conocido mediante el contacto con seres que han trascendido este plano terrenal, con respeto, humildad y profunda humanidad.
+Con cariño, Laura.</p>
+          </div>
         </div>
       </section>
 

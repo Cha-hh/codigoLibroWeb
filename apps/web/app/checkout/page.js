@@ -97,14 +97,14 @@ export default function Checkout() {
         throw new Error(paymentData.error || 'Error al crear preferencia de pago')
       }
 
-      // Redirigir a Mercado Pago o abrir checkout modal
-      if (paymentData.init_point) {
-        window.location.href = paymentData.init_point
-      } else if (paymentData.sandbox_init_point) {
-        window.location.href = paymentData.sandbox_init_point
-      } else {
-        throw new Error('No se obtuvo la URL de pago')
-      }
+      // Redirigir a Mercado Pago - Prioriza sandbox en desarrollo, producción en prod
+      const isDevelopment = process.env.NODE_ENV !== 'production'
+      const url = (isDevelopment ? paymentData.sandbox_init_point : paymentData.init_point) 
+        || paymentData.init_point 
+        || paymentData.sandbox_init_point
+
+      if (!url) throw new Error("No se obtuvo la URL de pago")
+      window.location.href = url
     } catch (error) {
       console.error('Error al procesar pago:', error)
       alert('Error al procesar el pago. Por favor, intenta de nuevo.')
