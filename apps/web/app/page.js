@@ -371,7 +371,7 @@ Con cariño, Laura.</p>
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold mb-8">Atención y dudas</h2>
-          <p className="text-lg mb-6">Bot de atención con respuestas predeterminadas:</p>
+          <p className="text-lg mb-6">Selecciona la categoria:</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <button 
               onClick={() => { setSelectedTopic('Envíos'); setContactMessage('Pregunta sobre envíos: '); }}

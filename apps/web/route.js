@@ -45,16 +45,20 @@ export async function POST(request) {
     // Crear la preferencia de pago usando el SDK
     const preference = new Preference(client);
     
-    const publicBaseUrl = process.env.MP_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const publicBaseUrl = process.env.MP_PUBLIC_BASE_URL
+      || process.env.NEXT_PUBLIC_APP_URL
+      || 'http://localhost:3000';
     const notificationUrl = process.env.MERCADO_PAGO_NOTIFICATION_URL || process.env.MP_NOTIFICATION_URL || `${publicBaseUrl}/api/payment/webhook`;
+    const canAutoReturn = publicBaseUrl.startsWith('https://');
 
     const body = {
       items: items,
       back_urls: {
-        success: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/redirect?type=success&orderId=${orderId}`,
-        failure: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/redirect?type=failure&orderId=${orderId}`,
-        pending: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/redirect?type=pending&orderId=${orderId}`
+        success: `${publicBaseUrl}/checkout/redirect?type=success&orderId=${orderId}`,
+        failure: `${publicBaseUrl}/checkout/redirect?type=failure&orderId=${orderId}`,
+        pending: `${publicBaseUrl}/checkout/redirect?type=pending&orderId=${orderId}`
       },
+      ...(canAutoReturn ? { auto_return: 'approved' } : {}),
       notification_url: notificationUrl,
       external_reference: orderId,
       statement_descriptor: 'LibroWeb',

@@ -82,16 +82,21 @@ export default function Shipping() {
         })
       })
 
-      const paymentData = await paymentResponse.json()
+      let paymentData = null
+      try {
+        paymentData = await paymentResponse.json()
+      } catch (parseError) {
+        paymentData = null
+      }
 
       if (!paymentResponse.ok) {
         console.error('Error de API:', paymentData)
-        throw new Error(paymentData.error || 'Error al crear preferencia de pago')
+        throw new Error(paymentData?.error || 'Error al crear preferencia de pago')
       }
 
-      const url = paymentData.checkout_url
-        || paymentData.sandbox_init_point
-        || paymentData.init_point
+      const url = paymentData?.checkout_url
+        || paymentData?.sandbox_init_point
+        || paymentData?.init_point
 
       if (!url) throw new Error('No se obtuvo la URL de pago')
       window.location.href = url
