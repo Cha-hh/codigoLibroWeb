@@ -13,58 +13,117 @@ export default function CheckoutRedirect() {
   useEffect(() => {
     const processPayment = async () => {
       const type = searchParams.get('type')
-      const paymentId = searchParams.get('payment_id')
-      const orderId = searchParams.get('external_reference')
+      const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id')
+      const orderId = searchParams.get('orderId') || searchParams.get('external_reference')
       const merchantOrderId = searchParams.get('merchant_order_id')
+      const statusParam = searchParams.get('status')
+        || searchParams.get('collection_status')
+        || searchParams.get('payment_status')
+        || type
 
       try {
-        if (type === 'success' && paymentId) {
-          // Obtener los datos de la orden guardados
+        if (statusParam === 'approved' || statusParam === 'success') {
           const currentOrder = localStorage.getItem('currentOrder')
           const currentOrderId = localStorage.getItem('currentOrderId')
+          const resolvedOrderId = currentOrderId || orderId
 
-          if (currentOrder) {
-            const order = JSON.parse(currentOrder)
+          const order = currentOrder ? JSON.parse(currentOrder) : null
 
-            // Confirmar pago con el backend
-            const confirmResponse = await fetch('/api/payment-confirmation', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId: paymentId,
-                orderId: currentOrderId || orderId,
-                order: order
-              })
+          // Confirmar pago con el backend (incluso si no hay order en localStorage)
+          const confirmResponse = await fetch('/api/payment-confirmation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              paymentId: paymentId,
+              merchantOrderId: merchantOrderId,
+              orderId: resolvedOrderId,
+              order: order
+                ? {
+                    ...order,
+                    id: resolvedOrderId
+                  }
+                : undefined
             })
+          })
 
-            const confirmData = await confirmResponse.json()
+          const confirmData = await confirmResponse.json()
 
-            if (confirmData.success) {
+          if (confirmData.success) {
               setStatus('approved')
               setMessage('¡Pago aprobado exitosamente!')
 
-              // Si es solo digital, mostrar popup de agradecimiento
-              if (order.digital > 0 && order.physical === 0) {
-                setShowThankYouPopup(true)
+              if (order) {
+                const completedOrder = {
+                  id: resolvedOrderId,
+                  ...order,
+                  paymentId: paymentId || confirmData.paymentId,
+                  status: 'approved',
+                  createdAt: new Date().toISOString()
+                }
+
+                const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]')
+                existingOrders.push(completedOrder)
+                localStorage.setItem('orders', JSON.stringify(existingOrders))
+
+                if (order.physical > 0) {
+                  try {
+                    const stockRes = await fetch('/api/stock')
+                    const stock = await stockRes.json()
+                    const currentQuantity = stock.book?.quantity || 0
+                    const newQuantity = Math.max(0, currentQuantity - order.physical)
+                    await fetch('/api/stock', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ id: 'book', quantity: newQuantity }),
+                    })
+                  } catch (error) {
+                    console.error('Error al reducir stock:', error)
+                  }
+                }
+
+                if (order.shipping?.name && order.shipping?.email) {
+                  localStorage.setItem('orderConfirmed', JSON.stringify({
+                    name: order.shipping.name,
+                    email: order.shipping.email
+                  }))
+                }
+
                 localStorage.removeItem('currentOrder')
                 localStorage.removeItem('currentOrderId')
-              } else if (order.physical > 0) {
-                // Si es físico, redirigir a envío después de 2 segundos
-                setTimeout(() => {
-                  router.push('/checkout/shipping')
-                }, 2000)
+
+                if (order.digital > 0 && order.physical === 0) {
+                  try {
+                    await fetch('/api/digital-delivery', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        orderId: resolvedOrderId,
+                        name: order.shipping?.name,
+                        email: order.shipping?.email
+                      })
+                    })
+                  } catch (error) {
+                    console.error('Error solicitando entrega digital:', error)
+                  }
+                }
               }
-            } else {
-              setStatus('declined')
-              setMessage('El pago no fue aprobado. Por favor, intenta de nuevo.')
-            }
+
+              setTimeout(() => {
+                router.push('/')
+              }, 500)
+          } else {
+            setStatus('declined')
+            setMessage(confirmData?.message || 'El pago no fue aprobado. Por favor, intenta de nuevo.')
           }
-        } else if (type === 'failure') {
+        } else if (statusParam === 'failure' || statusParam === 'rejected') {
           setStatus('declined')
           setMessage('Tu pago fue rechazado. Por favor, intenta con otro método de pago.')
-        } else if (type === 'pending') {
+        } else if (statusParam === 'pending' || statusParam === 'in_process') {
           setStatus('pending')
           setMessage('Tu pago está pendiente de confirmación. Te notificaremos cuando sea procesado.')
+        } else if (!statusParam) {
+          setStatus('error')
+          setMessage('No se recibió el estado del pago. Por favor, intenta de nuevo.')
         }
       } catch (error) {
         console.error('Error procesando pago:', error)

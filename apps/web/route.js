@@ -66,20 +66,24 @@ export async function POST(request) {
     console.log('✅ Preferencia creada:', response.id);
 
     const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || '';
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    const forceSandbox = (process.env.MP_FORCE_SANDBOX === 'true')
-      || (process.env.NEXT_PUBLIC_MP_FORCE_SANDBOX === 'true');
-    const useSandbox = forceSandbox
-      || isDevelopment
-      || (process.env.MP_USE_SANDBOX === 'true')
-      || (process.env.NEXT_PUBLIC_MP_USE_SANDBOX === 'true')
-      || accessToken.startsWith('TEST-');
+    const isTestToken = accessToken.startsWith('TEST-');
+    const forceSandbox = (process.env.MP_USE_SANDBOX === 'true') || (process.env.NEXT_PUBLIC_MP_USE_SANDBOX === 'true');
+
+    if (forceSandbox && !isTestToken) {
+      return Response.json(
+        { error: 'MP_USE_SANDBOX requiere un access token TEST-' },
+        { status: 400 }
+      );
+    }
+
+    const useSandbox = isTestToken || forceSandbox;
     const checkoutUrl = (useSandbox ? response.sandbox_init_point : response.init_point)
       || response.sandbox_init_point
       || response.init_point;
 
     console.log('✅ Checkout generado:', {
       use_sandbox: useSandbox,
+      is_test_token: isTestToken,
       checkout_url: checkoutUrl,
       init_point: response.init_point,
       sandbox_init_point: response.sandbox_init_point,
@@ -91,7 +95,8 @@ export async function POST(request) {
       init_point: response.init_point,
       sandbox_init_point: response.sandbox_init_point,
       checkout_url: checkoutUrl,
-      use_sandbox: useSandbox
+      use_sandbox: useSandbox,
+      is_test_token: isTestToken
     });
   } catch (error) {
     console.error('❌ Error al crear preferencia:', error.message);

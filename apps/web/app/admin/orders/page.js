@@ -11,14 +11,40 @@ export default function Orders() {
     loadOrders()
   }, [])
 
-  const loadOrders = () => {
+  const loadOrders = async () => {
+    try {
+      const res = await fetch('/api/orders', { cache: 'no-store' })
+      const data = await res.json()
+      if (data.ok) {
+        setOrders(data.orders || [])
+        return
+      }
+    } catch (error) {
+      console.error('Error cargando pedidos:', error)
+    }
     const storedOrders = localStorage.getItem('orders')
     if (storedOrders) {
       setOrders(JSON.parse(storedOrders))
     }
   }
 
-  const updateOrderStatus = (orderId, newStatus) => {
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, status: newStatus })
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setOrders(prev => prev.map(order =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        ))
+        return
+      }
+    } catch (error) {
+      console.error('Error actualizando pedido:', error)
+    }
     const updatedOrders = orders.map(order =>
       order.id === orderId ? { ...order, status: newStatus } : order
     )
@@ -34,6 +60,7 @@ export default function Orders() {
 
   const getStatusColor = (status) => {
     switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800'
       case 'pending': return 'bg-yellow-100 text-yellow-800'
       case 'processing': return 'bg-blue-100 text-blue-800'
       case 'shipped': return 'bg-green-100 text-green-800'
@@ -63,6 +90,7 @@ export default function Orders() {
             className="border border-gray-300 rounded px-4 py-2"
           >
             <option value="">Todos los estados</option>
+            <option value="approved">Aprobado</option>
             <option value="pending">Pendiente</option>
             <option value="processing">Procesando</option>
             <option value="shipped">Enviado</option>
@@ -102,7 +130,8 @@ export default function Orders() {
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
                       <span className={`px-2 py-1 rounded ${getStatusColor(order.status)}`}>
-                        {order.status === 'pending' ? 'Pendiente' :
+                        {order.status === 'approved' ? 'Aprobado' :
+                         order.status === 'pending' ? 'Pendiente' :
                          order.status === 'processing' ? 'Procesando' :
                          order.status === 'shipped' ? 'Enviado' : 'Entregado'}
                       </span>

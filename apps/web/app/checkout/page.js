@@ -8,7 +8,7 @@ export default function Checkout() {
   const [digitalQuantity, setDigitalQuantity] = useState(0)
   const [stock, setStock] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [mercadoPagoReady, setMercadoPagoReady] = useState(false)
+  const [mpStatus, setMpStatus] = useState({ ok: true, message: '' })
   const router = useRouter()
 
   useEffect(() => {
@@ -18,18 +18,17 @@ export default function Checkout() {
       .then(data => setStock(data.book?.quantity || 0))
       .catch(() => setStock(0))
 
-    // Cargar script de Mercado Pago
-    const script = document.createElement('script')
-    script.src = 'https://sdk.mercadopago.com/js/v2'
-    script.async = true
-    script.onload = () => {
-      if (window.MercadoPago) {
-        // La public key se configura directamente en el constructor
-        // o cuando se inicializa el cliente de Mercado Pago
-        setMercadoPagoReady(true)
-      }
-    }
-    document.body.appendChild(script)
+    // Validar configuración de Mercado Pago
+    fetch('/api/payment/health')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) {
+          setMpStatus({ ok: false, message: data.error || 'Mercado Pago no está configurado' })
+        }
+      })
+      .catch(() => {
+        setMpStatus({ ok: false, message: 'No se pudo validar Mercado Pago' })
+      })
   }, [])
 
   const generateOrderId = () => {
@@ -78,36 +77,15 @@ export default function Checkout() {
       localStorage.setItem('currentOrder', JSON.stringify(order))
       localStorage.setItem('currentOrderId', orderId)
 
-      // Crear preferencia de pago en Mercado Pago
-      const paymentResponse = await fetch('/api/payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          physical: physicalQuantity,
-          digital: digitalQuantity,
-          total: total,
-          orderId: orderId
-        })
-      })
-
-      const paymentData = await paymentResponse.json()
-
-      if (!paymentResponse.ok) {
-        console.error('Error de API:', paymentData)
-        throw new Error(paymentData.error || 'Error al crear preferencia de pago')
+      // Redirigir según tipo de pedido
+      if (physicalQuantity === 0 && digitalQuantity > 0) {
+        router.push('/checkout/digital')
+      } else {
+        router.push('/checkout/shipping')
       }
-
-      // Redirigir a Mercado Pago - Prioriza sandbox en desarrollo, producción en prod
-      const isDevelopment = process.env.NODE_ENV !== 'production'
-      const url = (isDevelopment ? paymentData.sandbox_init_point : paymentData.init_point) 
-        || paymentData.init_point 
-        || paymentData.sandbox_init_point
-
-      if (!url) throw new Error("No se obtuvo la URL de pago")
-      window.location.href = url
     } catch (error) {
-      console.error('Error al procesar pago:', error)
-      alert('Error al procesar el pago. Por favor, intenta de nuevo.')
+      console.error('Error al preparar la orden:', error)
+      alert('Error al preparar la orden. Por favor, intenta de nuevo.')
       setLoading(false)
     }
   }
@@ -130,9 +108,14 @@ export default function Checkout() {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Checkout</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">Carrito</h1>
 
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+          {!mpStatus.ok && (
+            <div className="mb-6 rounded border border-red-200 bg-red-50 p-4 text-red-700">
+              {mpStatus.message}
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             {/* Libro Físico */}
             <div className="mb-6">
@@ -193,7 +176,7 @@ export default function Checkout() {
               className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-600 transition disabled:bg-gray-400"
               disabled={physicalQuantity === 0 && digitalQuantity === 0 || physicalQuantity > stock || loading}
             >
-              {loading ? 'Procesando...' : physicalQuantity > stock ? 'Stock insuficiente' : 'Proceder al Pago'}
+              {loading ? 'Procesando...' : physicalQuantity > stock ? 'Stock insuficiente' : 'Continuar al envío'}
             </button>
           </form>
         </div>

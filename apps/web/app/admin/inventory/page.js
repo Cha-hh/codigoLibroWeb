@@ -33,7 +33,17 @@ export default function InventoryAdmin() {
     loadOrders()
   }, [])
 
-  const loadOrders = () => {
+  const loadOrders = async () => {
+    try {
+      const res = await fetch('/api/orders', { cache: 'no-store' })
+      const data = await res.json()
+      if (data.ok) {
+        setOrders(data.orders || [])
+        return
+      }
+    } catch (error) {
+      console.error('Error cargando pedidos:', error)
+    }
     const storedOrders = localStorage.getItem('orders')
     if (storedOrders) {
       setOrders(JSON.parse(storedOrders))
