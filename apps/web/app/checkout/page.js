@@ -93,7 +93,7 @@ export default function Checkout() {
   const total = (physicalQuantity * 20) + (digitalQuantity * 10)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
       <nav className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-4">
@@ -110,13 +110,22 @@ export default function Checkout() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">Carrito</h1>
 
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-          {!mpStatus.ok && (
-            <div className="mb-6 rounded border border-red-200 bg-red-50 p-4 text-red-700">
-              {mpStatus.message}
+        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+          <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+            <div className="md:w-1/2 flex-shrink-0 flex justify-center">
+              <img
+                src="/images/MockupLibro.jpg"
+                alt="Libro"
+                className="w-full max-w-sm md:max-w-md h-auto rounded-lg shadow"
+              />
             </div>
-          )}
-          <form onSubmit={handleSubmit}>
+            <div className="md:w-1/2">
+              {!mpStatus.ok && (
+                <div className="mb-6 rounded border border-red-200 bg-red-50 p-4 text-red-700">
+                  {mpStatus.message}
+                </div>
+              )}
+              <form onSubmit={handleSubmit}>
             {/* Libro Físico */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-4">Libro Físico</h2>
@@ -126,7 +135,7 @@ export default function Checkout() {
                   <p className="text-sm text-gray-500">Envío incluido</p>
                   <p className="text-sm text-blue-600">Stock disponible: {stock} unidades</p>
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center gap-3">
                   <label className="mr-2">Cantidad:</label>
                   <input
                     type="number"
@@ -178,7 +187,9 @@ export default function Checkout() {
             >
               {loading ? 'Procesando...' : physicalQuantity > stock ? 'Stock insuficiente' : 'Continuar al envío'}
             </button>
-          </form>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>

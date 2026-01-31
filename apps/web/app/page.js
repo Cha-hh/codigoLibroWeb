@@ -133,7 +133,7 @@ export default function Home() {
       {/* Introducción */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-8">Introducción</h2>
+          <h2 className="text-2xl font-bold mb-8">INTRODUCCION</h2>
           <p className="text-lg max-w-3xl mx-auto leading-relaxed">
             El mundo no se limita a lo que los ojos alcanzan a ver.<br />
             Existe lo material: lo tangible, lo comprobable, aquello que se sostiene en la certeza de lo visible y, sin embargo, está condenado a desvanecerse con el tiempo.<br />
@@ -233,27 +233,37 @@ export default function Home() {
       </section>
 
       {/* El autor */}
-      <section className="py-0" style={{ backgroundColor: '#132940' }}>
+      <section
+        className="py-0 bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/images/fondoAutor.jpg')",
+          backgroundColor: '#132940'
+        }}
+      >
         <div className="flex flex-col md:flex-row items-stretch">
           <div className="md:w-1/3 flex-shrink-0">
             <img src="/images/autor.jpg" alt="El autor" className="w-full h-full object-cover" />
           </div>
           <div className="md:w-2/3 py-16 px-4 flex flex-col justify-center">
-            <h2 className="text-2xl font-bold mb-8 text-white">EL AUTOR</h2>
-            <p className="text-lg text-gray-100">Presentación del autor.
-Conozco a Gerardo Romeh desde siempre. Es mi hermano, y he sido testigo de su historia, de sus luchas y de su perseverancia. Desde niño vivió experiencias extraordinarias que marcaron su sensibilidad y su manera de ver el mundo, encuentros con realidades que muchos no perciben y que, con el paso del tiempo, han dado forma a su identidad y a su camino de vida.
-Gerardo nunca ha dejado de luchar por sus sueños. Es un padre amoroso y comprometido, profesionista, emprendedor y artesano artífice, un hombre carismático, con una creatividad que se manifiesta en todo lo que hace. 
-Hoy se abre paso en una nueva faceta: La literaria, y nos presenta con gran entusiasmo su primera obra, en estas páginas comparte no solo su talento, sino también su don sensitivo. A través de sus vivencias, nos invita a asomarnos al mundo espiritual que ha conocido mediante el contacto con seres que han trascendido este plano terrenal, con respeto, humildad y profunda humanidad.
-Con cariño, Laura.</p>
+            <h2 className="text-2xl font-bold mb-8 text-white ml-6 md:ml-10">GERARDO ROMEH</h2>
+            <div className="bg-gray-700/50 p-6 md:p-8 rounded-lg max-w-3xl">
+              <p className="text-sm text-gray-200 text-justify leading-relaxed">
+                Presentación del autor.
+                Conozco a Gerardo Romeh desde siempre. Es mi hermano, y he sido testigo de su historia, de sus luchas y de su perseverancia. Desde niño vivió experiencias extraordinarias que marcaron su sensibilidad y su manera de ver el mundo, encuentros con realidades que muchos no perciben y que, con el paso del tiempo, han dado forma a su identidad y a su camino de vida.
+                Gerardo nunca ha dejado de luchar por sus sueños. Es un padre amoroso y comprometido, profesionista, emprendedor y artesano artífice, un hombre carismático, con una creatividad que se manifiesta en todo lo que hace. 
+                Hoy se abre paso en una nueva faceta: La literaria, y nos presenta con gran entusiasmo su primera obra, en estas páginas comparte no solo su talento, sino también su don sensitivo. A través de sus vivencias, nos invita a asomarnos al mundo espiritual que ha conocido mediante el contacto con seres que han trascendido este plano terrenal, con respeto, humildad y profunda humanidad.
+                Con cariño, Laura.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* El libro físico */}
       <section className="py-16 bg-gray-100">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 mb-8 md:mb-0">
-            <img src="/libro-fisico.jpg" alt="Libro físico" className="w-64 mx-auto md:mx-0 rounded-lg shadow-lg" />
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center md:gap-8">
+          <div className="md:w-1/2 mb-8 md:mb-0 md:pl-6">
+            <img src="/images/MockupLibro.jpg" alt="Libro físico" className="w-72 mx-auto md:mx-0 md:ml-auto rounded-lg shadow-lg" />
           </div>
           <div className="md:w-1/2">
             <h2 className="text-2xl font-bold mb-6">El libro físico</h2>
