@@ -9,6 +9,8 @@ node_modules/
 # Next.js
 /.next/
 /out/
+apps/web/.next/
+apps/web/.data/
 
 # Production
 /build
@@ -21,6 +23,7 @@ node_modules/
 
 # Misc
 .DS_Store
+._*
 *.pem
 
 # Debug

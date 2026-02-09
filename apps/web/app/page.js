@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
   const [faq, setFaq] = useState([]);
@@ -14,6 +14,7 @@ export default function Home() {
   const [selectedTopic, setSelectedTopic] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactMessage, setContactMessage] = useState('');
+  const trackRef = useRef(null);
 
   useEffect(() => {
     fetch('/api/faq')
@@ -68,14 +69,14 @@ export default function Home() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: contactMessage, answer: '' }),
     })
-    .then(() => {
-      // Limpiar formulario
-      setContactEmail('');
-      setContactMessage('');
-      setSelectedTopic('');
-      alert('Mensaje enviado correctamente. Te responderemos pronto.');
-    })
-    .catch(() => alert('Error al enviar el mensaje.'));
+      .then(() => {
+        // Limpiar formulario
+        setContactEmail('');
+        setContactMessage('');
+        setSelectedTopic('');
+        alert('Mensaje enviado correctamente. Te responderemos pronto.');
+      })
+      .catch(() => alert('Error al enviar el mensaje.'));
   };
 
   const FaqGrid = () => {
@@ -95,6 +96,38 @@ export default function Home() {
       </div>
     )
   }
+
+  const scrollOne = (dir) => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const cards = Array.from(track.querySelectorAll('[data-card]'));
+    if (!cards.length) return;
+
+    const trackRect = track.getBoundingClientRect();
+    const center = trackRect.left + trackRect.width / 2;
+
+    let activeIndex = 0;
+    let minDist = Infinity;
+
+    cards.forEach((card, i) => {
+      const rect = card.getBoundingClientRect();
+      const cardCenter = rect.left + rect.width / 2;
+      const dist = Math.abs(cardCenter - center);
+      if (dist < minDist) {
+        minDist = dist;
+        activeIndex = i;
+      }
+    });
+
+    const nextIndex = Math.min(Math.max(activeIndex + dir, 0), cards.length - 1);
+
+    cards[nextIndex].scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -154,80 +187,116 @@ export default function Home() {
       <section className="py-16 bg-gray-100">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-12">RELATOS Y EXPERIENCIAS DESTACADAS</h2>
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Parte Uno: Distintas presencias */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style={{aspectRatio: '2 / 3'}}>
-              <div className="p-6 border-b border-gray-200 flex-shrink-0">
-                <h3 className="text-xl font-semibold text-center">DISTINTAS PRESENCIAS</h3>
-              </div>
-              <div className="flex-1 overflow-y-auto p-6 text-sm leading-relaxed">
-                <p className="mb-4">En mi opinión, la existencia no se limita a una sola forma de ser. Hay distintos seres, distintas presencias, distintos estados de conciencia.</p>
-                
-                <p className="mb-4">Comencemos por el ser humano, compuesto de cuerpo y alma, unidos mientras la vida persiste. El cuerpo habita lo material; el alma, aunque invisible, le da sentido, voluntad y propósito.</p>
-                
-                <p className="mb-4">Existen también las almas que ya no permanecen en su cuerpo. Aquellas que han cruzado el umbral y existen en otros planos: el cielo, el purgatorio o el limbo; y las desdichadas, que por sus actos o decisiones han quedado atrapadas en el infierno.</p>
-                
-                <p className="mb-4">Además, los ángeles. Seres que no pertenecen a la carne ni al tiempo. Algunos permanecen fieles al bien, inspirando, protegiendo, en el servicio a Dios. Otros, en cambio, eligieron la ruptura, rechazaron la luz y ahora buscan confundir, tentar y dañar.</p>
-                
-                <p className="mb-4">El ser humano se encuentra en medio de todo esto. Capaz tanto del bien como del mal. Puede elegir uno u otro camino, entregarse a la luz o a la oscuridad, consciente o inconscientemente. Nadie está exento de esa elección.</p>
-                
-                <p>Mientras vivimos, estamos sujetos al tiempo y al libre albedrío. El tiempo avanza sin detenerse; el libre albedrío decide el rumbo. Ambos son contundentes, inevitables y profundamente consecuentes.</p>
-              </div>
+
+          <div className="relative max-w-4xl mx-auto">
+            <button
+              type="button"
+              onClick={() => scrollOne(-1)}
+              className="absolute -left-6 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur shadow-md rounded-full w-11 h-11 flex items-center justify-center hover:scale-105 transition"
+              aria-label="Anterior"
+            >
+              ‹
+            </button>
+
+            <div
+              ref={trackRef}
+              className="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch] pb-4"
+            >
+              <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[340px] sm:h-[360px]">
+                  <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                    <h3 className="text-xl font-semibold text-center">DISTINTAS PRESENCIAS</h3>
+                  </div>
+                  <div className="flex-1 p-6 text-sm leading-relaxed overflow-y-auto">
+                    <p className="mb-4">En mi opinión, la existencia no se limita a una sola forma de ser. Hay distintos seres, distintas presencias, distintos estados de conciencia.</p>
+
+                    <p className="mb-4">Comencemos por el ser humano, compuesto de cuerpo y alma, unidos mientras la vida persiste. El cuerpo habita lo material; el alma, aunque invisible, le da sentido, voluntad y propósito.</p>
+
+                    <p className="mb-4">Existen también las almas que ya no permanecen en su cuerpo. Aquellas que han cruzado el umbral y existen en otros planos: el cielo, el purgatorio o el limbo; y las desdichadas, que por sus actos o decisiones han quedado atrapadas en el infierno.</p>
+
+                    <p className="mb-4">Además, los ángeles. Seres que no pertenecen a la carne ni al tiempo. Algunos permanecen fieles al bien, inspirando, protegiendo, en el servicio a Dios. Otros, en cambio, eligieron la ruptura, rechazaron la luz y ahora buscan confundir, tentar y dañar.</p>
+
+                    <p className="mb-4">El ser humano se encuentra en medio de todo esto. Capaz tanto del bien como del mal. Puede elegir uno u otro camino, entregarse a la luz o a la oscuridad, consciente o inconscientemente. Nadie está exento de esa elección.</p>
+
+                    <p>Mientras vivimos, estamos sujetos al tiempo y al libre albedrío. El tiempo avanza sin detenerse; el libre albedrío decide el rumbo. Ambos son contundentes, inevitables y profundamente consecuentes.</p>
+                  </div>
+                </div>
+              </article>
+
+              <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[340px] sm:h-[360px]">
+                  <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                    <h3 className="text-center font-semibold">
+                      <span className="text-2xl block">EL MIEDO</span>
+                      <span className="text-sm text-gray-500 tracking-wide block">UN SILENCIOSO ASESINO</span>
+                    </h3>
+                  </div>
+                  <div className="flex-1 p-6 text-sm leading-relaxed overflow-y-auto">
+                    <p className="mb-4">En el proceso de la vida, el miedo aparece como una sombra constante. No siempre grita; a veces susurra. Se disfraza de prudencia, de duda, de espera eterna. Pero su efecto es el mismo: detiene.</p>
+
+                    <p className="font-semibold mb-4">El miedo paraliza.</p>
+
+                    <p className="mb-4">Cuando se instala, inmoviliza la voluntad, nubla la razón y debilita la fe en uno mismo. Poco a poco va erosionando la confianza, hasta convertir cada decisión en una amenaza y cada paso en un riesgo insoportable.</p>
+
+                    <p className="font-semibold mb-4">El miedo destruye.</p>
+
+                    <p className="mb-4">No siempre de forma visible, pero sí profunda. Destruye sueños antes de que nazcan, rompe oportunidades antes de que se presenten, y convierte la posibilidad en renuncia. No necesita vencer; le basta con que no intentes.</p>
+
+                    <p className="mb-4">Enfrentar el miedo no significa no sentirlo. Significa avanzar a pesar de él. Reconocerlo, mirarlo de frente y decidir que no será quien gobierne el rumbo de nuestra vida.</p>
+
+                    <p className="mb-4">Porque todo momento que el miedo bloquea, es una oportunidad que nunca vuelve. Y toda vida dominada por el miedo, es una vida detenida en el tiempo.</p>
+
+                    <p className="font-semibold mb-4">El miedo nunca desaparece solo; se debilita únicamente cuando lo enfrentas.</p>
+
+                    <p className="mb-4">Si no lo haces, podrías perder la oportunidad que marque un antes y un después en tu vida, un instante único en toda tu existencia.</p>
+
+                    <p className="font-semibold">No temas más… confía y sigue adelante.</p>
+                  </div>
+                </div>
+              </article>
+
+              <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[340px] sm:h-[360px]">
+                  <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                    <h3 className="text-xl font-semibold text-center">HOY ES UN BUEN DÍA</h3>
+                  </div>
+                  <div className="flex-1 p-6 text-sm leading-relaxed overflow-y-auto">
+                    <p className="font-semibold mb-4">Hoy es un buen día.</p>
+
+                    <p className="mb-4">No porque todo esté en orden, ni porque la vida haya decidido concedernos una tregua. Es porque estamos aquí, respirando, conscientes, con la posibilidad intacta de elegir cómo enfrentarlo.</p>
+
+                    <p className="font-semibold mb-4">A pesar de las circunstancias.</p>
+
+                    <p className="mb-4">A pesar de los errores cometidos, de las decisiones que pesaron más de lo esperado, de las palabras que no se dijeron o de aquellas que se dijeron de más. El pasado no desaparece, pero tampoco gobierna este instante.</p>
+
+                    <p className="mb-4">La actitud positiva no consiste en negar el dolor ni en disfrazar la realidad con optimismo forzado. Consiste en reconocer la dificultad y, aun así, decidir no rendirse ante ella. Es una postura interior: mantenerse en pie cuando todo invita a bajar la cabeza.</p>
+
+                    <p className="mb-4">Hoy es un buen día porque aún hay margen para corregir, aprender, pedir perdón u otorgarlo. Porque mientras el tiempo siga avanzando, existe la oportunidad de hacer algo distinto, aunque sea pequeño, un solo paso.</p>
+
+                    <p className="mb-4">La actitud positiva no cambia el mundo de inmediato, pero transforma la forma en que caminamos dentro de él. Nos permite mirar el error sin quedar atrapados en la culpa, enfrentar la adversidad sin convertirla en condena.</p>
+
+                    <p className="font-semibold mb-4">Hoy es un buen día. Ha sido mi filosofía de vida, en ella he decidido cada paso, cada decisión.</p>
+
+                    <p className="font-semibold">Porque incluso en medio de la oscuridad, decidir avanzar ya es un acto de luz.</p>
+                  </div>
+                </div>
+              </article>
             </div>
 
-            {/* Parte Dos: El miedo, un silencioso asesino */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style={{aspectRatio: '2 / 3'}}>
-              <div className="p-6 border-b border-gray-200 flex-shrink-0">
-                <h3 className="text-xl font-semibold text-center">EL MIEDO, UN SILENCIOSO ASESINO</h3>
-              </div>
-              <div className="flex-1 overflow-y-auto p-6 text-sm leading-relaxed">
-                <p className="mb-4">En el proceso de la vida, el miedo aparece como una sombra constante. No siempre grita; a veces susurra. Se disfraza de prudencia, de duda, de espera eterna. Pero su efecto es el mismo: detiene.</p>
-                
-                <p className="font-semibold mb-4">El miedo paraliza.</p>
-                
-                <p className="mb-4">Cuando se instala, inmoviliza la voluntad, nubla la razón y debilita la fe en uno mismo. Poco a poco va erosionando la confianza, hasta convertir cada decisión en una amenaza y cada paso en un riesgo insoportable.</p>
-                
-                <p className="font-semibold mb-4">El miedo destruye.</p>
-                
-                <p className="mb-4">No siempre de forma visible, pero sí profunda. Destruye sueños antes de que nazcan, rompe oportunidades antes de que se presenten, y convierte la posibilidad en renuncia. No necesita vencer; le basta con que no intentes.</p>
-                
-                <p className="mb-4">Enfrentar el miedo no significa no sentirlo. Significa avanzar a pesar de él. Reconocerlo, mirarlo de frente y decidir que no será quien gobierne el rumbo de nuestra vida.</p>
-                
-                <p className="mb-4">Porque todo momento que el miedo bloquea, es una oportunidad que nunca vuelve. Y toda vida dominada por el miedo, es una vida detenida en el tiempo.</p>
-                
-                <p className="font-semibold mb-4">El miedo nunca desaparece solo; se debilita únicamente cuando lo enfrentas.</p>
-                
-                <p className="mb-4">Si no lo haces, podrías perder la oportunidad que marque un antes y un después en tu vida, un instante único en toda tu existencia.</p>
-                
-                <p className="font-semibold">No temas más… confía y sigue adelante.</p>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => scrollOne(1)}
+              className="absolute -right-6 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur shadow-md rounded-full w-11 h-11 flex items-center justify-center hover:scale-105 transition"
+              aria-label="Siguiente"
+            >
+              ›
+            </button>
 
-            {/* Parte Tres: Hoy es un buen día */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style={{aspectRatio: '2 / 3'}}>
-              <div className="p-6 border-b border-gray-200 flex-shrink-0">
-                <h3 className="text-xl font-semibold text-center">HOY ES UN BUEN DÍA</h3>
-              </div>
-              <div className="flex-1 overflow-y-auto p-6 text-sm leading-relaxed">
-                <p className="font-semibold mb-4">Hoy es un buen día.</p>
-                
-                <p className="mb-4">No porque todo esté en orden, ni porque la vida haya decidido concedernos una tregua. Es porque estamos aquí, respirando, conscientes, con la posibilidad intacta de elegir cómo enfrentarlo.</p>
-                
-                <p className="font-semibold mb-4">A pesar de las circunstancias.</p>
-                
-                <p className="mb-4">A pesar de los errores cometidos, de las decisiones que pesaron más de lo esperado, de las palabras que no se dijeron o de aquellas que se dijeron de más. El pasado no desaparece, pero tampoco gobierna este instante.</p>
-                
-                <p className="mb-4">La actitud positiva no consiste en negar el dolor ni en disfrazar la realidad con optimismo forzado. Consiste en reconocer la dificultad y, aun así, decidir no rendirse ante ella. Es una postura interior: mantenerse en pie cuando todo invita a bajar la cabeza.</p>
-                
-                <p className="mb-4">Hoy es un buen día porque aún hay margen para corregir, aprender, pedir perdón u otorgarlo. Porque mientras el tiempo siga avanzando, existe la oportunidad de hacer algo distinto, aunque sea pequeño, un solo paso.</p>
-                
-                <p className="mb-4">La actitud positiva no cambia el mundo de inmediato, pero transforma la forma en que caminamos dentro de él. Nos permite mirar el error sin quedar atrapados en la culpa, enfrentar la adversidad sin convertirla en condena.</p>
-                
-                <p className="font-semibold mb-4">Hoy es un buen día. Ha sido mi filosofía de vida, en ella he decidido cada paso, cada decisión.</p>
-                
-                <p className="font-semibold">Porque incluso en medio de la oscuridad, decidir avanzar ya es un acto de luz.</p>
-              </div>
-            </div>
+            <style jsx>{`
+              div::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
           </div>
         </div>
       </section>
@@ -250,7 +319,7 @@ export default function Home() {
               <p className="text-sm text-gray-200 text-justify leading-relaxed">
                 Presentación del autor.
                 Conozco a Gerardo Romeh desde siempre. Es mi hermano, y he sido testigo de su historia, de sus luchas y de su perseverancia. Desde niño vivió experiencias extraordinarias que marcaron su sensibilidad y su manera de ver el mundo, encuentros con realidades que muchos no perciben y que, con el paso del tiempo, han dado forma a su identidad y a su camino de vida.
-                Gerardo nunca ha dejado de luchar por sus sueños. Es un padre amoroso y comprometido, profesionista, emprendedor y artesano artífice, un hombre carismático, con una creatividad que se manifiesta en todo lo que hace. 
+                Gerardo nunca ha dejado de luchar por sus sueños. Es un padre amoroso y comprometido, profesionista, emprendedor y artesano artífice, un hombre carismático, con una creatividad que se manifiesta en todo lo que hace.
                 Hoy se abre paso en una nueva faceta: La literaria, y nos presenta con gran entusiasmo su primera obra, en estas páginas comparte no solo su talento, sino también su don sensitivo. A través de sus vivencias, nos invita a asomarnos al mundo espiritual que ha conocido mediante el contacto con seres que han trascendido este plano terrenal, con respeto, humildad y profunda humanidad.
                 Con cariño, Laura.
               </p>
@@ -274,7 +343,7 @@ export default function Home() {
       </section>
 
       {/* Oferta y compra */}
-      <section id="oferta" className="py-16 text-white" style={{backgroundColor: '#132940'}}>
+      <section id="oferta" className="py-16 text-white" style={{ backgroundColor: '#132940' }}>
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold mb-8">Oferta y compra</h2>
           <p className="text-xl mb-4">Precio: $XX.XX</p>
@@ -383,25 +452,25 @@ export default function Home() {
           <h2 className="text-2xl font-bold mb-8">Atención y dudas</h2>
           <p className="text-lg mb-6">Selecciona la categoria:</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <button 
+            <button
               onClick={() => { setSelectedTopic('Envíos'); setContactMessage('Pregunta sobre envíos: '); }}
               className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Envíos' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
             >
               Envíos
             </button>
-            <button 
+            <button
               onClick={() => { setSelectedTopic('Pagos'); setContactMessage('Pregunta sobre pagos: '); }}
               className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Pagos' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
             >
               Pagos
             </button>
-            <button 
+            <button
               onClick={() => { setSelectedTopic('Disponibilidad'); setContactMessage('Pregunta sobre disponibilidad: '); }}
               className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Disponibilidad' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
             >
               Disponibilidad
             </button>
-            <button 
+            <button
               onClick={() => { setSelectedTopic('Facturación'); setContactMessage('Pregunta sobre facturación: '); }}
               className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Facturación' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
             >
@@ -409,17 +478,17 @@ export default function Home() {
             </button>
           </div>
           <form className="max-w-md mx-auto" onSubmit={handleSubmitContact}>
-            <input 
-              type="email" 
-              placeholder="Tu email" 
-              className="w-full p-2 mb-4 border rounded" 
+            <input
+              type="email"
+              placeholder="Tu email"
+              className="w-full p-2 mb-4 border rounded"
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
               required
             />
-            <textarea 
-              placeholder="Tu mensaje" 
-              className="w-full p-2 mb-4 border rounded" 
+            <textarea
+              placeholder="Tu mensaje"
+              className="w-full p-2 mb-4 border rounded"
               rows="4"
               value={contactMessage}
               onChange={(e) => setContactMessage(e.target.value)}
