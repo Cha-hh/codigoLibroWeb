@@ -14,6 +14,7 @@ export default function Home() {
   const [selectedTopic, setSelectedTopic] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactMessage, setContactMessage] = useState('');
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
   const trackRef = useRef(null);
 
   useEffect(() => {
@@ -88,16 +89,20 @@ export default function Home() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recentFaq.map((item) => (
-          <div key={item.id} className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-xl font-semibold mb-2 break-words">{item.question}</h3>
-            <p className="break-words">{item.answer}</p>
+          <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-center break-words">{item.question}</h3>
+            </div>
+            <div className="flex-1 p-6 text-sm leading-relaxed text-center">
+              <p className="break-words">{item.answer}</p>
+            </div>
           </div>
         ))}
       </div>
     )
   }
 
-  const scrollOne = (dir) => {
+  const getActiveIndex = () => {
     const track = trackRef.current;
     if (!track) return;
 
@@ -120,8 +125,53 @@ export default function Home() {
       }
     });
 
+    return { activeIndex, cards };
+  };
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    let frame;
+    const onScroll = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const result = getActiveIndex();
+        if (!result) return;
+        setActiveCardIndex(result.activeIndex);
+      });
+    };
+
+    onScroll();
+    track.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      track.removeEventListener('scroll', onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  const scrollOne = (dir) => {
+    const result = getActiveIndex();
+    if (!result) return;
+
+    const { activeIndex, cards } = result;
     const nextIndex = Math.min(Math.max(activeIndex + dir, 0), cards.length - 1);
 
+    cards[nextIndex].scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+  };
+
+  const scrollToIndex = (index) => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const cards = Array.from(track.querySelectorAll('[data-card]'));
+    if (!cards.length) return;
+
+    const nextIndex = Math.min(Math.max(index, 0), cards.length - 1);
     cards[nextIndex].scrollIntoView({
       behavior: 'smooth',
       inline: 'center',
@@ -165,9 +215,9 @@ export default function Home() {
 
       {/* Introducción */}
       <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 text-center">
+        <div className="container mx-auto px-16 text-center">
           <h2 className="text-2xl font-bold mb-8">INTRODUCCION</h2>
-          <p className="text-lg max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base max-w-2xl mx-auto leading-relaxed">
             El mundo no se limita a lo que los ojos alcanzan a ver.<br />
             Existe lo material: lo tangible, lo comprobable, aquello que se sostiene en la certeza de lo visible y, sin embargo, está condenado a desvanecerse con el tiempo.<br />
             <br />
@@ -184,15 +234,15 @@ export default function Home() {
       </section>
 
       {/* Relatos y experiencias destacadas */}
-      <section className="py-16 bg-gray-100">
+      <section className="py-20 bg-gray-100">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-12">RELATOS Y EXPERIENCIAS DESTACADAS</h2>
 
-          <div className="relative max-w-4xl mx-auto">
+            <div className="relative max-w-5xl mx-auto">
             <button
               type="button"
               onClick={() => scrollOne(-1)}
-              className="absolute -left-6 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur shadow-md rounded-full w-11 h-11 flex items-center justify-center hover:scale-105 transition"
+              className="absolute -left-12 top-[40%] -translate-y-1/2 z-10 bg-white/90 backdrop-blur shadow-md rounded-full w-11 h-11 flex items-center justify-center hover:scale-105 transition"
               aria-label="Anterior"
             >
               ‹
@@ -200,14 +250,14 @@ export default function Home() {
 
             <div
               ref={trackRef}
-              className="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch] pb-4"
+              className="track-scroll flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch] pb-12"
             >
               <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[340px] sm:h-[360px]">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[400px] sm:h-[440px]">
                   <div className="p-6 border-b border-gray-200 flex-shrink-0">
                     <h3 className="text-xl font-semibold text-center">DISTINTAS PRESENCIAS</h3>
                   </div>
-                  <div className="flex-1 p-6 text-sm leading-relaxed overflow-y-auto">
+                  <div className="card-scroll flex-1 px-20 py-6 text-sm leading-relaxed overflow-y-auto text-center">
                     <p className="mb-4">En mi opinión, la existencia no se limita a una sola forma de ser. Hay distintos seres, distintas presencias, distintos estados de conciencia.</p>
 
                     <p className="mb-4">Comencemos por el ser humano, compuesto de cuerpo y alma, unidos mientras la vida persiste. El cuerpo habita lo material; el alma, aunque invisible, le da sentido, voluntad y propósito.</p>
@@ -224,14 +274,14 @@ export default function Home() {
               </article>
 
               <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[340px] sm:h-[360px]">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[400px] sm:h-[440px]">
                   <div className="p-6 border-b border-gray-200 flex-shrink-0">
                     <h3 className="text-center font-semibold">
                       <span className="text-2xl block">EL MIEDO</span>
                       <span className="text-sm text-gray-500 tracking-wide block">UN SILENCIOSO ASESINO</span>
                     </h3>
                   </div>
-                  <div className="flex-1 p-6 text-sm leading-relaxed overflow-y-auto">
+                  <div className="card-scroll flex-1 px-20 py-6 text-sm leading-relaxed overflow-y-auto text-center">
                     <p className="mb-4">En el proceso de la vida, el miedo aparece como una sombra constante. No siempre grita; a veces susurra. Se disfraza de prudencia, de duda, de espera eterna. Pero su efecto es el mismo: detiene.</p>
 
                     <p className="font-semibold mb-4">El miedo paraliza.</p>
@@ -256,11 +306,11 @@ export default function Home() {
               </article>
 
               <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[340px] sm:h-[360px]">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[400px] sm:h-[440px]">
                   <div className="p-6 border-b border-gray-200 flex-shrink-0">
                     <h3 className="text-xl font-semibold text-center">HOY ES UN BUEN DÍA</h3>
                   </div>
-                  <div className="flex-1 p-6 text-sm leading-relaxed overflow-y-auto">
+                  <div className="card-scroll flex-1 px-20 py-6 text-sm leading-relaxed overflow-y-auto text-center">
                     <p className="font-semibold mb-4">Hoy es un buen día.</p>
 
                     <p className="mb-4">No porque todo esté en orden, ni porque la vida haya decidido concedernos una tregua. Es porque estamos aquí, respirando, conscientes, con la posibilidad intacta de elegir cómo enfrentarlo.</p>
@@ -283,17 +333,45 @@ export default function Home() {
               </article>
             </div>
 
+            <div className="mt-4 flex items-center justify-center gap-3">
+              {[0, 1, 2].map((index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => scrollToIndex(index)}
+                  className={`h-2.5 w-2.5 rounded-full transition ${
+                    activeCardIndex === index ? 'bg-gray-800' : 'bg-gray-400/60'
+                  }`}
+                  aria-label={`Ir a tarjeta ${index + 1}`}
+                />
+              ))}
+            </div>
+
             <button
               type="button"
               onClick={() => scrollOne(1)}
-              className="absolute -right-6 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur shadow-md rounded-full w-11 h-11 flex items-center justify-center hover:scale-105 transition"
+              className="absolute -right-12 top-[40%] -translate-y-1/2 z-10 bg-white/90 backdrop-blur shadow-md rounded-full w-11 h-11 flex items-center justify-center hover:scale-105 transition"
               aria-label="Siguiente"
             >
               ›
             </button>
 
             <style jsx>{`
-              div::-webkit-scrollbar {
+              .track-scroll {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+
+              .track-scroll::-webkit-scrollbar {
+                display: none;
+              }
+
+              .card-scroll {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+
+              .card-scroll::-webkit-scrollbar {
                 display: none;
               }
             `}</style>
@@ -302,21 +380,12 @@ export default function Home() {
       </section>
 
       {/* El autor */}
-      <section
-        className="py-0 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/images/fondoAutor.jpg')",
-          backgroundColor: '#132940'
-        }}
-      >
+      <section className="py-0 bg-white">
         <div className="flex flex-col md:flex-row items-stretch">
-          <div className="md:w-1/3 flex-shrink-0">
-            <img src="/images/autor.jpg" alt="El autor" className="w-full h-full object-cover" />
-          </div>
-          <div className="md:w-2/3 py-16 px-4 flex flex-col justify-center">
-            <h2 className="text-2xl font-bold mb-8 text-white ml-6 md:ml-10">GERARDO ROMEH</h2>
-            <div className="bg-gray-700/50 p-6 md:p-8 rounded-lg max-w-3xl">
-              <p className="text-sm text-gray-200 text-justify leading-relaxed">
+          <div className="md:w-1/3 py-16 px-4 flex flex-col justify-center">
+            <h2 className="text-2xl font-bold mb-8 text-black ml-6 md:ml-10">GERARDO ROMEH</h2>
+            <div className="bg-white/80 p-6 md:p-8 rounded-lg max-w-3xl">
+              <p className="text-sm text-black text-justify leading-relaxed">
                 Presentación del autor.
                 Conozco a Gerardo Romeh desde siempre. Es mi hermano, y he sido testigo de su historia, de sus luchas y de su perseverancia. Desde niño vivió experiencias extraordinarias que marcaron su sensibilidad y su manera de ver el mundo, encuentros con realidades que muchos no perciben y que, con el paso del tiempo, han dado forma a su identidad y a su camino de vida.
                 Gerardo nunca ha dejado de luchar por sus sueños. Es un padre amoroso y comprometido, profesionista, emprendedor y artesano artífice, un hombre carismático, con una creatividad que se manifiesta en todo lo que hace.
@@ -324,6 +393,9 @@ export default function Home() {
                 Con cariño, Laura.
               </p>
             </div>
+          </div>
+          <div className="md:w-2/3 flex-shrink-0">
+            <img src="/images/autor.jpg" alt="El autor" className="w-full h-full object-cover" />
           </div>
         </div>
       </section>
@@ -335,7 +407,7 @@ export default function Home() {
             <img src="/images/MockupLibro.jpg" alt="Libro físico" className="w-72 mx-auto md:mx-0 md:ml-auto rounded-lg shadow-lg" />
           </div>
           <div className="md:w-1/2">
-            <h2 className="text-2xl font-bold mb-6">El libro físico</h2>
+            <h2 className="text-2xl font-bold mb-6">LIBRO FISICO</h2>
             <p className="text-lg mb-4">Enfoque visual y descriptivo del objeto físico. Detalles: formato, páginas, encuadernación.</p>
             <p className="text-lg">Valor diferencial del formato impreso.</p>
           </div>
@@ -345,7 +417,6 @@ export default function Home() {
       {/* Oferta y compra */}
       <section id="oferta" className="py-16 text-white" style={{ backgroundColor: '#132940' }}>
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-8">Oferta y compra</h2>
           <p className="text-xl mb-4">Precio: $XX.XX</p>
           <p className="text-lg mb-4">Qué incluye la compra: Libro físico, envío gratuito.</p>
           <p className="text-lg mb-8">Información clara de envíos: Entrega en 5-7 días hábiles.</p>
@@ -356,7 +427,7 @@ export default function Home() {
       {/* FAQ */}
       <section className="py-16 bg-gray-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-12">Preguntas Frecuentes sobre el Libro</h2>
+          <h2 className="text-2xl font-bold text-center mb-12">PREGUNTAS FRECUENTES SOBRE EL LIBRO </h2>
           <div className="max-w-6xl mx-auto">
             <FaqGrid />
             <div className="text-center mt-8 space-y-4">
@@ -449,7 +520,7 @@ export default function Home() {
       {/* Atención y dudas */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-8">Atención y dudas</h2>
+          <h2 className="text-2xl font-bold mb-8">ATENCION Y DUDAS</h2>
           <p className="text-lg mb-6">Selecciona la categoria:</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <button
