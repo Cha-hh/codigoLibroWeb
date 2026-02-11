@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
@@ -15,6 +16,10 @@ export default function Home() {
   const [contactEmail, setContactEmail] = useState('');
   const [contactMessage, setContactMessage] = useState('');
   const [activeCardIndex, setActiveCardIndex] = useState(0);
+  const [introOffset, setIntroOffset] = useState(0);
+  const [introTextProgress, setIntroTextProgress] = useState(0);
+  const introSectionRef = useRef(null);
+  const introTextRef = useRef(null);
   const trackRef = useRef(null);
 
   useEffect(() => {
@@ -32,6 +37,44 @@ export default function Home() {
       localStorage.removeItem('orderConfirmed');
     }
   }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (!introSectionRef.current) return;
+
+      const rect = introSectionRef.current.getBoundingClientRect();
+      const vh = window.innerHeight;
+
+      const progress = Math.min(Math.max((vh - rect.top) / (vh + rect.height), 0), 1);
+      setIntroOffset(progress * 120);
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (!introTextRef.current) return;
+
+      const rect = introTextRef.current.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const start = vh * 0.9;
+      const end = vh * 0.2;
+      const p = (start - rect.top) / (start - end);
+
+      setIntroTextProgress(Math.min(Math.max(p, 0), 1));
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const introTextEase = introTextProgress * introTextProgress;
+  const introTextTranslateX = 120 - introTextEase * 120;
+  const introTextOpacity = 0.35 + introTextEase * 0.65;
 
   const handleSubmitQuestion = (e) => {
     e.preventDefault();
@@ -162,6 +205,7 @@ export default function Home() {
       inline: 'center',
       block: 'nearest',
     });
+    setActiveCardIndex(nextIndex);
   };
 
   const scrollToIndex = (index) => {
@@ -177,6 +221,7 @@ export default function Home() {
       inline: 'center',
       block: 'nearest',
     });
+    setActiveCardIndex(nextIndex);
   };
 
   return (
@@ -214,133 +259,293 @@ export default function Home() {
       </section>
 
       {/* Introducción */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-16 text-center">
-          <h2 className="text-2xl font-bold mb-8">INTRODUCCION</h2>
-          <p className="text-base max-w-2xl mx-auto leading-relaxed">
-            El mundo no se limita a lo que los ojos alcanzan a ver.<br />
-            Existe lo material: lo tangible, lo comprobable, aquello que se sostiene en la certeza de lo visible y, sin embargo, está condenado a desvanecerse con el tiempo.<br />
-            <br />
-            Pero hay otro mundo, uno que no se mide ni se pesa. El mundo espiritual.<br />
-            Un territorio invisible donde convergen fuerzas, creencias y voluntades; algunas deformadas por el error, otras aferradas a verdades que trascienden al hombre.<br />
-            No importa cómo se le nombre o desde dónde se le mire: está ahí. Silencioso, constante, más próximo de lo que quisiéramos admitir.<br />
-            <br />
-            No siempre se manifiesta con claridad. A veces se insinúa en la sombra, en el presentimiento, en el temor que no tiene explicación. Otras, se revelan con la contundencia de lo inevitable.<br />
-            <br />
-            Este libro no pretende revelarlo todo. Apenas abre una rendija, un instante fugaz, un susurro en medio de la oscuridad.<br />
-            Un suspiro breve, pero cargado de verdad; tan profundo y real como la respiración que, sin notarlo, nos mantiene con vida.
-          </p>
+      <section
+        ref={introSectionRef}
+        className="bg-[#F2F0EA] py-16 md:py-24"
+      >
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
+            <div className="md:col-span-4">
+              <div className="text-xs tracking-[0.25em] uppercase text-black/70">
+                Introduccion
+              </div>
+
+              <div className="relative mt-10 h-[340px] md:h-[520px] overflow-hidden">
+                <div className="absolute inset-0 rounded-xl border border-black/10" />
+                {/* Imagen paralax, efecto de desplazamiento*/}
+                <div
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{
+                    transform: `translateY(${50- introOffset}px)`,
+                transition: 'transform 20ms linear',
+                  }}
+                >
+                  <div className="relative w-[90%] h-[90%]">
+                    <Image
+                      src="/images/MockupLibro.jpg"
+                      alt="Imagen intro"
+                      fill
+                      className="object-cover rounded-xl shadow-sm"
+                      priority
+                    />
+                  </div>
+                </div>
+
+                <div className="absolute bottom-3 left-4 text-[11px] tracking-widest text-black/50">
+                  SCROLL
+                </div>
+              </div>
+            </div>
+
+            <div className="md:col-span-8">
+              <div
+                ref={introTextRef}
+                className="max-w-3xl"
+                style={{
+                  transform: `translateX(${introTextTranslateX}px)` ,
+                  opacity: introTextOpacity,
+                  transition: 'none',
+                }}
+              >
+                <h2 className="text-4xl md:text-6xl leading-[1.05] font-medium text-black">
+                  El mundo no se limita <br />
+                  a lo visible.
+                  <br />
+                  <span className="text-black/70">Hay otro territorio cercano.</span>
+                </h2>
+              </div>
+
+              <div className="mt-10 max-w-2xl space-y-6 text-[15px] md:text-base leading-relaxed text-black/75">
+                <p>
+                  El mundo no se limita a lo que los ojos alcanzan a ver. Existe lo material: lo tangible,
+                  lo comprobable, aquello que se sostiene en la certeza de lo visible y, sin embargo,
+                  esta condenado a desvanecerse con el tiempo.
+                </p>
+
+                <p>
+                  Pero hay otro mundo, uno que no se mide ni se pesa: el mundo espiritual. Un territorio
+                  invisible donde convergen fuerzas, creencias y voluntades; algunas deformadas por el error,
+                  otras aferradas a verdades que trascienden al hombre.
+                </p>
+
+                <p>
+                  No importa como se le nombre o desde donde se le mire: esta ahi. Silencioso, constante,
+                  mas proximo de lo que quisieramos admitir.
+                </p>
+
+                <p>
+                  No siempre se manifiesta con claridad. A veces se insinua en la sombra, en el presentimiento,
+                  en el temor que no tiene explicacion. Otras, se revela con la contundencia de lo inevitable.
+                </p>
+
+                <p>
+                  Este libro no pretende revelarlo todo. Apenas abre una rendija: un instante fugaz, un susurro
+                  en medio de la oscuridad. Un suspiro breve, pero cargado de verdad; tan profundo y real como
+                  la respiracion que, sin notarlo, nos mantiene con vida.
+                </p>
+              </div>
+
+              <div className="mt-10 flex items-center justify-between max-w-2xl">
+                <div className="text-xs tracking-[0.25em] uppercase text-black/70">
+                  Leer mas
+                </div>
+                <div className="h-px flex-1 mx-6 bg-black/20" />
+                <button className="text-sm tracking-wide text-black hover:opacity-70 transition">
+                  →
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Relatos y experiencias destacadas */}
-      <section className="py-20 bg-gray-100">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-12">RELATOS Y EXPERIENCIAS DESTACADAS</h2>
+      <section className="relative py-20 overflow-hidden bg-[#F2F0EA]">
+        <div
+          className="absolute inset-0 opacity-70"
+          style={{
+            background:
+              'radial-gradient(1200px 600px at 70% 20%, rgba(0,0,0,0.06), transparent 55%), radial-gradient(900px 500px at 20% 80%, rgba(0,0,0,0.05), transparent 60%)',
+          }}
+        />
 
-            <div className="relative max-w-5xl mx-auto">
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.08] mix-blend-multiply"
+          style={{
+            backgroundImage:
+              "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22120%22 height=%22120%22 filter=%22url(%23n)%22 opacity=%220.35%22/%3E%3C/svg%3E')",
+          }}
+        />
+
+        <div className="relative container mx-auto px-4">
+         
+
+          <div className="max-w-5xl mx-auto mb-4 flex items-center justify-between text-xs tracking-[0.25em] uppercase text-black/60">
+            <span>Relatos y experiencias destacadas</span>
+            <span>{String(activeCardIndex + 1).padStart(2, '0')} / 03</span>
+          </div>
+
+          <div className="relative max-w-5xl mx-auto">
             <button
               type="button"
               onClick={() => scrollOne(-1)}
-              className="absolute -left-12 top-[40%] -translate-y-1/2 z-10 bg-white/90 backdrop-blur shadow-md rounded-full w-11 h-11 flex items-center justify-center hover:scale-105 transition"
+              className="absolute -left-12 top-[40%] -translate-y-1/2 z-20 bg-white/70 border border-black/10 shadow-sm backdrop-blur rounded-full w-11 h-11 flex items-center justify-center hover:bg-white/90 hover:scale-105 transition"
               aria-label="Anterior"
             >
               ‹
             </button>
 
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#F2F0EA] to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#F2F0EA] to-transparent z-10" />
+
             <div
               ref={trackRef}
-              className="track-scroll flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch] pb-12"
+              className="track-scroll flex overflow-x-auto snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch] pb-10"
             >
               <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[400px] sm:h-[440px]">
-                  <div className="p-6 border-b border-gray-200 flex-shrink-0">
-                    <h3 className="text-xl font-semibold text-center">DISTINTAS PRESENCIAS</h3>
-                  </div>
-                  <div className="card-scroll flex-1 px-20 py-6 text-sm leading-relaxed overflow-y-auto text-center">
-                    <p className="mb-4">En mi opinión, la existencia no se limita a una sola forma de ser. Hay distintos seres, distintas presencias, distintos estados de conciencia.</p>
-
-                    <p className="mb-4">Comencemos por el ser humano, compuesto de cuerpo y alma, unidos mientras la vida persiste. El cuerpo habita lo material; el alma, aunque invisible, le da sentido, voluntad y propósito.</p>
-
-                    <p className="mb-4">Existen también las almas que ya no permanecen en su cuerpo. Aquellas que han cruzado el umbral y existen en otros planos: el cielo, el purgatorio o el limbo; y las desdichadas, que por sus actos o decisiones han quedado atrapadas en el infierno.</p>
-
-                    <p className="mb-4">Además, los ángeles. Seres que no pertenecen a la carne ni al tiempo. Algunos permanecen fieles al bien, inspirando, protegiendo, en el servicio a Dios. Otros, en cambio, eligieron la ruptura, rechazaron la luz y ahora buscan confundir, tentar y dañar.</p>
-
-                    <p className="mb-4">El ser humano se encuentra en medio de todo esto. Capaz tanto del bien como del mal. Puede elegir uno u otro camino, entregarse a la luz o a la oscuridad, consciente o inconscientemente. Nadie está exento de esa elección.</p>
-
-                    <p>Mientras vivimos, estamos sujetos al tiempo y al libre albedrío. El tiempo avanza sin detenerse; el libre albedrío decide el rumbo. Ambos son contundentes, inevitables y profundamente consecuentes.</p>
-                  </div>
-                </div>
-              </article>
-
-              <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[400px] sm:h-[440px]">
-                  <div className="p-6 border-b border-gray-200 flex-shrink-0">
-                    <h3 className="text-center font-semibold">
-                      <span className="text-2xl block">EL MIEDO</span>
-                      <span className="text-sm text-gray-500 tracking-wide block">UN SILENCIOSO ASESINO</span>
+                <div className="bg-white/85 border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
+                  <div className="p-6 border-b border-black/10 flex-shrink-0">
+                    <h3 className="text-xl font-semibold text-center tracking-wide">
+                      DISTINTAS PRESENCIAS
                     </h3>
                   </div>
-                  <div className="card-scroll flex-1 px-20 py-6 text-sm leading-relaxed overflow-y-auto text-center">
-                    <p className="mb-4">En el proceso de la vida, el miedo aparece como una sombra constante. No siempre grita; a veces susurra. Se disfraza de prudencia, de duda, de espera eterna. Pero su efecto es el mismo: detiene.</p>
-
-                    <p className="font-semibold mb-4">El miedo paraliza.</p>
-
-                    <p className="mb-4">Cuando se instala, inmoviliza la voluntad, nubla la razón y debilita la fe en uno mismo. Poco a poco va erosionando la confianza, hasta convertir cada decisión en una amenaza y cada paso en un riesgo insoportable.</p>
-
-                    <p className="font-semibold mb-4">El miedo destruye.</p>
-
-                    <p className="mb-4">No siempre de forma visible, pero sí profunda. Destruye sueños antes de que nazcan, rompe oportunidades antes de que se presenten, y convierte la posibilidad en renuncia. No necesita vencer; le basta con que no intentes.</p>
-
-                    <p className="mb-4">Enfrentar el miedo no significa no sentirlo. Significa avanzar a pesar de él. Reconocerlo, mirarlo de frente y decidir que no será quien gobierne el rumbo de nuestra vida.</p>
-
-                    <p className="mb-4">Porque todo momento que el miedo bloquea, es una oportunidad que nunca vuelve. Y toda vida dominada por el miedo, es una vida detenida en el tiempo.</p>
-
-                    <p className="font-semibold mb-4">El miedo nunca desaparece solo; se debilita únicamente cuando lo enfrentas.</p>
-
-                    <p className="mb-4">Si no lo haces, podrías perder la oportunidad que marque un antes y un después en tu vida, un instante único en toda tu existencia.</p>
-
-                    <p className="font-semibold">No temas más… confía y sigue adelante.</p>
+                  <div className="h-px w-full bg-black/5" />
+                  <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-black/75">
+                    <p className="mb-4">
+                      En mi opinión, la existencia no se limita a una sola forma de ser. Hay distintos seres,
+                      distintas presencias, distintos estados de conciencia.
+                    </p>
+                    <p className="mb-4">
+                      Comencemos por el ser humano, compuesto de cuerpo y alma, unidos mientras la vida persiste.
+                      El cuerpo habita lo material; el alma, aunque invisible, le da sentido, voluntad y propósito.
+                    </p>
+                    <p className="mb-4">
+                      Existen también las almas que ya no permanecen en su cuerpo. Aquellas que han cruzado el
+                      umbral y existen en otros planos: el cielo, el purgatorio o el limbo; y las desdichadas,
+                      que por sus actos o decisiones han quedado atrapadas en el infierno.
+                    </p>
+                    <p className="mb-4">
+                      Además, los ángeles. Seres que no pertenecen a la carne ni al tiempo. Algunos permanecen
+                      fieles al bien, inspirando, protegiendo, en el servicio a Dios. Otros, en cambio, eligieron
+                      la ruptura, rechazaron la luz y ahora buscan confundir, tentar y dañar.
+                    </p>
+                    <p className="mb-4">
+                      El ser humano se encuentra en medio de todo esto. Capaz tanto del bien como del mal. Puede
+                      elegir uno u otro camino, entregarse a la luz o a la oscuridad, consciente o inconscientemente.
+                      Nadie está exento de esa elección.
+                    </p>
+                    <p>
+                      Mientras vivimos, estamos sujetos al tiempo y al libre albedrío. El tiempo avanza sin
+                      detenerse; el libre albedrío decide el rumbo. Ambos son contundentes, inevitables y
+                      profundamente consecuentes.
+                    </p>
                   </div>
                 </div>
               </article>
 
               <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col mx-auto h-[400px] sm:h-[440px]">
-                  <div className="p-6 border-b border-gray-200 flex-shrink-0">
-                    <h3 className="text-xl font-semibold text-center">HOY ES UN BUEN DÍA</h3>
+                <div className="bg-white/85 border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
+                  <div className="p-6 border-b border-black/10 flex-shrink-0">
+                    <h3 className="text-center font-semibold tracking-wide">
+                      <span className="text-2xl block">EL MIEDO</span>
+                      <span className="text-sm text-black/50 tracking-[0.2em] block">
+                        UN SILENCIOSO ASESINO
+                      </span>
+                    </h3>
                   </div>
-                  <div className="card-scroll flex-1 px-20 py-6 text-sm leading-relaxed overflow-y-auto text-center">
-                    <p className="font-semibold mb-4">Hoy es un buen día.</p>
+                  <div className="h-px w-full bg-black/5" />
+                  <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-black/75">
+                    <p className="mb-4">
+                      En el proceso de la vida, el miedo aparece como una sombra constante. No siempre grita;
+                      a veces susurra. Se disfraza de prudencia, de duda, de espera eterna. Pero su efecto es el mismo:
+                      detiene.
+                    </p>
+                    <p className="font-semibold mb-4 text-black/80">El miedo paraliza.</p>
+                    <p className="mb-4">
+                      Cuando se instala, inmoviliza la voluntad, nubla la razón y debilita la fe en uno mismo.
+                      Poco a poco va erosionando la confianza, hasta convertir cada decisión en una amenaza y cada paso
+                      en un riesgo insoportable.
+                    </p>
+                    <p className="font-semibold mb-4 text-black/80">El miedo destruye.</p>
+                    <p className="mb-4">
+                      No siempre de forma visible, pero sí profunda. Destruye sueños antes de que nazcan, rompe oportunidades
+                      antes de que se presenten, y convierte la posibilidad en renuncia. No necesita vencer; le basta con
+                      que no intentes.
+                    </p>
+                    <p className="mb-4">
+                      Enfrentar el miedo no significa no sentirlo. Significa avanzar a pesar de él. Reconocerlo, mirarlo
+                      de frente y decidir que no será quien gobierne el rumbo de nuestra vida.
+                    </p>
+                    <p className="mb-4">
+                      Porque todo momento que el miedo bloquea, es una oportunidad que nunca vuelve. Y toda vida dominada por
+                      el miedo, es una vida detenida en el tiempo.
+                    </p>
+                    <p className="font-semibold mb-4 text-black/80">
+                      El miedo nunca desaparece solo; se debilita únicamente cuando lo enfrentas.
+                    </p>
+                    <p className="mb-4">
+                      Si no lo haces, podrías perder la oportunidad que marque un antes y un después en tu vida, un instante
+                      único en toda tu existencia.
+                    </p>
+                    <p className="font-semibold text-black/80">
+                      No temas mas... confia y sigue adelante.
+                    </p>
+                  </div>
+                </div>
+              </article>
 
-                    <p className="mb-4">No porque todo esté en orden, ni porque la vida haya decidido concedernos una tregua. Es porque estamos aquí, respirando, conscientes, con la posibilidad intacta de elegir cómo enfrentarlo.</p>
-
-                    <p className="font-semibold mb-4">A pesar de las circunstancias.</p>
-
-                    <p className="mb-4">A pesar de los errores cometidos, de las decisiones que pesaron más de lo esperado, de las palabras que no se dijeron o de aquellas que se dijeron de más. El pasado no desaparece, pero tampoco gobierna este instante.</p>
-
-                    <p className="mb-4">La actitud positiva no consiste en negar el dolor ni en disfrazar la realidad con optimismo forzado. Consiste en reconocer la dificultad y, aun así, decidir no rendirse ante ella. Es una postura interior: mantenerse en pie cuando todo invita a bajar la cabeza.</p>
-
-                    <p className="mb-4">Hoy es un buen día porque aún hay margen para corregir, aprender, pedir perdón u otorgarlo. Porque mientras el tiempo siga avanzando, existe la oportunidad de hacer algo distinto, aunque sea pequeño, un solo paso.</p>
-
-                    <p className="mb-4">La actitud positiva no cambia el mundo de inmediato, pero transforma la forma en que caminamos dentro de él. Nos permite mirar el error sin quedar atrapados en la culpa, enfrentar la adversidad sin convertirla en condena.</p>
-
-                    <p className="font-semibold mb-4">Hoy es un buen día. Ha sido mi filosofía de vida, en ella he decidido cada paso, cada decisión.</p>
-
-                    <p className="font-semibold">Porque incluso en medio de la oscuridad, decidir avanzar ya es un acto de luz.</p>
+              <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
+                <div className="bg-white/85 border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
+                  <div className="p-6 border-b border-black/10 flex-shrink-0">
+                    <h3 className="text-xl font-semibold text-center tracking-wide">
+                      HOY ES UN BUEN DIA
+                    </h3>
+                  </div>
+                  <div className="h-px w-full bg-black/5" />
+                  <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-black/75">
+                    <p className="font-semibold mb-4 text-black/80">Hoy es un buen dia.</p>
+                    <p className="mb-4">
+                      No porque todo este en orden, ni porque la vida haya decidido concedernos una tregua. Es porque
+                      estamos aqui, respirando, conscientes, con la posibilidad intacta de elegir como enfrentarlo.
+                    </p>
+                    <p className="font-semibold mb-4 text-black/80">A pesar de las circunstancias.</p>
+                    <p className="mb-4">
+                      A pesar de los errores cometidos, de las decisiones que pesaron mas de lo esperado, de las palabras
+                      que no se dijeron o de aquellas que se dijeron de mas. El pasado no desaparece, pero tampoco gobierna
+                      este instante.
+                    </p>
+                    <p className="mb-4">
+                      La actitud positiva no consiste en negar el dolor ni en disfrazar la realidad con optimismo forzado.
+                      Consiste en reconocer la dificultad y, aun asi, decidir no rendirse ante ella. Es una postura interior:
+                      mantenerse en pie cuando todo invita a bajar la cabeza.
+                    </p>
+                    <p className="mb-4">
+                      Hoy es un buen dia porque aun hay margen para corregir, aprender, pedir perdon u otorgarlo. Porque mientras
+                      el tiempo siga avanzando, existe la oportunidad de hacer algo distinto, aunque sea pequeño, un solo paso.
+                    </p>
+                    <p className="mb-4">
+                      La actitud positiva no cambia el mundo de inmediato, pero transforma la forma en que caminamos dentro de el.
+                      Nos permite mirar el error sin quedar atrapados en la culpa, enfrentar la adversidad sin convertirla en condena.
+                    </p>
+                    <p className="font-semibold mb-4 text-black/80">
+                      Hoy es un buen dia. Ha sido mi filosofia de vida, en ella he decidido cada paso, cada decision.
+                    </p>
+                    <p className="font-semibold text-black/80">
+                      Porque incluso en medio de la oscuridad, decidir avanzar ya es un acto de luz.
+                    </p>
                   </div>
                 </div>
               </article>
             </div>
 
-            <div className="mt-4 flex items-center justify-center gap-3">
+            <div className="mt-3 flex items-center justify-center gap-3">
               {[0, 1, 2].map((index) => (
                 <button
                   key={index}
                   type="button"
                   onClick={() => scrollToIndex(index)}
                   className={`h-2.5 w-2.5 rounded-full transition ${
-                    activeCardIndex === index ? 'bg-gray-800' : 'bg-gray-400/60'
+                    activeCardIndex === index ? 'bg-black/70' : 'bg-black/20'
                   }`}
                   aria-label={`Ir a tarjeta ${index + 1}`}
                 />
@@ -350,7 +555,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => scrollOne(1)}
-              className="absolute -right-12 top-[40%] -translate-y-1/2 z-10 bg-white/90 backdrop-blur shadow-md rounded-full w-11 h-11 flex items-center justify-center hover:scale-105 transition"
+              className="absolute -right-12 top-[40%] -translate-y-1/2 z-20 bg-white/70 border border-black/10 shadow-sm backdrop-blur rounded-full w-11 h-11 flex items-center justify-center hover:bg-white/90 hover:scale-105 transition"
               aria-label="Siguiente"
             >
               ›
