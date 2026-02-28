@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { CheckoutRedirectClient } from './client'
 
 export default function CheckoutRedirectPage() {
