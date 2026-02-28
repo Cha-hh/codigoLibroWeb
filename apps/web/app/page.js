@@ -652,26 +652,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Sección Collage */}
-      <section className="relative py-20 bg-gray-900">
-        {/* Noise texture overlay */}
-        <div
-          className="absolute inset-0 opacity-40 pointer-events-none"
-          style={{
-            backgroundImage:
-              "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22 seed=%221%22/%3E%3C/filter%3E%3Crect width=%22200%22 height=%22200%22 fill=%22%23000%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')",
-            backgroundSize: '200px 200px',
-          }}
-        />
-        <div className="relative container mx-auto px-4">
-          <img 
-            src="/images/colage.jpg" 
-            alt="Collage" 
-            className="w-full rounded-xl shadow-2xl"
-          />
-        </div>
-      </section>
-
       {/* El libro físico y Oferta */}
       <section id="oferta" className="relative py-20 bg-gray-100">
         {/* Noise texture overlay */}
@@ -702,6 +682,26 @@ export default function Home() {
               <a href="/checkout" className="bg-gray-800 text-white px-8 py-4 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition inline-block uppercase">Comprar Ahora</a>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Sección Collage */}
+      <section className="relative py-20 bg-gray-900">
+        {/* Noise texture overlay */}
+        <div
+          className="absolute inset-0 opacity-40 pointer-events-none"
+          style={{
+            backgroundImage:
+              "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22 seed=%221%22/%3E%3C/filter%3E%3Crect width=%22200%22 height=%22200%22 fill=%22%23000%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')",
+            backgroundSize: '200px 200px',
+          }}
+        />
+        <div className="relative container mx-auto px-4">
+          <img 
+            src="/images/colage.jpg" 
+            alt="Collage" 
+            className="w-full rounded-xl shadow-2xl"
+          />
         </div>
       </section>
 
