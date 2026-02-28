@@ -151,7 +151,6 @@ export default function CheckoutRedirect() {
             <div className="flex space-x-6">
               <a href="/admin/login" className="text-blue-600 hover:text-blue-800 font-medium">Admin</a>
               <a href="/" className="text-gray-700 hover:text-gray-800 font-medium">Libro</a>
-              <a href="#" className="text-gray-700 hover:text-gray-800 font-medium">Monturas</a>
             </div>
           </div>
         </div>

@@ -132,12 +132,12 @@ export default function Home() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recentFaq.map((item) => (
-          <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
+          <div key={item.id} className="bg-white/60 backdrop-blur-lg rounded-lg shadow-md overflow-hidden flex flex-col border border-gray-200">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-center break-words">{item.question}</h3>
+              <h3 className="text-xl font-semibold text-center break-words text-gray-800 uppercase">{item.question}</h3>
             </div>
             <div className="flex-1 p-6 text-sm leading-relaxed text-center">
-              <p className="break-words">{item.answer}</p>
+              <p className="break-words text-gray-700">{item.answer}</p>
             </div>
           </div>
         ))}
@@ -227,46 +227,92 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <nav className="bg-black shadow-md">
+      <nav className="bg-black shadow-md fixed top-0 left-0 right-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex space-x-6">
-              <a href="/admin/login" className="text-white hover:text-gray-300 font-medium">Admin</a>
-              <a href="/" className="text-white hover:text-gray-300 font-medium">Libro</a>
-              <a href="#" className="text-white hover:text-gray-300 font-medium">Monturas</a>
+          <div className="flex justify-center items-center">
+            <div className="flex space-x-8">
+              <a href="#intro" className="text-white hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Inicio</a>
+              <a href="#relatos" className="text-white hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Relatos</a>
+              <a href="#autor" className="text-white hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Autor</a>
+              <a href="#oferta" className="text-white hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Libro</a>
+              <a href="#faq" className="text-white hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">FAQ</a>
+              <a href="#contacto" className="text-white hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Contacto</a>
+              <a href="/admin/login" className="text-gray-400 hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Admin</a>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative bg-black text-white min-h-screen overflow-hidden flex items-center">
-        <div className="absolute inset-0 w-full h-full">
-          <img src="/images/Panel.jpg" alt="Panel de inicio" className="w-full h-full object-cover opacity-50" />
-        </div>
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-4 relative z-10">
-          <div className="md:w-1/2 text-center md:text-left">
-            <div className="p-6">
-              <h1 className="text-5xl md:text-6xl font-bold mb-4 animate__animated animate__fadeInDown uppercase">En el agua oscura</h1>
-              <p className="text-base mb-6 animate__animated animate__fadeInDown">No te encuentras solo.</p>
-              <a href="#oferta" className="bg-gray-600 bg-opacity-40 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-opacity-60 transition animate__animated animate__fadeInDown inline-flex items-center gap-2 mt-6">COMPRA EL LIBRO <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white bg-opacity-20 text-xs">→</span></a>
+      {/* Shared background wrapper for hero, intro and relatos */}
+      <div
+        className="relative w-full pt-16"
+        style={{
+          background: 'linear-gradient(180deg, #106069ff 0%, #074B54ff 25%, #0A323Bff 50%, #0B1C1Fff 75%, #000000 100%)',
+        }}
+      >
+        {/* Noise texture overlay */}
+        <div
+          className="absolute inset-0 opacity-30 pointer-events-none"
+          style={{
+            backgroundImage:
+              "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22 seed=%221%22/%3E%3C/filter%3E%3Crect width=%22200%22 height=%22200%22 fill=%22%23000%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')",
+            backgroundSize: '200px 200px',
+          }}
+        />
+        {/* Hero Section */}
+        <section id="intro" className="relative text-white min-h-screen overflow-hidden flex items-center">
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="relative rounded-xl overflow-hidden p-6 md:p-10">
+              {/* Background image with opacity */}
+              <div 
+                className="absolute inset-0 opacity-30"
+                style={{
+                  backgroundImage: "url('/images/Panel.jpg')",
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              />
+              
+              {/* Content */}
+              <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                <div className="md:w-1/2 text-center md:text-left">
+                  <h1 className="text-6xl md:text-7xl font-bold mb-4 animate__animated animate__fadeInDown uppercase text-gray-200">
+                    En el agua oscura
+                  </h1>
+                  <p className="text-lg tracking-[0.10em] mb-6 animate__animated animate__fadeInDown text-gray-200 ">
+                    No te encuentras solo...
+                  </p>
+                  <a
+                    href="#oferta"
+                    className="bg-gray-600 bg-opacity-40 text-gray-100 px-4 py-2 rounded-full text-sm tracking-[0.25em] hover:bg-opacity-60 transition animate__animated animate__fadeInDown inline-flex items-center gap-2 mt-6 uppercase"
+                  >
+                    COMPRA EL LIBRO{' '}
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white bg-opacity-20 text-xs">
+                      →
+                    </span>
+                  </a>
+                </div>
+                <div className="md:w-1/2 flex justify-center">
+                  <img
+                    src="/images/autor-libro.jpg"
+                    alt="Autor del libro"
+                    className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-          <div className="md:w-1/2 mb-8 md:mb-0 flex justify-center">
-            <img src="/images/autor-libro.jpg" alt="Autor del libro" className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg" />
-          </div>
-        </div>
       </section>
 
       {/* Introducción */}
       <section
         ref={introSectionRef}
-        className="bg-[#F2F0EA] py-16 md:py-24"
+        className="relative py-16 md:py-24"
       >
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="relative mx-auto max-w-6xl px-4 bg-white/10 backdrop-blur-lg rounded-xl p-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
             <div className="md:col-span-4">
-              <div className="text-xs tracking-[0.25em] uppercase text-black/70">
+              <div className="text-xs tracking-[0.25em] uppercase text-gray-300">
                 Introduccion
               </div>
 
@@ -276,13 +322,13 @@ export default function Home() {
                 <div
                   className="absolute inset-0 flex items-center justify-center"
                   style={{
-                    transform: `translateY(${50- introOffset}px)`,
-                transition: 'transform 20ms linear',
+                    transform: `translateY(${50- introOffset}px)` ,
+                    transition: 'transform 20ms linear',
                   }}
                 >
                   <div className="relative w-[90%] h-[90%]">
                     <Image
-                      src="/images/MockupLibro.jpg"
+                      src="/images/ImagenIntro.jpg"
                       alt="Imagen intro"
                       fill
                       className="object-cover rounded-xl shadow-sm"
@@ -291,7 +337,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="absolute bottom-3 left-4 text-[11px] tracking-widest text-black/50">
+                <div className="absolute bottom-3 left-4 text-[11px] tracking-widest text-gray-400">
                   SCROLL
                 </div>
               </div>
@@ -307,15 +353,15 @@ export default function Home() {
                   transition: 'none',
                 }}
               >
-                <h2 className="text-4xl md:text-6xl leading-[1.05] font-medium text-black">
+                <h2 className="text-4xl md:text-6xl leading-[1.05] font-medium text-gray-200">
                   El mundo no se limita <br />
                   a lo visible.
                   <br />
-                  <span className="text-black/70">Hay otro territorio cercano.</span>
+                  <span className="text-gray-800">Hay otro territorio cercano.</span>
                 </h2>
               </div>
 
-              <div className="mt-10 max-w-2xl space-y-6 text-[15px] md:text-base leading-relaxed text-black/75">
+              <div className="mt-10 max-w-2xl space-y-6 text-[15px] md:text-base leading-relaxed text-gray-300">
                 <p>
                   El mundo no se limita a lo que los ojos alcanzan a ver. Existe lo material: lo tangible,
                   lo comprobable, aquello que se sostiene en la certeza de lo visible y, sin embargo,
@@ -350,7 +396,7 @@ export default function Home() {
                   Leer mas
                 </div>
                 <div className="h-px flex-1 mx-6 bg-black/20" />
-                <button className="text-sm tracking-wide text-black hover:opacity-70 transition">
+                <button className="text-xs tracking-[0.25em] text-black hover:opacity-70 transition uppercase">
                   →
                 </button>
               </div>
@@ -360,7 +406,7 @@ export default function Home() {
       </section>
 
       {/* Relatos y experiencias destacadas */}
-      <section className="relative py-20 overflow-hidden bg-[#F2F0EA]">
+      <section id="relatos" className="relative py-20 overflow-hidden">
         <div
           className="absolute inset-0 opacity-70"
           style={{
@@ -380,7 +426,7 @@ export default function Home() {
         <div className="relative container mx-auto px-4">
          
 
-          <div className="max-w-5xl mx-auto mb-4 flex items-center justify-between text-xs tracking-[0.25em] uppercase text-black/60">
+          <div className="max-w-5xl mx-auto mb-4 flex items-center justify-between text-xs tracking-[0.25em] uppercase text-gray-300">
             <span>Relatos y experiencias destacadas</span>
             <span>{String(activeCardIndex + 1).padStart(2, '0')} / 03</span>
           </div>
@@ -395,22 +441,22 @@ export default function Home() {
               ‹
             </button>
 
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#F2F0EA] to-transparent z-10" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#F2F0EA] to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-transparent to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-transparent to-transparent z-10" />
 
             <div
               ref={trackRef}
               className="track-scroll flex overflow-x-auto snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch] pb-10"
             >
               <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
-                <div className="bg-white/85 border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
+                <div className="bg-white/15 backdrop-blur-lg border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
                   <div className="p-6 border-b border-black/10 flex-shrink-0">
-                    <h3 className="text-xl font-semibold text-center tracking-wide">
+                    <h3 className="text-xl font-bold text-center tracking-wide text-gray-800">
                       DISTINTAS PRESENCIAS
                     </h3>
                   </div>
                   <div className="h-px w-full bg-black/5" />
-                  <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-black/75">
+                  <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-gray-300">
                     <p className="mb-4">
                       En mi opinión, la existencia no se limita a una sola forma de ser. Hay distintos seres,
                       distintas presencias, distintos estados de conciencia.
@@ -444,29 +490,29 @@ export default function Home() {
               </article>
 
               <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
-                <div className="bg-white/85 border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
+                <div className="bg-white/15 backdrop-blur-lg border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
                   <div className="p-6 border-b border-black/10 flex-shrink-0">
-                    <h3 className="text-center font-semibold tracking-wide">
-                      <span className="text-2xl block">EL MIEDO</span>
-                      <span className="text-sm text-black/50 tracking-[0.2em] block">
+                    <h3 className="text-center font-bold tracking-wide">
+                      <span className="text-2xl block text-gray-800">EL MIEDO</span>
+                      <span className="text-sm text-gray-800 tracking-[0.2em] block">
                         UN SILENCIOSO ASESINO
                       </span>
                     </h3>
                   </div>
                   <div className="h-px w-full bg-black/5" />
-                  <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-black/75">
+                  <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-gray-300">
                     <p className="mb-4">
                       En el proceso de la vida, el miedo aparece como una sombra constante. No siempre grita;
                       a veces susurra. Se disfraza de prudencia, de duda, de espera eterna. Pero su efecto es el mismo:
                       detiene.
                     </p>
-                    <p className="font-semibold mb-4 text-black/80">El miedo paraliza.</p>
+                    <p className="font-semibold mb-4 text-gray-800">El miedo paraliza.</p>
                     <p className="mb-4">
                       Cuando se instala, inmoviliza la voluntad, nubla la razón y debilita la fe en uno mismo.
                       Poco a poco va erosionando la confianza, hasta convertir cada decisión en una amenaza y cada paso
                       en un riesgo insoportable.
                     </p>
-                    <p className="font-semibold mb-4 text-black/80">El miedo destruye.</p>
+                    <p className="font-semibold mb-4 text-gray-800">El miedo destruye.</p>
                     <p className="mb-4">
                       No siempre de forma visible, pero sí profunda. Destruye sueños antes de que nazcan, rompe oportunidades
                       antes de que se presenten, y convierte la posibilidad en renuncia. No necesita vencer; le basta con
@@ -480,14 +526,14 @@ export default function Home() {
                       Porque todo momento que el miedo bloquea, es una oportunidad que nunca vuelve. Y toda vida dominada por
                       el miedo, es una vida detenida en el tiempo.
                     </p>
-                    <p className="font-semibold mb-4 text-black/80">
+                    <p className="font-semibold mb-4 text-gray-800">
                       El miedo nunca desaparece solo; se debilita únicamente cuando lo enfrentas.
                     </p>
                     <p className="mb-4">
                       Si no lo haces, podrías perder la oportunidad que marque un antes y un después en tu vida, un instante
                       único en toda tu existencia.
                     </p>
-                    <p className="font-semibold text-black/80">
+                    <p className="font-semibold text-gray-800">
                       No temas mas... confia y sigue adelante.
                     </p>
                   </div>
@@ -495,20 +541,20 @@ export default function Home() {
               </article>
 
               <article data-card className="snap-center flex-shrink-0 w-full px-3 sm:px-8">
-                <div className="bg-white/85 border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
+                <div className="bg-white/15 backdrop-blur-lg border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
                   <div className="p-6 border-b border-black/10 flex-shrink-0">
-                    <h3 className="text-xl font-semibold text-center tracking-wide">
+                    <h3 className="text-xl font-bold text-center tracking-wide text-gray-800">
                       HOY ES UN BUEN DIA
                     </h3>
                   </div>
                   <div className="h-px w-full bg-black/5" />
-                  <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-black/75">
-                    <p className="font-semibold mb-4 text-black/80">Hoy es un buen dia.</p>
+                  <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-gray-300">
+                    <p className="font-semibold mb-4 text-gray-800">Hoy es un buen dia.</p>
                     <p className="mb-4">
                       No porque todo este en orden, ni porque la vida haya decidido concedernos una tregua. Es porque
                       estamos aqui, respirando, conscientes, con la posibilidad intacta de elegir como enfrentarlo.
                     </p>
-                    <p className="font-semibold mb-4 text-black/80">A pesar de las circunstancias.</p>
+                    <p className="font-semibold mb-4 text-gray-800">A pesar de las circunstancias.</p>
                     <p className="mb-4">
                       A pesar de los errores cometidos, de las decisiones que pesaron mas de lo esperado, de las palabras
                       que no se dijeron o de aquellas que se dijeron de mas. El pasado no desaparece, pero tampoco gobierna
@@ -527,10 +573,10 @@ export default function Home() {
                       La actitud positiva no cambia el mundo de inmediato, pero transforma la forma en que caminamos dentro de el.
                       Nos permite mirar el error sin quedar atrapados en la culpa, enfrentar la adversidad sin convertirla en condena.
                     </p>
-                    <p className="font-semibold mb-4 text-black/80">
+                    <p className="font-semibold mb-4 text-gray-800">
                       Hoy es un buen dia. Ha sido mi filosofia de vida, en ella he decidido cada paso, cada decision.
                     </p>
-                    <p className="font-semibold text-black/80">
+                    <p className="font-semibold text-gray-800">
                       Porque incluso en medio de la oscuridad, decidir avanzar ya es un acto de luz.
                     </p>
                   </div>
@@ -583,9 +629,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </div>
 
       {/* El autor */}
-      <section className="py-0 bg-white">
+      <section id="autor" className="py-0 bg-white">
         <div className="flex flex-col md:flex-row items-stretch">
           <div className="md:w-1/3 py-16 px-4 flex flex-col justify-center">
             <h2 className="text-2xl font-bold mb-8 text-black ml-6 md:ml-10">GERARDO ROMEH</h2>
@@ -605,42 +652,80 @@ export default function Home() {
         </div>
       </section>
 
-      {/* El libro físico */}
-      <section className="py-16 bg-gray-100">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center md:gap-8">
-          <div className="md:w-1/2 mb-8 md:mb-0 md:pl-6">
-            <img src="/images/MockupLibro.jpg" alt="Libro físico" className="w-72 mx-auto md:mx-0 md:ml-auto rounded-lg shadow-lg" />
-          </div>
-          <div className="md:w-1/2">
-            <h2 className="text-2xl font-bold mb-6">LIBRO FISICO</h2>
-            <p className="text-lg mb-4">Enfoque visual y descriptivo del objeto físico. Detalles: formato, páginas, encuadernación.</p>
-            <p className="text-lg">Valor diferencial del formato impreso.</p>
-          </div>
+      {/* Sección Collage */}
+      <section className="relative py-20 bg-gray-900">
+        {/* Noise texture overlay */}
+        <div
+          className="absolute inset-0 opacity-40 pointer-events-none"
+          style={{
+            backgroundImage:
+              "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22 seed=%221%22/%3E%3C/filter%3E%3Crect width=%22200%22 height=%22200%22 fill=%22%23000%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')",
+            backgroundSize: '200px 200px',
+          }}
+        />
+        <div className="relative container mx-auto px-4">
+          <img 
+            src="/images/colage.jpg" 
+            alt="Collage" 
+            className="w-full rounded-xl shadow-2xl"
+          />
         </div>
       </section>
 
-      {/* Oferta y compra */}
-      <section id="oferta" className="py-16 text-white" style={{ backgroundColor: '#132940' }}>
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-xl mb-4">Precio: $XX.XX</p>
-          <p className="text-lg mb-4">Qué incluye la compra: Libro físico, envío gratuito.</p>
-          <p className="text-lg mb-8">Información clara de envíos: Entrega en 5-7 días hábiles.</p>
-          <a href="/checkout" className="bg-[#006888] text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-[#0e5a70] transition">Comprar Ahora</a>
+      {/* El libro físico y Oferta */}
+      <section id="oferta" className="relative py-20 bg-gray-100">
+        {/* Noise texture overlay */}
+        <div
+          className="absolute inset-0 opacity-30 pointer-events-none"
+          style={{
+            backgroundImage:
+              "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22 seed=%221%22/%3E%3C/filter%3E%3Crect width=%22200%22 height=%22200%22 fill=%22%23000%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')",
+            backgroundSize: '200px 200px',
+          }}
+        />
+        <div className="relative container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center gap-12 mb-16">
+            <div className="md:w-1/2 flex justify-center">
+              <img src="/images/MockupLibro.jpg" alt="Libro físico" className="w-96 md:w-[500px] rounded-lg shadow-2xl" />
+            </div>
+            <div className="md:w-1/2">
+              <h2 className="text-3xl font-bold mb-6 text-gray-800 uppercase">LIBRO FÍSICO</h2>
+              <p className="text-lg mb-4 text-gray-700">Enfoque visual y descriptivo del objeto físico. Detalles: formato, páginas, encuadernación.</p>
+              <p className="text-lg mb-6 text-gray-700">Valor diferencial del formato impreso.</p>
+              
+              <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-lg mb-6">
+                <p className="text-2xl font-bold mb-2 text-gray-800">Precio: $XX.XX</p>
+                <p className="text-base mb-2 text-gray-600">Incluye: Libro físico + envío gratuito</p>
+                <p className="text-sm text-gray-500">Entrega en 5-7 días hábiles</p>
+              </div>
+              
+              <a href="/checkout" className="bg-gray-800 text-white px-8 py-4 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition inline-block uppercase">Comprar Ahora</a>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="py-16 bg-gray-100">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-12">PREGUNTAS FRECUENTES SOBRE EL LIBRO </h2>
+      <section id="faq" className="relative py-16 bg-gray-50">
+        {/* Noise texture overlay */}
+        <div
+          className="absolute inset-0 opacity-30 pointer-events-none"
+          style={{
+            backgroundImage:
+              "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22 seed=%221%22/%3E%3C/filter%3E%3Crect width=%22200%22 height=%22200%22 fill=%22%23000%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')",
+            backgroundSize: '200px 200px',
+          }}
+        />
+        <div className="relative container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 uppercase">PREGUNTAS FRECUENTES SOBRE EL LIBRO</h2>
           <div className="max-w-6xl mx-auto">
             <FaqGrid />
             <div className="text-center mt-8 space-y-4">
-              <button onClick={() => setIsModalOpen(true)} className="bg-[#006888] text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-[#0e5a70] transition">
+              <button onClick={() => setIsModalOpen(true)} className="bg-gray-800 text-white px-6 py-3 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase">
                 Hacer una pregunta
               </button>
               <div>
-                <a href="/faq" className="text-[#006888] hover:text-[#0e5a70] underline">
+                <a href="/faq" className="text-gray-800 hover:text-gray-600 underline">
                   Ver todas las preguntas frecuentes
                 </a>
               </div>
@@ -653,7 +738,7 @@ export default function Home() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-2xl font-bold mb-4">Haz tu pregunta</h3>
+            <h3 className="text-2xl font-bold mb-4 uppercase">Haz tu pregunta</h3>
             <form onSubmit={handleSubmitQuestion}>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">Nombre</label>
@@ -688,10 +773,10 @@ export default function Home() {
                 />
               </div>
               <div className="flex justify-end space-x-2">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 text-xs tracking-[0.25em] uppercase">
                   Cancelar
                 </button>
-                <button type="submit" className="px-4 py-2 bg-[#006888] text-white rounded hover:bg-[#0e5a70]">
+                <button type="submit" className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-xs tracking-[0.25em] uppercase">
                   Enviar
                 </button>
               </div>
@@ -704,7 +789,7 @@ export default function Home() {
       {showOrderModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
-            <h3 className="text-2xl font-bold mb-4 text-green-600">¡Compra Confirmada!</h3>
+            <h3 className="text-2xl font-bold mb-4 text-green-600 uppercase">¡Compra Confirmada!</h3>
             <p className="text-lg mb-4">
               Gracias por tu compra <strong>{orderName}</strong>.<br />
               Te llegará un correo a <strong>{orderEmail}</strong> con información de tu compra.
@@ -713,7 +798,7 @@ export default function Home() {
             <div className="mt-6">
               <button
                 onClick={() => setShowOrderModal(false)}
-                className="px-6 py-2 bg-[#006888] text-white rounded hover:bg-[#0e5a70]"
+                className="px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-xs tracking-[0.25em] uppercase"
               >
                 Cerrar
               </button>
@@ -723,32 +808,41 @@ export default function Home() {
       )}
 
       {/* Atención y dudas */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-8">ATENCION Y DUDAS</h2>
-          <p className="text-lg mb-6">Selecciona la categoria:</p>
+      <section id="contacto" className="relative py-16 bg-white">
+        {/* Noise texture overlay */}
+        <div
+          className="absolute inset-0 opacity-20 pointer-events-none"
+          style={{
+            backgroundImage:
+              "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22 seed=%221%22/%3E%3C/filter%3E%3Crect width=%22200%22 height=%22200%22 fill=%22%23000%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')",
+            backgroundSize: '200px 200px',
+          }}
+        />
+        <div className="relative container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-8 text-gray-800 uppercase">ATENCIÓN Y DUDAS</h2>
+          <p className="text-lg mb-6 text-gray-700">Selecciona la categoria:</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <button
               onClick={() => { setSelectedTopic('Envíos'); setContactMessage('Pregunta sobre envíos: '); }}
-              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Envíos' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
+              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Envíos' ? 'bg-gray-800' : 'bg-gray-600'} text-white text-xs tracking-[0.25em] uppercase`}
             >
               Envíos
             </button>
             <button
               onClick={() => { setSelectedTopic('Pagos'); setContactMessage('Pregunta sobre pagos: '); }}
-              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Pagos' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
+              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Pagos' ? 'bg-gray-800' : 'bg-gray-600'} text-white text-xs tracking-[0.25em] uppercase`}
             >
               Pagos
             </button>
             <button
               onClick={() => { setSelectedTopic('Disponibilidad'); setContactMessage('Pregunta sobre disponibilidad: '); }}
-              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Disponibilidad' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
+              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Disponibilidad' ? 'bg-gray-800' : 'bg-gray-600'} text-white text-xs tracking-[0.25em] uppercase`}
             >
               Disponibilidad
             </button>
             <button
               onClick={() => { setSelectedTopic('Facturación'); setContactMessage('Pregunta sobre facturación: '); }}
-              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Facturación' ? 'bg-[#073752]' : 'bg-[#0c3550]'} text-white`}
+              className={`px-4 py-2 rounded hover:opacity-80 ${selectedTopic === 'Facturación' ? 'bg-gray-800' : 'bg-gray-600'} text-white text-xs tracking-[0.25em] uppercase`}
             >
               Facturación
             </button>
@@ -757,20 +851,20 @@ export default function Home() {
             <input
               type="email"
               placeholder="Tu email"
-              className="w-full p-2 mb-4 border rounded"
+              className="w-full p-2 mb-4 border rounded bg-white border-gray-300 text-gray-800 placeholder-gray-400"
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
               required
             />
             <textarea
               placeholder="Tu mensaje"
-              className="w-full p-2 mb-4 border rounded"
+              className="w-full p-2 mb-4 border rounded bg-white border-gray-300 text-gray-800 placeholder-gray-400"
               rows="4"
               value={contactMessage}
               onChange={(e) => setContactMessage(e.target.value)}
               required
             />
-            <button type="submit" className="bg-[#006888] text-white px-6 py-2 rounded hover:bg-[#0e5a70]">Enviar</button>
+            <button type="submit" className="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-700 text-xs tracking-[0.25em] uppercase">Enviar</button>
           </form>
         </div>
       </section>
