@@ -1,5 +1,7 @@
 import { CheckoutRedirectClient } from './client'
 
+export const dynamic = 'force-dynamic'
+
 export default function CheckoutRedirectPage() {
   return (
     <div className="min-h-screen bg-gray-50">
