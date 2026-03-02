@@ -18,8 +18,12 @@ export default function Home() {
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [introOffset, setIntroOffset] = useState(0);
   const [introTextProgress, setIntroTextProgress] = useState(0);
+  const [heroTitleProgress, setHeroTitleProgress] = useState(0);
+  const [heroTitleMaxDistance, setHeroTitleMaxDistance] = useState(160);
+  const heroSectionRef = useRef(null);
   const introSectionRef = useRef(null);
   const introTextRef = useRef(null);
+  const heroTitleRef = useRef(null);
   const trackRef = useRef(null);
 
   useEffect(() => {
@@ -55,6 +59,16 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const onResize = () => {
+      setHeroTitleMaxDistance(window.innerWidth < 768 ? 120 : 160);
+    };
+
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
     const onScroll = () => {
       if (!introTextRef.current) return;
 
@@ -72,9 +86,29 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      if (!heroSectionRef.current) return;
+
+      const rect = heroSectionRef.current.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const start = vh * 0.9;
+      const end = vh * 0.2;
+      const p = (start - rect.bottom) / (start - end);
+
+      setHeroTitleProgress(Math.min(Math.max(p, 0), 1));
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const introTextEase = introTextProgress * introTextProgress;
   const introTextTranslateX = 120 - introTextEase * 120;
   const introTextOpacity = 0.35 + introTextEase * 0.65;
+  const heroTitleEase = heroTitleProgress * heroTitleProgress;
+  const heroTitleTranslateX = -heroTitleEase * heroTitleMaxDistance;
 
   const handleSubmitQuestion = (e) => {
     e.preventDefault();
@@ -198,7 +232,8 @@ export default function Home() {
     if (!result) return;
 
     const { activeIndex, cards } = result;
-    const nextIndex = Math.min(Math.max(activeIndex + dir, 0), cards.length - 1);
+    const totalCards = cards.length;
+    const nextIndex = (activeIndex + dir + totalCards) % totalCards;
 
     cards[nextIndex].scrollIntoView({
       behavior: 'smooth',
@@ -260,7 +295,7 @@ export default function Home() {
           }}
         />
         {/* Hero Section */}
-        <section id="intro" className="relative text-white min-h-screen overflow-hidden flex items-center">
+        <section ref={heroSectionRef} id="intro" className="relative text-white min-h-screen overflow-hidden flex items-center">
           <div className="container mx-auto px-4 relative z-10">
             <div className="relative rounded-xl overflow-hidden p-6 md:p-10">
               {/* Background image with opacity */}
@@ -276,7 +311,14 @@ export default function Home() {
               {/* Content */}
               <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
                 <div className="md:w-1/2 text-center md:text-left">
-                  <h1 className="text-6xl md:text-7xl font-bold mb-4 animate__animated animate__fadeInDown uppercase text-gray-200">
+                  <h1
+                    ref={heroTitleRef}
+                    className="text-6xl md:text-7xl font-bold mb-4 uppercase text-gray-200"
+                    style={{
+                      transform: `translateX(${heroTitleTranslateX}px)`,
+                      transition: 'none',
+                    }}
+                  >
                     En el agua oscura
                   </h1>
                   <p className="text-lg tracking-[0.10em] mb-6 animate__animated animate__fadeInDown text-gray-200 ">
@@ -341,7 +383,7 @@ export default function Home() {
                 </div>
 
                 <div className="absolute bottom-3 left-4 text-[11px] tracking-widest text-gray-400">
-                  SCROLL
+                  IN DEO SPERAVI, NON TIMEBO.
                 </div>
               </div>
             </div>
@@ -399,9 +441,9 @@ export default function Home() {
                   Leer mas
                 </div>
                 <div className="h-px flex-1 mx-6 bg-black/20" />
-                <button className="text-xs tracking-[0.25em] text-black hover:opacity-70 transition uppercase">
+                <a href="/checkout" className="text-xs tracking-[0.25em] text-black hover:opacity-70 transition uppercase">
                   →
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -426,9 +468,7 @@ export default function Home() {
           }}
         />
 
-        <div className="relative container mx-auto px-4">
-         
-
+        <div className="relative mx-auto max-w-6xl px-4 bg-white/20 backdrop-blur-lg rounded-xl p-8">
           <div className="max-w-5xl mx-auto mb-4 flex items-center justify-between text-xs tracking-[0.25em] uppercase text-gray-300">
             <span>Relatos y experiencias destacadas</span>
             <span>{String(activeCardIndex + 1).padStart(2, '0')} / 03</span>
@@ -688,11 +728,21 @@ export default function Home() {
             </div>
             <div className="md:w-1/2">
               <h2 className="text-3xl font-bold mb-6 text-gray-800 uppercase">LIBRO FÍSICO</h2>
-              <p className="text-lg mb-4 text-gray-700">Enfoque visual y descriptivo del objeto físico. Detalles: formato, páginas, encuadernación.</p>
-              <p className="text-lg mb-6 text-gray-700">Valor diferencial del formato impreso.</p>
+              <p className="text-lg mb-4 text-gray-700">No es solo una historia.
+Es un objeto que se siente.
+
+Edición impresa en pasta blanda resistente, con 200 páginas cuidadosamente maquetadas para una lectura fluida y envolvente.
+Formato cómodo, pensado para sostenerse durante horas sin fatiga.
+
+El papel de tono cálido y textura suave permite que cada palabra respire.
+La encuadernación flexible facilita una apertura natural, conservando la integridad del ejemplar con el paso del tiempo.
+</p>
+              <p className="text-lg mb-6 text-gray-700">No es un archivo que se desliza y desaparece.
+Es tangible.
+Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
               
               <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-lg mb-6">
-                <p className="text-2xl font-bold mb-2 text-gray-800">Precio: $XX.XX</p>
+                <p className="text-2xl font-bold mb-2 text-gray-800">Precio: $450.00</p>
                 <p className="text-base mb-2 text-gray-600">Incluye: Libro físico + envío gratuito</p>
                 <p className="text-sm text-gray-500">Entrega en 5-7 días hábiles</p>
               </div>
@@ -704,7 +754,7 @@ export default function Home() {
       </section>
 
       {/* Sección Collage */}
-      <section className="relative py-20 bg-gray-900">
+      <section className="relative py-0 bg-gray-900">
         {/* Noise texture overlay */}
         <div
           className="absolute inset-0 opacity-40 pointer-events-none"
@@ -720,7 +770,7 @@ export default function Home() {
             alt="Collage"
             width={1600}
             height={900}
-            className="w-full rounded-xl shadow-2xl h-auto"
+            className="w-full rounded-none shadow-none h-auto"
             sizes="(min-width: 1024px) 1024px, 100vw"
           />
         </div>

@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
+const PHYSICAL_PRICE = 450
+const DIGITAL_PRICE = 300
+
 export default function Checkout() {
   const [physicalQuantity, setPhysicalQuantity] = useState(1)
   const [digitalQuantity, setDigitalQuantity] = useState(0)
@@ -67,7 +70,7 @@ export default function Checkout() {
 
     try {
       const orderId = generateOrderId()
-      const total = (physicalQuantity * 20) + (digitalQuantity * 10)
+      const total = (physicalQuantity * PHYSICAL_PRICE) + (digitalQuantity * DIGITAL_PRICE)
 
       const order = {
         physical: physicalQuantity,
@@ -92,7 +95,7 @@ export default function Checkout() {
     }
   }
 
-  const total = (physicalQuantity * 20) + (digitalQuantity * 10)
+  const total = (physicalQuantity * PHYSICAL_PRICE) + (digitalQuantity * DIGITAL_PRICE)
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -135,8 +138,8 @@ export default function Checkout() {
               <h2 className="text-xl font-semibold mb-4">Libro Físico</h2>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-700">Precio: $20.00</p>
-                  <p className="text-sm text-gray-500">Envío incluido</p>
+                  <p className="text-gray-700">Precio: $450.00</p>
+                  <p className="text-sm text-gray-500">Envío nacional incluido</p>
                   <p className="text-sm text-blue-600">Stock disponible: {stock} unidades</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -158,7 +161,7 @@ export default function Checkout() {
               <h2 className="text-xl font-semibold mb-4">Libro Digital</h2>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-700">Precio: $10.00</p>
+                  <p className="text-gray-700">Precio: $300.00</p>
                   <p className="text-sm text-gray-500">Descarga inmediata - Máximo 1 por usuario</p>
                 </div>
                 <div className="flex items-center">

@@ -24,10 +24,10 @@ export async function POST(request) {
       items.push({
         id: 'book-physical',
         title: 'Libro Físico',
-        description: `${physical} unidad(es) - Envío incluido`,
+        description: `${physical} unidad(es) - Envío nacional incluido`,
         quantity: physical,
         currency_id: 'MXN',
-        unit_price: 20
+        unit_price: 450
       });
     }
 
@@ -38,7 +38,7 @@ export async function POST(request) {
         description: `${digital} unidad(es) - Descarga inmediata`,
         quantity: digital,
         currency_id: 'MXN',
-        unit_price: 10
+        unit_price: 300
       });
     }
 
