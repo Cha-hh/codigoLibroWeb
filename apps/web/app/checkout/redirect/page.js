@@ -1,6 +1,8 @@
+import { Suspense } from 'react'
 import { CheckoutRedirectClient } from './client'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default function CheckoutRedirectPage() {
   return (
@@ -17,7 +19,9 @@ export default function CheckoutRedirectPage() {
         </div>
       </nav>
 
-      <CheckoutRedirectClient />
+      <Suspense fallback={<div className="p-8 text-center">Cargando…</div>}>
+        <CheckoutRedirectClient />
+      </Suspense>
     </div>
   )
 }
