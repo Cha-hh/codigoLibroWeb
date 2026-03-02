@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function DigitalCheckout() {
   const [name, setName] = useState('')
@@ -108,8 +109,8 @@ export default function DigitalCheckout() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex space-x-6">
-              <a href="/admin/login" className="text-blue-600 hover:text-blue-800 font-medium">Admin</a>
-              <a href="/" className="text-gray-700 hover:text-gray-800 font-medium">Libro</a>
+              <Link href="/admin/login" className="text-blue-600 hover:text-blue-800 font-medium">Admin</Link>
+              <Link href="/" className="text-gray-700 hover:text-gray-800 font-medium">Libro</Link>
             </div>
           </div>
         </div>

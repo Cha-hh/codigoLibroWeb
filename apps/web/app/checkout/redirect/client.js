@@ -9,16 +9,18 @@ export function CheckoutRedirectClient() {
   const [showThankYouPopup, setShowThankYouPopup] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
+  const searchParamsString = searchParams.toString()
 
   useEffect(() => {
     const processPayment = async () => {
-      const type = searchParams.get('type')
-      const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id')
-      const orderId = searchParams.get('orderId') || searchParams.get('external_reference')
-      const merchantOrderId = searchParams.get('merchant_order_id')
-      const statusParam = searchParams.get('status')
-        || searchParams.get('collection_status')
-        || searchParams.get('payment_status')
+      const params = new URLSearchParams(searchParamsString)
+      const type = params.get('type')
+      const paymentId = params.get('payment_id') || params.get('collection_id')
+      const orderId = params.get('orderId') || params.get('external_reference')
+      const merchantOrderId = params.get('merchant_order_id')
+      const statusParam = params.get('status')
+        || params.get('collection_status')
+        || params.get('payment_status')
         || type
 
       try {
@@ -129,7 +131,7 @@ export function CheckoutRedirectClient() {
     }
 
     processPayment()
-  }, [router, searchParams.toString()])
+  }, [router, searchParamsString])
 
   const handleClosePopup = () => {
     setShowThankYouPopup(false)

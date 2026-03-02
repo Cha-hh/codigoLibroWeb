@@ -293,10 +293,13 @@ export default function Home() {
                   </a>
                 </div>
                 <div className="md:w-1/2 flex justify-center">
-                  <img
+                  <Image
                     src="/images/autor-libro.jpg"
                     alt="Autor del libro"
-                    className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg"
+                    width={900}
+                    height={1200}
+                    className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg h-auto"
+                    priority
                   />
                 </div>
               </div>
@@ -647,7 +650,15 @@ export default function Home() {
             </div>
           </div>
           <div className="md:w-2/3 flex-shrink-0">
-            <img src="/images/autor.jpg" alt="El autor" className="w-full h-full object-cover" />
+            <div className="relative w-full h-full min-h-[320px]">
+              <Image
+                src="/images/autor.jpg"
+                alt="El autor"
+                fill
+                className="object-cover"
+                sizes="(min-width: 768px) 66vw, 100vw"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -666,7 +677,14 @@ export default function Home() {
         <div className="relative container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center gap-12 mb-16">
             <div className="md:w-1/2 flex justify-center">
-              <img src="/images/MockupLibro.jpg" alt="Libro físico" className="w-96 md:w-[500px] rounded-lg shadow-2xl" />
+              <Image
+                src="/images/MockupLibro.jpg"
+                alt="Libro físico"
+                width={500}
+                height={700}
+                className="w-96 md:w-[500px] rounded-lg shadow-2xl h-auto"
+                priority
+              />
             </div>
             <div className="md:w-1/2">
               <h2 className="text-3xl font-bold mb-6 text-gray-800 uppercase">LIBRO FÍSICO</h2>
@@ -697,10 +715,13 @@ export default function Home() {
           }}
         />
         <div className="relative container mx-auto px-4">
-          <img 
-            src="/images/colage.jpg" 
-            alt="Collage" 
-            className="w-full rounded-xl shadow-2xl"
+          <Image
+            src="/images/colage.jpg"
+            alt="Collage"
+            width={1600}
+            height={900}
+            className="w-full rounded-xl shadow-2xl h-auto"
+            sizes="(min-width: 1024px) 1024px, 100vw"
           />
         </div>
       </section>

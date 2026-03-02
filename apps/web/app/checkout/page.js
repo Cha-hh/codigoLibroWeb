@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import Link from 'next/link'
 
 export default function Checkout() {
   const [physicalQuantity, setPhysicalQuantity] = useState(1)
@@ -99,8 +101,8 @@ export default function Checkout() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex space-x-6">
-              <a href="/admin/login" className="text-blue-600 hover:text-blue-800 font-medium">Admin</a>
-              <a href="/" className="text-gray-700 hover:text-gray-800 font-medium">Libro</a>
+              <Link href="/admin/login" className="text-blue-600 hover:text-blue-800 font-medium">Admin</Link>
+              <Link href="/" className="text-gray-700 hover:text-gray-800 font-medium">Libro</Link>
             </div>
           </div>
         </div>
@@ -112,10 +114,13 @@ export default function Checkout() {
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
           <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
             <div className="md:w-1/2 flex-shrink-0 flex justify-center">
-              <img
+              <Image
                 src="/images/MockupLibro.jpg"
                 alt="Libro"
+                width={500}
+                height={700}
                 className="w-full max-w-sm md:max-w-md h-auto rounded-lg shadow"
+                priority
               />
             </div>
             <div className="md:w-1/2">

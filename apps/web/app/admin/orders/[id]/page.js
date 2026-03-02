@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 
 export default function OrderDetail() {
   const { id } = useParams()
@@ -50,7 +51,7 @@ export default function OrderDetail() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Pedido no encontrado</h1>
-          <a href="/admin/orders" className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Volver a Pedidos</a>
+          <Link href="/admin/orders" className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Volver a Pedidos</Link>
         </div>
         <p className="text-gray-600">No se encontró información para el pedido #{id}.</p>
       </div>
@@ -81,7 +82,7 @@ export default function OrderDetail() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Detalle del Pedido #{id}</h1>
-        <a href="/admin/orders" className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Volver a Pedidos</a>
+        <Link href="/admin/orders" className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Volver a Pedidos</Link>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
