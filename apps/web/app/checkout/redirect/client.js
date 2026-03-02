@@ -129,7 +129,7 @@ export function CheckoutRedirectClient() {
     }
 
     processPayment()
-  }, [searchParams, router])
+  }, [router, searchParams.toString()])
 
   const handleClosePopup = () => {
     setShowThankYouPopup(false)
