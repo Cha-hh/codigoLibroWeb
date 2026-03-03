@@ -55,42 +55,42 @@ export default function FaqAdmin() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Administrar FAQ</h1>
-      <form onSubmit={handleSubmit} className="mb-8">
+    <div className="max-w-5xl mx-auto px-2 sm:px-4 py-8 text-gray-100">
+      <h1 className="text-3xl font-bold mb-8 uppercase tracking-[0.2em]">Administrar FAQ</h1>
+      <form onSubmit={handleSubmit} className="mb-8 bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Pregunta</label>
+          <label className="block text-xs font-medium tracking-[0.18em] uppercase mb-2 text-gray-200">Pregunta</label>
           <input
             type="text"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
             required
           />
         </div>
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Respuesta</label>
+          <label className="block text-xs font-medium tracking-[0.18em] uppercase mb-2 text-gray-200">Respuesta</label>
           <textarea
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
             rows="4"
             required
           />
         </div>
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        <button type="submit" className="bg-gray-800 text-white px-6 py-3 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase">
           {editingId ? 'Actualizar' : 'Agregar'} FAQ
         </button>
       </form>
       <div>
-        <h2 className="text-2xl font-bold mb-4">FAQ Existentes</h2>
+        <h2 className="text-2xl font-bold mb-4 uppercase tracking-[0.14em]">FAQ Existentes</h2>
         {faq.map((item) => (
-          <div key={item.id} className="border p-4 mb-4 rounded">
-            <h3 className="font-semibold">{item.question}</h3>
-            <p>{item.answer}</p>
+          <div key={item.id} className="bg-white/10 backdrop-blur-lg border border-white/20 p-4 mb-4 rounded-2xl shadow-lg">
+            <h3 className="font-semibold text-gray-100">{item.question}</h3>
+            <p className="text-gray-300">{item.answer}</p>
             <div className="mt-2">
-              <button onClick={() => handleEdit(item)} className="bg-yellow-500 text-white px-2 py-1 rounded mr-2">Editar</button>
-              <button onClick={() => handleDelete(item.id)} className="bg-red-500 text-white px-2 py-1 rounded">Eliminar</button>
+              <button onClick={() => handleEdit(item)} className="bg-white/15 text-gray-100 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase mr-2 hover:bg-white/25 transition">Editar</button>
+              <button onClick={() => handleDelete(item.id)} className="bg-black/40 text-gray-200 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-black/60 transition">Eliminar</button>
             </div>
           </div>
         ))}

@@ -76,31 +76,31 @@ export default function InventoryAdmin() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Gestión de Inventario</h1>
+    <div className="max-w-6xl mx-auto px-2 sm:px-4 py-8 text-gray-100">
+      <h1 className="text-3xl font-bold mb-6 uppercase tracking-[0.2em]">Gestión de Inventario</h1>
 
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Control de Unidades Restantes</h2>
+        <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Control de Unidades Restantes</h2>
         <div className="space-y-4">
           {loading ? (
-            <p className="text-gray-500 text-center py-8">Cargando inventario...</p>
+            <p className="text-gray-300 text-center py-8">Cargando inventario...</p>
           ) : Object.keys(stock).length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No hay inventario disponible o error al cargar.</p>
+            <p className="text-gray-300 text-center py-8">No hay inventario disponible o error al cargar.</p>
           ) : (
             Object.entries(stock).map(([id, item]) => {
               return (
-                <div key={id} className="bg-white p-6 rounded-lg shadow">
+                <div key={id} className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold">{item.title}</h3>
-                      <p className="text-gray-600">ID: {id}</p>
+                      <h3 className="text-lg font-semibold text-gray-100">{item.title}</h3>
+                      <p className="text-gray-300">ID: {id}</p>
                     </div>
                     <div className="text-right">
                       {editingId === id ? (
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => setNewQuantity(Math.max(0, parseInt(newQuantity) - 1).toString())}
-                            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                            className="bg-black/40 text-gray-200 px-2 py-1 rounded-full hover:bg-black/60 transition"
                           >
                             -
                           </button>
@@ -108,24 +108,24 @@ export default function InventoryAdmin() {
                             type="number"
                             value={newQuantity}
                             onChange={(e) => setNewQuantity(e.target.value)}
-                            className="border border-gray-300 rounded px-2 py-1 w-20 text-center"
+                            className="bg-black/20 border border-white/20 rounded-lg px-2 py-1 w-20 text-center text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                             min="0"
                           />
                           <button
                             onClick={() => setNewQuantity((parseInt(newQuantity) + 1).toString())}
-                            className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                            className="bg-white/15 text-gray-100 px-2 py-1 rounded-full hover:bg-white/25 transition"
                           >
                             +
                           </button>
                           <button
                             onClick={() => updateStock(id, newQuantity)}
-                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                            className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs tracking-[0.16em] uppercase hover:bg-gray-700 transition"
                           >
                             Guardar
                           </button>
                           <button
                             onClick={() => setEditingId(null)}
-                            className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
+                            className="bg-white/15 text-gray-100 px-3 py-1 rounded-full text-xs tracking-[0.16em] uppercase hover:bg-white/25 transition"
                           >
                             Cancelar
                           </button>
@@ -134,15 +134,15 @@ export default function InventoryAdmin() {
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => updateStock(id, item.quantity - 1)}
-                            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                            className="bg-black/40 text-gray-200 px-2 py-1 rounded-full hover:bg-black/60 transition"
                             disabled={item.quantity <= 0}
                           >
                             -1
                           </button>
-                          <span className="text-xl font-bold">Cantidad: {item.quantity}</span>
+                          <span className="text-xl font-bold text-gray-100">Cantidad: {item.quantity}</span>
                           <button
                             onClick={() => updateStock(id, item.quantity + 1)}
-                            className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                            className="bg-white/15 text-gray-100 px-2 py-1 rounded-full hover:bg-white/25 transition"
                           >
                             +1
                           </button>
@@ -151,7 +151,7 @@ export default function InventoryAdmin() {
                               setEditingId(id)
                               setNewQuantity(item.quantity.toString())
                             }}
-                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                            className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs tracking-[0.16em] uppercase hover:bg-gray-700 transition"
                           >
                             Editar
                           </button>
@@ -168,54 +168,54 @@ export default function InventoryAdmin() {
 
       {/* Estadísticas de Ventas */}
       <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Estadísticas de Ventas</h2>
+        <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Estadísticas de Ventas</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-700">Total de Órdenes</h3>
-            <p className="text-3xl font-bold text-blue-600">{getSalesStats().totalOrders}</p>
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-200">Total de Órdenes</h3>
+            <p className="text-3xl font-bold text-gray-100">{getSalesStats().totalOrders}</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-700">Libros Físicos Vendidos</h3>
-            <p className="text-3xl font-bold text-green-600">{getSalesStats().totalPhysicalSold}</p>
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-200">Libros Físicos Vendidos</h3>
+            <p className="text-3xl font-bold text-gray-100">{getSalesStats().totalPhysicalSold}</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-700">Libros Digitales Vendidos</h3>
-            <p className="text-3xl font-bold text-purple-600">{getSalesStats().totalDigitalSold}</p>
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-200">Libros Digitales Vendidos</h3>
+            <p className="text-3xl font-bold text-gray-100">{getSalesStats().totalDigitalSold}</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-700">Ingresos Totales</h3>
-            <p className="text-3xl font-bold text-yellow-600">${getSalesStats().totalRevenue.toFixed(2)}</p>
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-200">Ingresos Totales</h3>
+            <p className="text-3xl font-bold text-gray-100">${getSalesStats().totalRevenue.toFixed(2)}</p>
           </div>
         </div>
 
-        <h3 className="text-xl font-semibold mb-4">Historial de Ventas Recientes</h3>
+        <h3 className="text-xl font-semibold mb-4 uppercase tracking-[0.14em]">Historial de Ventas Recientes</h3>
         <div className="space-y-4">
           {orders.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No hay ventas registradas aún.</p>
+            <p className="text-gray-300 text-center py-8">No hay ventas registradas aún.</p>
           ) : (
             orders.slice(0, 10).map((order) => (
-              <div key={order.id} className="bg-white p-6 rounded-lg shadow">
+              <div key={order.id} className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h4 className="text-lg font-semibold">Orden #{order.id}</h4>
-                    <p className="text-gray-600">Cliente: {order.shipping?.name} ({order.shipping?.email})</p>
-                    <p className="text-sm text-gray-500">Fecha: {new Date(order.createdAt).toLocaleString()}</p>
+                    <h4 className="text-lg font-semibold text-gray-100">Orden #{order.id}</h4>
+                    <p className="text-gray-300">Cliente: {order.shipping?.name} ({order.shipping?.email})</p>
+                    <p className="text-sm text-gray-400">Fecha: {new Date(order.createdAt).toLocaleString()}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold">Total: ${order.total?.toFixed(2)}</p>
-                    <p className="text-sm text-gray-500">Estado: {order.status}</p>
+                    <p className="text-lg font-bold text-gray-100">Total: ${order.total?.toFixed(2)}</p>
+                    <p className="text-sm text-gray-400">Estado: {order.status}</p>
                   </div>
                 </div>
                 <div className="mb-4">
-                  <h5 className="font-semibold mb-2">Productos:</h5>
-                  <ul className="list-disc list-inside text-sm">
+                  <h5 className="font-semibold mb-2 text-gray-200">Productos:</h5>
+                  <ul className="list-disc list-inside text-sm text-gray-300">
                     <li>Libro Físico: {order.physical} unidades</li>
                     <li>Libro Digital: {order.digital} unidades</li>
                   </ul>
                 </div>
                 <div>
-                  <h5 className="font-semibold mb-2">Dirección de Envío:</h5>
-                  <p className="text-sm text-gray-600">
+                  <h5 className="font-semibold mb-2 text-gray-200">Dirección de Envío:</h5>
+                  <p className="text-sm text-gray-300">
                     {order.shipping?.address}, {order.shipping?.city}, {order.shipping?.postalCode}, {order.shipping?.country}
                   </p>
                 </div>

@@ -104,20 +104,20 @@ export default function DigitalCheckout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-md">
+    <div
+      className="min-h-screen"
+      style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f6 55%, #d1d5db 100%)' }}
+    >
+      <nav className="bg-black/70 backdrop-blur-md shadow-md border-b border-black/10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex space-x-6">
-              <Link href="/admin/login" className="text-blue-600 hover:text-blue-800 font-medium">Admin</Link>
-              <Link href="/" className="text-gray-700 hover:text-gray-800 font-medium">Libro</Link>
-            </div>
+          <div className="flex justify-center items-center">
+            <Link href="/" className="text-gray-200 hover:text-white text-xs tracking-[0.25em] transition uppercase">Volver al Libro</Link>
           </div>
         </div>
       </nav>
 
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Datos para envío digital</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center uppercase tracking-[0.2em]">Datos para envío digital</h1>
 
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
           {!mpStatus.ok && (
@@ -126,7 +126,7 @@ export default function DigitalCheckout() {
             </div>
           )}
           <div className="mb-8 p-4 bg-gray-100 rounded">
-            <h2 className="text-xl font-semibold mb-4">Resumen de tu pedido</h2>
+            <h2 className="text-xl font-semibold mb-4 uppercase tracking-[0.14em]">Resumen de tu pedido</h2>
             <div className="space-y-2">
               <p><strong>Libro Digital:</strong> {order.digital} unidades</p>
               <p><strong>Total:</strong> ${order.total.toFixed(2)}</p>
@@ -136,24 +136,24 @@ export default function DigitalCheckout() {
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 gap-6">
               <div>
-                <label className="block text-gray-700 mb-2">Nombre Completo</label>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Nombre Completo</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                   placeholder="Ingresa tu nombre completo"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Correo Electrónico</label>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Correo Electrónico</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                   placeholder="tu@email.com"
                   required
                 />
@@ -162,7 +162,7 @@ export default function DigitalCheckout() {
 
             <button
               type="submit"
-              className="w-full mt-8 bg-blue-500 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-600 transition disabled:bg-gray-400"
+              className="w-full mt-8 bg-gray-800 text-white py-3 px-6 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
               {loading ? 'Procesando...' : 'Pagar con Mercado Pago'}

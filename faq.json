@@ -28,17 +28,5 @@
     "question": "¿Hay una versión digital disponible?",
     "answer": "Actualmente, el libro solo está disponible en formato físico. No hay planes para una versión digital en este momento.",
     "createdAt": "2024-12-16T10:00:00.000Z"
-  },
-  {
-    "id": 7,
-    "question": "Prueba Prueba?",
-    "answer": "SI SI",
-    "createdAt": "2026-01-13T22:52:03.084Z"
-  },
-  {
-    "id": 8,
-    "question": "prueba2 ?",
-    "answer": "Prueba 222",
-    "createdAt": "2026-02-10T05:15:16.201Z"
   }
 ]

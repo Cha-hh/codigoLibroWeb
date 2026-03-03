@@ -60,25 +60,25 @@ export default function Orders() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800'
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'processing': return 'bg-blue-100 text-blue-800'
-      case 'shipped': return 'bg-green-100 text-green-800'
-      case 'delivered': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'approved': return 'bg-white/15 text-gray-100 border border-white/20'
+      case 'pending': return 'bg-white/10 text-gray-200 border border-white/20'
+      case 'processing': return 'bg-white/20 text-white border border-white/25'
+      case 'shipped': return 'bg-white/15 text-gray-100 border border-white/20'
+      case 'delivered': return 'bg-black/30 text-gray-300 border border-white/10'
+      default: return 'bg-black/30 text-gray-300 border border-white/10'
     }
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Gestión de Pedidos</h1>
+    <div className="max-w-6xl mx-auto px-2 sm:px-4 py-8 text-gray-100">
+        <h1 className="text-3xl font-bold mb-6 uppercase tracking-[0.2em]">Gestión de Pedidos</h1>
 
         {/* Filtros */}
-        <div className="mb-6 flex space-x-4">
+        <div className="mb-6 flex flex-wrap gap-4">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="border border-gray-300 rounded px-4 py-2"
+            className="bg-black/20 border border-white/20 text-gray-100 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
           >
             <option value="">Todos los tipos</option>
             <option value="physical">Libro Físico</option>
@@ -87,7 +87,7 @@ export default function Orders() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-300 rounded px-4 py-2"
+            className="bg-black/20 border border-white/20 text-gray-100 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
           >
             <option value="">Todos los estados</option>
             <option value="approved">Aprobado</option>
@@ -99,52 +99,52 @@ export default function Orders() {
         </div>
 
         {/* Tabla de pedidos */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg overflow-hidden">
           <table className="w-full table-auto border-collapse">
-            <thead className="bg-gray-50">
+            <thead className="bg-black/30">
               <tr>
-                <th className="border border-gray-300 px-4 py-2 text-left">ID</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Cliente</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Productos</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Estado</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Fecha</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Acciones</th>
+                <th className="border border-white/10 px-4 py-3 text-left text-xs uppercase tracking-[0.18em] text-gray-300">ID</th>
+                <th className="border border-white/10 px-4 py-3 text-left text-xs uppercase tracking-[0.18em] text-gray-300">Cliente</th>
+                <th className="border border-white/10 px-4 py-3 text-left text-xs uppercase tracking-[0.18em] text-gray-300">Productos</th>
+                <th className="border border-white/10 px-4 py-3 text-left text-xs uppercase tracking-[0.18em] text-gray-300">Estado</th>
+                <th className="border border-white/10 px-4 py-3 text-left text-xs uppercase tracking-[0.18em] text-gray-300">Fecha</th>
+                <th className="border border-white/10 px-4 py-3 text-left text-xs uppercase tracking-[0.18em] text-gray-300">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="border border-gray-300 px-4 py-8 text-center text-gray-500">
+                  <td colSpan="6" className="border border-white/10 px-4 py-8 text-center text-gray-300">
                     No hay pedidos que coincidan con los filtros.
                   </td>
                 </tr>
               ) : (
                 filteredOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td className="border border-gray-300 px-4 py-2">{order.id}</td>
-                    <td className="border border-gray-300 px-4 py-2">{order.shipping?.name || 'N/A'}</td>
-                    <td className="border border-gray-300 px-4 py-2">
+                  <tr key={order.id} className="hover:bg-white/5 transition">
+                    <td className="border border-white/10 px-4 py-2 text-gray-100">{order.id}</td>
+                    <td className="border border-white/10 px-4 py-2 text-gray-200">{order.shipping?.name || 'N/A'}</td>
+                    <td className="border border-white/10 px-4 py-2 text-gray-200">
                       {order.physical > 0 && `Físico: ${order.physical}`}
                       {order.physical > 0 && order.digital > 0 && ', '}
                       {order.digital > 0 && `Digital: ${order.digital}`}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <span className={`px-2 py-1 rounded ${getStatusColor(order.status)}`}>
+                    <td className="border border-white/10 px-4 py-2">
+                      <span className={`px-3 py-1 rounded-full text-xs uppercase tracking-[0.16em] ${getStatusColor(order.status)}`}>
                         {order.status === 'approved' ? 'Aprobado' :
                          order.status === 'pending' ? 'Pendiente' :
                          order.status === 'processing' ? 'Procesando' :
                          order.status === 'shipped' ? 'Enviado' : 'Entregado'}
                       </span>
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">
+                    <td className="border border-white/10 px-4 py-2 text-gray-300">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <a href={`/admin/orders/${order.id}`} className="text-blue-500 hover:text-blue-700 mr-2">Ver</a>
+                    <td className="border border-white/10 px-4 py-2">
+                      <a href={`/admin/orders/${order.id}`} className="text-gray-200 hover:text-white mr-3 text-xs uppercase tracking-[0.14em]">Ver</a>
                       {order.status === 'pending' && (
                         <button
                           onClick={() => updateOrderStatus(order.id, 'processing')}
-                          className="text-green-500 hover:text-green-700 mr-2"
+                          className="text-gray-300 hover:text-gray-100 mr-3 text-xs uppercase tracking-[0.14em]"
                         >
                           Procesar
                         </button>
@@ -152,7 +152,7 @@ export default function Orders() {
                       {order.status === 'processing' && (
                         <button
                           onClick={() => updateOrderStatus(order.id, 'shipped')}
-                          className="text-green-500 hover:text-green-700 mr-2"
+                          className="text-gray-300 hover:text-gray-100 mr-3 text-xs uppercase tracking-[0.14em]"
                         >
                           Enviar
                         </button>
@@ -160,12 +160,12 @@ export default function Orders() {
                       {order.status === 'shipped' && (
                         <button
                           onClick={() => updateOrderStatus(order.id, 'delivered')}
-                          className="text-green-500 hover:text-green-700 mr-2"
+                          className="text-gray-300 hover:text-gray-100 mr-3 text-xs uppercase tracking-[0.14em]"
                         >
                           Entregar
                         </button>
                       )}
-                      <button className="text-red-500 hover:text-red-700">Cancelar</button>
+                      <button className="text-gray-400 hover:text-gray-200 text-xs uppercase tracking-[0.14em]">Cancelar</button>
                     </td>
                   </tr>
                 ))

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('')
@@ -9,7 +8,6 @@ export default function ChangePassword() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const router = useRouter()
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -41,43 +39,43 @@ export default function ChangePassword() {
   }
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Cambiar Contraseña</h1>
-      <div className="bg-white p-6 rounded-lg shadow max-w-md">
+    <div className="max-w-2xl px-2 sm:px-4 py-8 text-gray-100">
+      <h1 className="text-3xl font-bold mb-6 uppercase tracking-[0.2em]">Cambiar Contraseña</h1>
+      <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg max-w-md">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700">Contraseña Actual</label>
+            <label className="block text-gray-200 text-xs tracking-[0.18em] uppercase mb-2">Contraseña Actual</label>
             <input
               type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Nueva Contraseña</label>
+            <label className="block text-gray-200 text-xs tracking-[0.18em] uppercase mb-2">Nueva Contraseña</label>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Confirmar Nueva Contraseña</label>
+            <label className="block text-gray-200 text-xs tracking-[0.18em] uppercase mb-2">Confirmar Nueva Contraseña</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
               required
             />
           </div>
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          {success && <p className="text-green-500 mb-4">{success}</p>}
-          <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Cambiar Contraseña</button>
+          {error && <p className="text-red-300 mb-4">{error}</p>}
+          {success && <p className="text-gray-200 mb-4">{success}</p>}
+          <button type="submit" className="w-full bg-gray-800 text-white px-6 py-3 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase">Cambiar Contraseña</button>
         </form>
       </div>
     </div>

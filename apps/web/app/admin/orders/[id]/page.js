@@ -43,12 +43,22 @@ export default function OrderDetail() {
   }, [id])
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8">Cargando pedido...</div>
+    return (
+      <div
+        className="container mx-auto px-4 py-8 min-h-[70vh]"
+        style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f6 55%, #d1d5db 100%)' }}
+      >
+        Cargando pedido...
+      </div>
+    )
   }
 
   if (!orderData) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div
+        className="container mx-auto px-4 py-8 min-h-[70vh]"
+        style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f6 55%, #d1d5db 100%)' }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Pedido no encontrado</h1>
           <Link href="/admin/orders" className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Volver a Pedidos</Link>
@@ -79,7 +89,10 @@ export default function OrderDetail() {
             : orderData.status || 'Pendiente'
 
   return (
-    <div>
+    <div
+      className="min-h-[70vh] p-6 rounded-2xl"
+      style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f6 55%, #d1d5db 100%)' }}
+    >
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Detalle del Pedido #{id}</h1>
         <Link href="/admin/orders" className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Volver a Pedidos</Link>

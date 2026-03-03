@@ -95,6 +95,34 @@ export default function Tickets() {
     loadFaqs()
   }
 
+  const deleteClosedQuestion = async (questionToDelete) => {
+    const confirmed = window.confirm('¿Eliminar esta pregunta cerrada? También se eliminará de FAQ si existe.')
+    if (!confirmed) return
+
+    const updatedQuestions = questions.filter(q => q.id !== questionToDelete.id)
+    setQuestions(updatedQuestions)
+    localStorage.setItem('bookQuestions', JSON.stringify(updatedQuestions))
+
+    try {
+      const questionText = (questionToDelete.question || '').trim().toLowerCase()
+      const relatedFaqs = faqs.filter((item) => (item.question || '').trim().toLowerCase() === questionText)
+
+      await Promise.all(
+        relatedFaqs.map((item) =>
+          fetch('/api/faq', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: item.id }),
+          })
+        )
+      )
+
+      loadFaqs()
+    } catch (error) {
+      console.error('Error eliminando FAQ relacionada:', error)
+    }
+  }
+
   const filteredQuestions = questions.filter(q => {
     const matchesType = !filterType || q.type === filterType
     const matchesStatus = !filterStatus || q.status === filterStatus
@@ -103,35 +131,35 @@ export default function Tickets() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'abierto': return 'bg-red-100 text-red-800'
-      case 'respondido': return 'bg-yellow-100 text-yellow-800'
-      case 'cerrado': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'abierto': return 'bg-white/10 text-gray-200 border border-white/20'
+      case 'respondido': return 'bg-white/15 text-gray-100 border border-white/20'
+      case 'cerrado': return 'bg-black/30 text-gray-300 border border-white/10'
+      default: return 'bg-black/30 text-gray-300 border border-white/10'
     }
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Gestión de Preguntas del Libro</h1>
+    <div className="max-w-6xl mx-auto px-2 sm:px-4 py-8 text-gray-100">
+      <h1 className="text-3xl font-bold mb-6 uppercase tracking-[0.2em]">Gestión de Preguntas del Libro</h1>
 
       {/* Pestañas */}
       <div className="mb-6">
-        <nav className="flex space-x-4">
+        <nav className="flex flex-wrap gap-3">
           <button
             onClick={() => setActiveTab('preguntas')}
-            className={`px-4 py-2 rounded ${activeTab === 'preguntas' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+            className={`px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase transition ${activeTab === 'preguntas' ? 'bg-gray-800 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
           >
             Preguntas Recibidas
           </button>
           <button
             onClick={() => setActiveTab('cerradas')}
-            className={`px-4 py-2 rounded ${activeTab === 'cerradas' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+            className={`px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase transition ${activeTab === 'cerradas' ? 'bg-gray-800 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
           >
             Preguntas Cerradas
           </button>
           <button
             onClick={() => setActiveTab('faq')}
-            className={`px-4 py-2 rounded ${activeTab === 'faq' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+            className={`px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase transition ${activeTab === 'faq' ? 'bg-gray-800 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
           >
             Preguntas Frecuentes (FAQ)
           </button>
@@ -140,14 +168,14 @@ export default function Tickets() {
 
       {activeTab === 'preguntas' && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4">Preguntas Recibidas</h2>
+          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas Recibidas</h2>
 
           {/* Filtros */}
-          <div className="mb-6 flex space-x-4">
+          <div className="mb-6 flex flex-wrap gap-4">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="border border-gray-300 rounded px-4 py-2"
+              className="bg-black/20 border border-white/20 text-gray-100 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
             >
               <option value="">Todos los tipos</option>
               <option value="pregunta">Pregunta sobre el libro</option>
@@ -157,7 +185,7 @@ export default function Tickets() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 rounded px-4 py-2"
+              className="bg-black/20 border border-white/20 text-gray-100 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
             >
               <option value="">Todos los estados</option>
               <option value="abierto">Abierto</option>
@@ -169,36 +197,36 @@ export default function Tickets() {
           {/* Lista de preguntas */}
           <div className="space-y-4">
             {filteredQuestions.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No hay preguntas que coincidan con los filtros.</p>
+              <p className="text-gray-300 text-center py-8">No hay preguntas que coincidan con los filtros.</p>
             ) : (
               filteredQuestions.map((q) => (
-                <div key={q.id} className="bg-white p-6 rounded-lg shadow">
+                <div key={q.id} className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold">{q.name} - {q.question}</h3>
-                      <p className="text-gray-600">Email: {q.email}</p>
-                      <p className="text-sm text-gray-500">{new Date(q.createdAt).toLocaleString()}</p>
+                      <h3 className="text-lg font-semibold text-gray-100">{q.name} - {q.question}</h3>
+                      <p className="text-gray-300">Email: {q.email}</p>
+                      <p className="text-sm text-gray-400">{new Date(q.createdAt).toLocaleString()}</p>
                     </div>
-                    <span className={`px-2 py-1 rounded text-sm ${getStatusColor(q.status)}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs tracking-[0.18em] uppercase ${getStatusColor(q.status)}`}>
                       {q.status === 'abierto' ? 'Abierto' : q.status === 'respondido' ? 'Respondido' : 'Cerrado'}
                     </span>
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => openAnswerModal(q)}
-                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                      className="bg-gray-800 text-white px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-700 transition"
                     >
                       Responder y Agregar a FAQ
                     </button>
                     <button
                       onClick={() => updateQuestionStatus(q.id, 'respondido')}
-                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                      className="bg-white/15 text-gray-100 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-white/25 transition"
                     >
                       Marcar como Respondido
                     </button>
                     <button
                       onClick={() => updateQuestionStatus(q.id, 'cerrado')}
-                      className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                      className="bg-black/40 text-gray-200 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-black/60 transition"
                     >
                       Cerrar
                     </button>
@@ -212,27 +240,33 @@ export default function Tickets() {
 
       {activeTab === 'cerradas' && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4">Preguntas Cerradas</h2>
+          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas Cerradas</h2>
           <div className="space-y-4">
             {questions.filter(q => q.status === 'cerrado').length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No hay preguntas cerradas.</p>
+              <p className="text-gray-300 text-center py-8">No hay preguntas cerradas.</p>
             ) : (
               questions.filter(q => q.status === 'cerrado').map((q) => (
-                <div key={q.id} className="bg-white p-6 rounded-lg shadow">
+                <div key={q.id} className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold">{q.name} - {q.question}</h3>
-                      <p className="text-gray-600">Email: {q.email}</p>
-                      <p className="text-sm text-gray-500">{new Date(q.createdAt).toLocaleString()}</p>
+                      <h3 className="text-lg font-semibold text-gray-100">{q.name} - {q.question}</h3>
+                      <p className="text-gray-300">Email: {q.email}</p>
+                      <p className="text-sm text-gray-400">{new Date(q.createdAt).toLocaleString()}</p>
                     </div>
-                    <span className="px-2 py-1 rounded text-sm bg-gray-100 text-gray-800">Cerrado</span>
+                    <span className="px-3 py-1 rounded-full text-xs tracking-[0.18em] uppercase bg-black/30 text-gray-300 border border-white/10">Cerrado</span>
                   </div>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => addToFaq(q)}
-                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                      className="bg-gray-800 text-white px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-700 transition"
                     >
                       Agregar a FAQ
+                    </button>
+                    <button
+                      onClick={() => deleteClosedQuestion(q)}
+                      className="bg-black/40 text-gray-200 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-black/60 transition"
+                    >
+                      Eliminar
                     </button>
                   </div>
                 </div>
@@ -244,30 +278,30 @@ export default function Tickets() {
 
       {activeTab === 'faq' && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4">Preguntas Frecuentes (FAQ)</h2>
+          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas Frecuentes (FAQ)</h2>
           <div className="space-y-4">
             {faqs.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No hay preguntas frecuentes aún.</p>
+              <p className="text-gray-300 text-center py-8">No hay preguntas frecuentes aún.</p>
             ) : (
               faqs.map((faq) => (
-                <div key={faq.id} className="bg-white p-6 rounded-lg shadow">
+                <div key={faq.id} className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
                   <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-2">{faq.question}</h3>
+                    <h3 className="text-lg font-semibold mb-2 text-gray-100">{faq.question}</h3>
                     <textarea
                       value={faq.answer}
                       onChange={(e) => updateFaqAnswer(faq.id, e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded"
+                      className="w-full p-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                       rows="3"
                       placeholder="Escribe la respuesta..."
                     />
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-400 mt-1">
                       {faq.createdAt ? `Creado: ${new Date(faq.createdAt).toLocaleDateString()}` : 'FAQ existente'}
                     </p>
                   </div>
                   <div className="flex justify-end">
                     <button
                       onClick={() => deleteFaq(faq.id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                      className="bg-black/40 text-gray-200 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-black/60 transition"
                     >
                       Eliminar FAQ
                     </button>
@@ -281,19 +315,19 @@ export default function Tickets() {
 
       {/* Modal para responder pregunta */}
       {showAnswerModal && selectedQuestion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full mx-4">
-            <h3 className="text-2xl font-bold mb-4">Responder Pregunta</h3>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-8 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 text-gray-100">
+            <h3 className="text-2xl font-bold mb-4 uppercase tracking-[0.14em]">Responder Pregunta</h3>
             <div className="mb-4">
               <h4 className="font-semibold mb-2">Pregunta de {selectedQuestion.name}:</h4>
-              <p className="bg-gray-100 p-3 rounded">{selectedQuestion.question}</p>
+              <p className="bg-black/30 border border-white/10 p-3 rounded-lg text-gray-200">{selectedQuestion.question}</p>
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Tu Respuesta:</label>
+              <label className="block text-sm font-medium mb-2 uppercase tracking-[0.12em]">Tu Respuesta:</label>
               <textarea
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded"
+                className="w-full p-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                 rows="6"
                 placeholder="Escribe una respuesta detallada..."
               />
@@ -301,14 +335,14 @@ export default function Tickets() {
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setShowAnswerModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                className="px-4 py-2 bg-white/15 text-gray-100 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-white/25 transition"
               >
                 Cancelar
               </button>
               <button
                 onClick={submitAnswer}
                 disabled={!answer.trim()}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+                className="px-4 py-2 bg-gray-800 text-white rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Agregar a FAQ y Cerrar
               </button>
