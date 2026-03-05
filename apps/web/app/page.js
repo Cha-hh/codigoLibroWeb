@@ -94,11 +94,9 @@ export default function Home() {
     const onScroll = () => {
       if (!heroSectionRef.current) return;
 
-      const rect = heroSectionRef.current.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const start = vh * 0.9;
-      const end = vh * 0.2;
-      const p = (start - rect.bottom) / (start - end);
+      // Inicia la animacion desde el primer scroll hacia abajo.
+      const triggerDistance = Math.max(heroSectionRef.current.offsetHeight * 0.35, 1);
+      const p = window.scrollY / triggerDistance;
 
       setHeroTitleProgress(Math.min(Math.max(p, 0), 1));
     };
@@ -111,7 +109,7 @@ export default function Home() {
   const introTextEase = introTextProgress * introTextProgress;
   const introTextTranslateX = 120 - introTextEase * 120;
   const introTextOpacity = 0.35 + introTextEase * 0.65;
-  const heroTitleEase = heroTitleProgress * heroTitleProgress;
+  const heroTitleEase = 1 - Math.pow(1 - heroTitleProgress, 2);
   const heroTitleTranslateX = -heroTitleEase * heroTitleMaxDistance;
 
   const handleNavItemClick = () => {
@@ -736,19 +734,22 @@ export default function Home() {
                 Presentación del autor.
                 Conozco a Gerardo Romeh desde siempre. Es mi hermano, y he sido testigo de su historia, de sus luchas y de su perseverancia. Desde niño vivió experiencias extraordinarias que marcaron su sensibilidad y su manera de ver el mundo, encuentros con realidades que muchos no perciben y que, con el paso del tiempo, han dado forma a su identidad y a su camino de vida.
                 Gerardo nunca ha dejado de luchar por sus sueños. Es un padre amoroso y comprometido, profesionista, emprendedor y artesano artífice, un hombre carismático, con una creatividad que se manifiesta en todo lo que hace.
-                Hoy se abre paso en una nueva faceta: La literaria, y nos presenta con gran entusiasmo su primera obra, en estas páginas comparte no solo su talento, sino también su don sensitivo. A través de sus vivencias, nos invita a asomarnos al mundo espiritual que ha conocido mediante el contacto con seres que han trascendido este plano terrenal, con respeto, humildad y profunda humanidad.
+                Hoy se abre paso en una nueva faceta: La literaria, y nos presenta con gran entusiasmo su primera obra, en estas páginas comparte no solo su talento, sino también su don sensitivo. A través de sus vivencias, nos invita a asomarnos al mundo espiritual que ha conocido mediante el contacto con seres que han trascendido este plano terrenal, con respeto, humildad y profunda humanidad.    
+              </p>
+              <p className="text-sm text-black text-justify leading-relaxed">
                 Con cariño, Laura.
               </p>
             </div>
           </div>
           <div className="md:w-2/3 flex-shrink-0">
-            <div className="relative w-full h-full min-h-[320px]">
+            <div className="relative w-full h-full min-h-[320px] md:min-h-[520px] md:max-h-[720px]">
               <Image
                 src="/images/autor.jpg"
                 alt="El autor"
                 fill
                 className="object-cover"
                 sizes="(min-width: 768px) 66vw, 100vw"
+                quality={95}
               />
             </div>
           </div>
@@ -756,7 +757,11 @@ export default function Home() {
       </section>
 
       {/* El libro físico y Oferta */}
-      <section id="oferta" className="relative py-20 bg-gray-100">
+      <section
+        id="oferta"
+        className="relative py-20"
+        style={{ background: 'linear-gradient(180deg, #f3f4f6 0%, #d1d5db 35%, #6b7280 70%, #111827 100%)' }}
+      >
         {/* Noise texture overlay */}
         <div
           className="absolute inset-0 opacity-30 pointer-events-none"
@@ -779,8 +784,8 @@ export default function Home() {
               />
             </div>
             <div className="md:w-1/2">
-              <h2 className="text-3xl font-bold mb-6 text-gray-800 uppercase">LIBRO FÍSICO</h2>
-              <p className="text-lg mb-4 text-gray-700">No es solo una historia.
+              <h2 className="text-2xl font-bold mb-6 text-gray-800 uppercase">LIBRO FÍSICO</h2>
+              <p className="text-lg mb-4 text-gray-800">No es solo una historia.
 Es un objeto que se siente.
 
 Edición impresa en pasta blanda resistente, con 200 páginas cuidadosamente maquetadas para una lectura fluida y envolvente.
@@ -789,7 +794,7 @@ Formato cómodo, pensado para sostenerse durante horas sin fatiga.
 El papel de tono cálido y textura suave permite que cada palabra respire.
 La encuadernación flexible facilita una apertura natural, conservando la integridad del ejemplar con el paso del tiempo.
 </p>
-              <p className="text-lg mb-6 text-gray-700">No es un archivo que se desliza y desaparece.
+              <p className="text-lg mb-6 text-gray-800">No es un archivo que se desliza y desaparece.
 Es tangible.
 Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
               
@@ -829,7 +834,11 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="relative py-16 bg-gray-50">
+      <section
+        id="faq"
+        className="relative py-16"
+        style={{ background: 'linear-gradient(180deg, #e5e7eb 0%, #cbd5e1 35%, #64748b 70%, #0f172a 100%)' }}
+      >
         {/* Noise texture overlay */}
         <div
           className="absolute inset-0 opacity-30 pointer-events-none"
@@ -848,7 +857,7 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
                 Hacer una pregunta
               </button>
               <div>
-                <a href="/faq" className="text-gray-800 hover:text-gray-600 underline">
+                <a href="/faq" className="text-gray-100 hover:text-white underline">
                   Ver todas las preguntas frecuentes
                 </a>
               </div>
