@@ -118,51 +118,65 @@ export default function Home() {
     setIsMobileMenuOpen(false);
   };
 
-  const handleSubmitQuestion = (e) => {
+  const handleSubmitQuestion = async (e) => {
     e.preventDefault();
     if (!name || !email || !question) return;
 
-    const newQuestion = {
-      id: Date.now(),
-      name,
-      email,
-      question,
-      type: 'pregunta',
-      status: 'abierto',
-      createdAt: new Date().toISOString()
-    };
+    try {
+      await fetch('/api/faq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: question.trim(),
+          answer: '',
+          name: name.trim(),
+          email: email.trim(),
+          source: 'faq-form',
+        }),
+      });
 
-    const existingQuestions = JSON.parse(localStorage.getItem('bookQuestions') || '[]');
-    existingQuestions.push(newQuestion);
-    localStorage.setItem('bookQuestions', JSON.stringify(existingQuestions));
+      // Refrescar FAQ visible en Home para reflejar el nuevo registro.
+      const res = await fetch('/api/faq');
+      const data = await res.json();
+      setFaq(data);
 
-    // Limpiar formulario
-    setName('');
-    setEmail('');
-    setQuestion('');
-    setIsModalOpen(false);
+      // Limpiar formulario
+      setName('');
+      setEmail('');
+      setQuestion('');
+      setIsModalOpen(false);
 
-    alert('Pregunta enviada correctamente. Te responderemos pronto.');
+      alert('Pregunta enviada correctamente. La revisaremos en Preguntas libro.');
+    } catch {
+      alert('Error al enviar la pregunta. Intenta de nuevo.');
+    }
   };
 
   const handleSubmitContact = (e) => {
     e.preventDefault();
     if (!contactEmail || !contactMessage) return;
 
-    // Enviar directamente a FAQs con respuesta vacía
-    fetch('/api/faq', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: contactMessage, answer: '' }),
-    })
-      .then(() => {
-        // Limpiar formulario
-        setContactEmail('');
-        setContactMessage('');
-        setSelectedTopic('');
-        alert('Mensaje enviado correctamente. Te responderemos pronto.');
-      })
-      .catch(() => alert('Error al enviar el mensaje.'));
+    const newTicket = {
+      id: Date.now(),
+      name: selectedTopic ? `Consulta: ${selectedTopic}` : 'Consulta general',
+      email: contactEmail,
+      question: contactMessage,
+      type: 'duda',
+      status: 'abierto',
+      createdAt: new Date().toISOString(),
+      source: 'atencion-dudas',
+      topic: selectedTopic || 'general',
+    };
+
+    const existingQuestions = JSON.parse(localStorage.getItem('bookQuestions') || '[]');
+    existingQuestions.push(newTicket);
+    localStorage.setItem('bookQuestions', JSON.stringify(existingQuestions));
+
+    // Limpiar formulario
+    setContactEmail('');
+    setContactMessage('');
+    setSelectedTopic('');
+    alert('Mensaje enviado correctamente. Lo revisaremos en Atención y dudas.');
   };
 
   const FaqGrid = () => {

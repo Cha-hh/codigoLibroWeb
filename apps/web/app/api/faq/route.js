@@ -23,10 +23,18 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const { question, answer } = await request.json();
+  const { question, answer, name, email, source } = await request.json();
   const faq = readFaq();
   const newId = faq.length > 0 ? Math.max(...faq.map(item => item.id)) + 1 : 1;
-  faq.push({ id: newId, question, answer, createdAt: new Date().toISOString() });
+  faq.push({
+    id: newId,
+    question,
+    answer,
+    name: name || null,
+    email: email || null,
+    source: source || null,
+    createdAt: new Date().toISOString(),
+  });
   writeFaq(faq);
   return new Response(JSON.stringify({ message: 'FAQ added' }), { status: 201 });
 }

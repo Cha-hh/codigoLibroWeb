@@ -11,6 +11,9 @@ export default function Tickets() {
   const [selectedQuestion, setSelectedQuestion] = useState(null)
   const [answer, setAnswer] = useState('')
   const [activeTab, setActiveTab] = useState('preguntas')
+  const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false)
+  const [faqDrafts, setFaqDrafts] = useState({})
+  const [savingFaqId, setSavingFaqId] = useState(null)
 
   useEffect(() => {
     loadQuestions()
@@ -28,11 +31,27 @@ export default function Tickets() {
     const res = await fetch('/api/faq')
     const data = await res.json()
     setFaqs(data)
+    setFaqDrafts(Object.fromEntries(data.map((item) => [item.id, item.answer || ''])))
   }
 
   const updateQuestionStatus = (id, newStatus) => {
     const updatedQuestions = questions.map(q =>
       q.id === id ? { ...q, status: newStatus } : q
+    )
+    setQuestions(updatedQuestions)
+    localStorage.setItem('bookQuestions', JSON.stringify(updatedQuestions))
+  }
+
+  const closeQuestionWithAnswer = (id, adminAnswer) => {
+    const updatedQuestions = questions.map((q) =>
+      q.id === id
+        ? {
+            ...q,
+            status: 'cerrado',
+            adminAnswer,
+            answeredAt: new Date().toISOString(),
+          }
+        : q
     )
     setQuestions(updatedQuestions)
     localStorage.setItem('bookQuestions', JSON.stringify(updatedQuestions))
@@ -44,46 +63,37 @@ export default function Tickets() {
     setShowAnswerModal(true)
   }
 
-  const addToFaq = async (question) => {
-    // Pedir respuesta al admin
-    const answer = prompt(`Respuesta para: "${question.question}"`)
-    if (!answer || !answer.trim()) return
-
-    await fetch('/api/faq', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: question.question, answer: answer.trim() }),
-    })
-    loadFaqs()
-  }
-
   const submitAnswer = async () => {
     if (!selectedQuestion || !answer.trim()) return
 
-    // Agregar a FAQs
-    await fetch('/api/faq', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: selectedQuestion.question, answer: answer.trim() }),
-    })
+    const trimmedAnswer = answer.trim()
 
-    // Actualizar estado de la pregunta a cerrado
-    updateQuestionStatus(selectedQuestion.id, 'cerrado')
+    setIsSubmittingAnswer(true)
 
-    // Cerrar modal
-    setShowAnswerModal(false)
-    setSelectedQuestion(null)
-    setAnswer('')
-    loadFaqs()
+    try {
+      closeQuestionWithAnswer(selectedQuestion.id, trimmedAnswer)
+
+      setShowAnswerModal(false)
+      setSelectedQuestion(null)
+      setAnswer('')
+    } finally {
+      setIsSubmittingAnswer(false)
+    }
   }
 
-  const updateFaqAnswer = async (id, newAnswer) => {
+  const updateFaqAnswer = async (id) => {
+    const newAnswer = (faqDrafts[id] || '').trim()
+    const faqToUpdate = faqs.find((f) => f.id === id)
+    if (!faqToUpdate || !newAnswer) return
+
+    setSavingFaqId(id)
     await fetch('/api/faq', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, question: faqs.find(f => f.id === id).question, answer: newAnswer }),
+      body: JSON.stringify({ id, question: faqToUpdate.question, answer: newAnswer }),
     })
-    loadFaqs()
+    await loadFaqs()
+    setSavingFaqId(null)
   }
 
   const deleteFaq = async (id) => {
@@ -124,6 +134,7 @@ export default function Tickets() {
   }
 
   const filteredQuestions = questions.filter(q => {
+    if (q.status === 'cerrado') return false
     const matchesType = !filterType || q.type === filterType
     const matchesStatus = !filterStatus || q.status === filterStatus
     return matchesType && matchesStatus
@@ -138,6 +149,9 @@ export default function Tickets() {
     }
   }
 
+  const faqPending = faqs.filter((item) => !(item.answer || '').trim())
+  const faqClosed = faqs.filter((item) => (item.answer || '').trim())
+
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-4 py-8 text-gray-100">
       <h1 className="text-3xl font-bold mb-6 uppercase tracking-[0.2em]">Gestión de Preguntas del Libro</h1>
@@ -149,26 +163,32 @@ export default function Tickets() {
             onClick={() => setActiveTab('preguntas')}
             className={`px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase transition ${activeTab === 'preguntas' ? 'bg-gray-800 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
           >
-            Preguntas Recibidas
+            Preguntas Atencion y dudas
           </button>
           <button
             onClick={() => setActiveTab('cerradas')}
             className={`px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase transition ${activeTab === 'cerradas' ? 'bg-gray-800 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
           >
-            Preguntas Cerradas
+            Preguntas cerradas atencion y dudas
           </button>
           <button
             onClick={() => setActiveTab('faq')}
             className={`px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase transition ${activeTab === 'faq' ? 'bg-gray-800 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
           >
-            Preguntas Frecuentes (FAQ)
+            Preguntas libro
+          </button>
+          <button
+            onClick={() => setActiveTab('faq-cerradas')}
+            className={`px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase transition ${activeTab === 'faq-cerradas' ? 'bg-gray-800 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+          >
+            Preguntas cerradas Libro
           </button>
         </nav>
       </div>
 
       {activeTab === 'preguntas' && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas Recibidas</h2>
+          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas Atencion y dudas</h2>
 
           {/* Filtros */}
           <div className="mb-6 flex flex-wrap gap-4">
@@ -216,19 +236,7 @@ export default function Tickets() {
                       onClick={() => openAnswerModal(q)}
                       className="bg-gray-800 text-white px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-700 transition"
                     >
-                      Responder y Agregar a FAQ
-                    </button>
-                    <button
-                      onClick={() => updateQuestionStatus(q.id, 'respondido')}
-                      className="bg-white/15 text-gray-100 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-white/25 transition"
-                    >
-                      Marcar como Respondido
-                    </button>
-                    <button
-                      onClick={() => updateQuestionStatus(q.id, 'cerrado')}
-                      className="bg-black/40 text-gray-200 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-black/60 transition"
-                    >
-                      Cerrar
+                      Responder
                     </button>
                   </div>
                 </div>
@@ -240,7 +248,7 @@ export default function Tickets() {
 
       {activeTab === 'cerradas' && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas Cerradas</h2>
+          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas cerradas atencion y dudas</h2>
           <div className="space-y-4">
             {questions.filter(q => q.status === 'cerrado').length === 0 ? (
               <p className="text-gray-300 text-center py-8">No hay preguntas cerradas.</p>
@@ -252,16 +260,19 @@ export default function Tickets() {
                       <h3 className="text-lg font-semibold text-gray-100">{q.name} - {q.question}</h3>
                       <p className="text-gray-300">Email: {q.email}</p>
                       <p className="text-sm text-gray-400">{new Date(q.createdAt).toLocaleString()}</p>
+                      {q.adminAnswer && (
+                        <div className="mt-3 bg-black/25 border border-white/10 rounded-lg p-3">
+                          <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Respuesta admin</p>
+                          <p className="text-sm text-gray-200">{q.adminAnswer}</p>
+                        </div>
+                      )}
+                      {q.answeredAt && (
+                        <p className="text-xs text-gray-500 mt-2">Respondido: {new Date(q.answeredAt).toLocaleString()}</p>
+                      )}
                     </div>
                     <span className="px-3 py-1 rounded-full text-xs tracking-[0.18em] uppercase bg-black/30 text-gray-300 border border-white/10">Cerrado</span>
                   </div>
                   <div className="flex space-x-2">
-                    <button
-                      onClick={() => addToFaq(q)}
-                      className="bg-gray-800 text-white px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-700 transition"
-                    >
-                      Agregar a FAQ
-                    </button>
                     <button
                       onClick={() => deleteClosedQuestion(q)}
                       className="bg-black/40 text-gray-200 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-black/60 transition"
@@ -278,18 +289,25 @@ export default function Tickets() {
 
       {activeTab === 'faq' && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas Frecuentes (FAQ)</h2>
+          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas libro</h2>
           <div className="space-y-4">
-            {faqs.length === 0 ? (
-              <p className="text-gray-300 text-center py-8">No hay preguntas frecuentes aún.</p>
+            {faqPending.length === 0 ? (
+              <p className="text-gray-300 text-center py-8">No hay preguntas de libro pendientes por responder.</p>
             ) : (
-              faqs.map((faq) => (
+              faqPending.map((faq) => (
                 <div key={faq.id} className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold mb-2 text-gray-100">{faq.question}</h3>
+                    {(faq.name || faq.email || faq.source) && (
+                      <div className="mb-3 text-xs text-gray-400 space-y-1">
+                        {faq.name && <p>Nombre: <span className="text-gray-200">{faq.name}</span></p>}
+                        {faq.email && <p>Email: <span className="text-gray-200">{faq.email}</span></p>}
+                        {faq.source && <p>Origen: <span className="text-gray-300">{faq.source}</span></p>}
+                      </div>
+                    )}
                     <textarea
-                      value={faq.answer}
-                      onChange={(e) => updateFaqAnswer(faq.id, e.target.value)}
+                      value={faqDrafts[faq.id] ?? ''}
+                      onChange={(e) => setFaqDrafts((prev) => ({ ...prev, [faq.id]: e.target.value }))}
                       className="w-full p-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                       rows="3"
                       placeholder="Escribe la respuesta..."
@@ -298,12 +316,70 @@ export default function Tickets() {
                       {faq.createdAt ? `Creado: ${new Date(faq.createdAt).toLocaleDateString()}` : 'FAQ existente'}
                     </p>
                   </div>
-                  <div className="flex justify-end">
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => updateFaqAnswer(faq.id)}
+                      disabled={savingFaqId === faq.id || (faqDrafts[faq.id] || '').trim() === (faq.answer || '').trim() || !(faqDrafts[faq.id] || '').trim()}
+                      className="bg-gray-800 text-white px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {savingFaqId === faq.id ? 'Guardando...' : 'Responder'}
+                    </button>
                     <button
                       onClick={() => deleteFaq(faq.id)}
                       className="bg-black/40 text-gray-200 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-black/60 transition"
                     >
-                      Eliminar FAQ
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'faq-cerradas' && (
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 uppercase tracking-[0.14em]">Preguntas cerradas Libro</h2>
+          <div className="space-y-4">
+            {faqClosed.length === 0 ? (
+              <p className="text-gray-300 text-center py-8">No hay preguntas de libro respondidas todavía.</p>
+            ) : (
+              faqClosed.map((faq) => (
+                <div key={faq.id} className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-100">{faq.question}</h3>
+                    {(faq.name || faq.email || faq.source) && (
+                      <div className="mb-3 text-xs text-gray-400 space-y-1">
+                        {faq.name && <p>Nombre: <span className="text-gray-200">{faq.name}</span></p>}
+                        {faq.email && <p>Email: <span className="text-gray-200">{faq.email}</span></p>}
+                        {faq.source && <p>Origen: <span className="text-gray-300">{faq.source}</span></p>}
+                      </div>
+                    )}
+                    <textarea
+                      value={faqDrafts[faq.id] ?? ''}
+                      onChange={(e) => setFaqDrafts((prev) => ({ ...prev, [faq.id]: e.target.value }))}
+                      className="w-full p-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
+                      rows="3"
+                      placeholder="Escribe la respuesta..."
+                    />
+                    <p className="text-sm text-gray-400 mt-1">
+                      {faq.createdAt ? `Creado: ${new Date(faq.createdAt).toLocaleDateString()}` : 'FAQ existente'}
+                    </p>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => updateFaqAnswer(faq.id)}
+                      disabled={savingFaqId === faq.id || (faqDrafts[faq.id] || '').trim() === (faq.answer || '').trim() || !(faqDrafts[faq.id] || '').trim()}
+                      className="bg-gray-800 text-white px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {savingFaqId === faq.id ? 'Guardando...' : 'Guardar respuesta'}
+                    </button>
+                    <button
+                      onClick={() => deleteFaq(faq.id)}
+                      className="bg-black/40 text-gray-200 px-4 py-2 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-black/60 transition"
+                    >
+                      Eliminar
                     </button>
                   </div>
                 </div>
@@ -334,17 +410,21 @@ export default function Tickets() {
             </div>
             <div className="flex justify-end space-x-2">
               <button
-                onClick={() => setShowAnswerModal(false)}
+                onClick={() => {
+                  setShowAnswerModal(false)
+                  setSelectedQuestion(null)
+                  setAnswer('')
+                }}
                 className="px-4 py-2 bg-white/15 text-gray-100 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-white/25 transition"
               >
                 Cancelar
               </button>
               <button
                 onClick={submitAnswer}
-                disabled={!answer.trim()}
+                disabled={!answer.trim() || isSubmittingAnswer}
                 className="px-4 py-2 bg-gray-800 text-white rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Agregar a FAQ y Cerrar
+                {isSubmittingAnswer ? 'Guardando...' : 'Responder y Cerrar'}
               </button>
             </div>
           </div>
