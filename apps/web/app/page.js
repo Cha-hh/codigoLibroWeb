@@ -831,7 +831,9 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
             width={1600}
             height={900}
             className="w-full rounded-none shadow-none h-auto"
-            sizes="(min-width: 1024px) 1024px, 100vw"
+            sizes="(min-width: 1536px) 1400px, (min-width: 1280px) 1240px, (min-width: 1024px) 92vw, 100vw"
+            quality={100}
+            priority
           />
         </div>
       </section>
