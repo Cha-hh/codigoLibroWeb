@@ -16,6 +16,7 @@ export default function Home() {
   const [contactEmail, setContactEmail] = useState('');
   const [contactMessage, setContactMessage] = useState('');
   const [activeCardIndex, setActiveCardIndex] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [introOffset, setIntroOffset] = useState(0);
   const [introTextProgress, setIntroTextProgress] = useState(0);
   const [heroTitleProgress, setHeroTitleProgress] = useState(0);
@@ -61,6 +62,9 @@ export default function Home() {
   useEffect(() => {
     const onResize = () => {
       setHeroTitleMaxDistance(window.innerWidth < 768 ? 120 : 160);
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false);
+      }
     };
 
     onResize();
@@ -109,6 +113,10 @@ export default function Home() {
   const introTextOpacity = 0.35 + introTextEase * 0.65;
   const heroTitleEase = heroTitleProgress * heroTitleProgress;
   const heroTitleTranslateX = -heroTitleEase * heroTitleMaxDistance;
+
+  const handleNavItemClick = () => {
+    setIsMobileMenuOpen(false);
+  };
 
   const handleSubmitQuestion = (e) => {
     e.preventDefault();
@@ -264,8 +272,24 @@ export default function Home() {
       {/* Navbar */}
       <nav className="bg-black shadow-md fixed top-0 left-0 right-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-center items-center">
-            <div className="flex space-x-8">
+          <div className="flex items-center justify-between md:justify-center">
+            <button
+              type="button"
+              className="md:hidden ml-auto inline-flex items-center justify-center rounded-md border border-white/20 p-2 text-white hover:bg-white/10 transition"
+              onClick={() => setIsMobileMenuOpen(prev => !prev)}
+              aria-label="Abrir menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-nav-menu"
+            >
+              <span className="sr-only">Abrir menu</span>
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+
+            <div className="hidden md:flex space-x-8">
               <a href="#intro" className="text-white hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Inicio</a>
               <a href="#relatos" className="text-white hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Relatos</a>
               <a href="#autor" className="text-white hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Autor</a>
@@ -275,6 +299,20 @@ export default function Home() {
               <a href="/admin/login" className="text-gray-400 hover:text-gray-300 text-xs tracking-[0.25em] transition uppercase">Admin</a>
             </div>
           </div>
+
+          {isMobileMenuOpen && (
+            <div id="mobile-nav-menu" className="md:hidden mt-4 border-t border-white/15 pt-4">
+              <div className="flex flex-col gap-3">
+                <a href="#intro" onClick={handleNavItemClick} className="text-white hover:text-gray-300 text-xs tracking-[0.2em] transition uppercase">Inicio</a>
+                <a href="#relatos" onClick={handleNavItemClick} className="text-white hover:text-gray-300 text-xs tracking-[0.2em] transition uppercase">Relatos</a>
+                <a href="#autor" onClick={handleNavItemClick} className="text-white hover:text-gray-300 text-xs tracking-[0.2em] transition uppercase">Autor</a>
+                <a href="#oferta" onClick={handleNavItemClick} className="text-white hover:text-gray-300 text-xs tracking-[0.2em] transition uppercase">Libro</a>
+                <a href="#faq" onClick={handleNavItemClick} className="text-white hover:text-gray-300 text-xs tracking-[0.2em] transition uppercase">FAQ</a>
+                <a href="#contacto" onClick={handleNavItemClick} className="text-white hover:text-gray-300 text-xs tracking-[0.2em] transition uppercase">Contacto</a>
+                <a href="/admin/login" onClick={handleNavItemClick} className="text-gray-400 hover:text-gray-300 text-xs tracking-[0.2em] transition uppercase">Admin</a>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
@@ -296,8 +334,8 @@ export default function Home() {
         />
         {/* Hero Section */}
         <section ref={heroSectionRef} id="intro" className="relative text-white min-h-screen overflow-hidden flex items-center">
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="relative rounded-xl overflow-hidden p-6 md:p-10">
+          <div className="relative z-10 mx-auto max-w-6xl px-4 w-full">
+            <div className="relative bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden p-8">
               {/* Background image with opacity */}
               <div 
                 className="absolute inset-0 opacity-30"
@@ -309,8 +347,8 @@ export default function Home() {
               />
               
               {/* Content */}
-              <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                <div className="md:w-1/2 text-center md:text-left">
+              <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center gap-8">
+                <div className="text-center md:text-left">
                   <h1
                     ref={heroTitleRef}
                     className="text-6xl md:text-7xl font-bold mb-4 uppercase text-gray-200"
@@ -334,7 +372,7 @@ export default function Home() {
                     </span>
                   </a>
                 </div>
-                <div className="md:w-1/2 flex justify-center">
+                <div className="flex justify-center">
                   <Image
                     src="/images/autor-libro.jpg"
                     alt="Autor del libro"
