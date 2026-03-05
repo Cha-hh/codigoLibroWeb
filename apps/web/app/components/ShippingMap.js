@@ -11,7 +11,7 @@ const markerIcon = L.icon({
   iconAnchor: [12, 41],
 })
 
-export default function ShippingMap({ center, onPick }) {
+export default function ShippingMap({ center, onPick, interactive = true }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const markerRef = useRef(null)
@@ -29,7 +29,16 @@ export default function ShippingMap({ center, onPick }) {
       container._leaflet_id = null
     }
 
-    const map = L.map(container, { zoomControl: true }).setView(center, 13)
+    const map = L.map(container, {
+      zoomControl: interactive,
+      dragging: interactive,
+      scrollWheelZoom: interactive,
+      doubleClickZoom: interactive,
+      touchZoom: interactive,
+      boxZoom: interactive,
+      keyboard: interactive,
+      tap: interactive,
+    }).setView(center, 13)
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
@@ -37,11 +46,13 @@ export default function ShippingMap({ center, onPick }) {
 
     const marker = L.marker(center, { icon: markerIcon }).addTo(map)
 
-    map.on('click', (event) => {
-      if (onPickRef.current) {
-        onPickRef.current(event.latlng)
-      }
-    })
+    if (interactive) {
+      map.on('click', (event) => {
+        if (onPickRef.current) {
+          onPickRef.current(event.latlng)
+        }
+      })
+    }
 
     mapRef.current = map
     markerRef.current = marker
@@ -52,7 +63,7 @@ export default function ShippingMap({ center, onPick }) {
       mapRef.current = null
       markerRef.current = null
     }
-  }, [center])
+  }, [center, interactive])
 
   useEffect(() => {
     if (!mapRef.current || !markerRef.current) return

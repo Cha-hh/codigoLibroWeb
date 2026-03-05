@@ -7,7 +7,7 @@ const client = new MercadoPagoConfig({
 
 export async function POST(request) {
   try {
-    const { physical, digital, total, orderId } = await request.json();
+    const { physical, digital, total, orderId, shipping } = await request.json();
 
     // Validar que haya productos
     if (!orderId || (physical === 0 && digital === 0)) {
@@ -64,6 +64,51 @@ export async function POST(request) {
       statement_descriptor: 'LibroWeb',
       binary_mode: true
     };
+
+    if (shipping && typeof shipping === 'object') {
+      const fullName = String(shipping.name || '').trim();
+      const nameParts = fullName.split(/\s+/).filter(Boolean);
+      const firstName = nameParts[0] || undefined;
+      const lastName = nameParts.slice(1).join(' ') || undefined;
+
+      const streetNumberRaw = String(shipping.externalNumber || '').trim();
+      const streetNumberMatch = streetNumberRaw.match(/\d+/);
+      const streetNumber = streetNumberMatch ? Number(streetNumberMatch[0]) : undefined;
+
+      const payer = {
+        ...(firstName ? { name: firstName } : {}),
+        ...(lastName ? { surname: lastName } : {}),
+        ...(shipping.email ? { email: shipping.email } : {}),
+        address: {
+          ...(shipping.postalCode ? { zip_code: shipping.postalCode } : {}),
+          ...(shipping.street ? { street_name: shipping.street } : {}),
+          ...(Number.isFinite(streetNumber) ? { street_number: streetNumber } : {})
+        }
+      };
+
+      if (Object.keys(payer.address).length === 0) {
+        delete payer.address;
+      }
+
+      if (Object.keys(payer).length > 0) {
+        body.payer = payer;
+      }
+
+      const metadata = {
+        order_id: orderId,
+        address_line: shipping.address || '',
+        municipality: shipping.municipality || '',
+        city: shipping.city || '',
+        colony: shipping.colony || '',
+        references: shipping.references || '',
+        postal_code: shipping.postalCode || '',
+        country: shipping.country || ''
+      };
+
+      body.metadata = Object.fromEntries(
+        Object.entries(metadata).filter(([, value]) => Boolean(String(value || '').trim()))
+      );
+    }
 
     const response = await preference.create({ body });
 

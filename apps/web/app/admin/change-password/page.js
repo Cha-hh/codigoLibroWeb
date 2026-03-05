@@ -39,9 +39,9 @@ export default function ChangePassword() {
   }
 
   return (
-    <div className="max-w-2xl px-2 sm:px-4 py-8 text-gray-100">
-      <h1 className="text-3xl font-bold mb-6 uppercase tracking-[0.2em]">Cambiar Contraseña</h1>
-      <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg max-w-md">
+    <div className="min-h-[65vh] w-full flex items-center justify-center px-2 sm:px-4 py-8 text-gray-100">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 uppercase tracking-[0.2em] text-center">Cambiar Contraseña</h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-200 text-xs tracking-[0.18em] uppercase mb-2">Contraseña Actual</label>

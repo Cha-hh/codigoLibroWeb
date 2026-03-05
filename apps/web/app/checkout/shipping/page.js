@@ -9,18 +9,18 @@ const ShippingMap = dynamic(() => import('../../components/ShippingMap'), { ssr:
 
 const countryCodeByName = {
   'México': 'mx',
-  'Estados Unidos': 'us',
-  'Canadá': 'ca',
 }
 
 const defaultCenter = [19.4326, -99.1332]
 
-const buildStreetAddress = (address, fallback) => {
-  if (!address) return fallback || ''
-  const road = address.road || address.pedestrian || address.footway || ''
-  const houseNumber = address.house_number || ''
-  const street = `${road} ${houseNumber}`.trim()
-  return street || fallback || ''
+const buildStreet = (address) => {
+  if (!address) return ''
+  return address.road || address.pedestrian || address.footway || ''
+}
+
+const buildExternalNumber = (address) => {
+  if (!address) return ''
+  return address.house_number || ''
 }
 
 const buildCity = (address) => {
@@ -28,13 +28,27 @@ const buildCity = (address) => {
   return address.city || address.town || address.village || address.municipality || address.state_district || ''
 }
 
+const buildMunicipality = (address) => {
+  if (!address) return ''
+  return address.municipality || address.county || address.state_district || ''
+}
+
+const normalizeText = (value) => (value || '').trim().toLowerCase()
+const normalizePostalCode = (value) => (value || '').replace(/\D/g, '').slice(0, 5)
+
 export default function Shipping() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [address, setAddress] = useState('')
+  const [municipality, setMunicipality] = useState('')
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
-  const [country, setCountry] = useState('México')
+  const [colony, setColony] = useState('')
+  const [street, setStreet] = useState('')
+  const [externalNumber, setExternalNumber] = useState('')
+  const [internalNumber, setInternalNumber] = useState('')
+  const [references, setReferences] = useState('')
+  const [colonyOptions, setColonyOptions] = useState([])
+  const country = 'México'
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(false)
   const [mpStatus, setMpStatus] = useState({ ok: true, message: '' })
@@ -76,51 +90,135 @@ export default function Shipping() {
     }
 
     const addressData = result.address || {}
-    const streetAddress = buildStreetAddress(addressData, result.display_name)
     const cityName = buildCity(addressData)
+    const municipalityName = buildMunicipality(addressData)
+    const streetName = buildStreet(addressData)
+    const extNumber = buildExternalNumber(addressData)
     const postal = addressData.postcode || ''
 
-    if (streetAddress) setAddress(streetAddress)
     if (cityName) setCity(cityName)
+    if (municipalityName) setMunicipality(municipalityName)
+    if (streetName && !street) setStreet(streetName)
+    if (extNumber && !externalNumber) setExternalNumber(extNumber)
     if (postal) setPostalCode(postal)
-
-    if (addressData.country) {
-      const supportedCountry = Object.keys(countryCodeByName).find((countryName) => countryName === addressData.country)
-      if (supportedCountry) {
-        setCountry(supportedCountry)
-      }
-    }
   }
 
   const handlePostalCodeLookup = async () => {
-    if (!postalCode.trim()) {
+    const normalizedPostalCode = normalizePostalCode(postalCode)
+    if (!normalizedPostalCode) {
       setGeoStatus('Ingresa un código postal para buscar ubicación.')
       return
+    }
+
+    if (normalizedPostalCode.length < 5) {
+      setGeoStatus('El código postal debe tener 5 dígitos.')
+      return
+    }
+
+    if (normalizedPostalCode !== postalCode) {
+      setPostalCode(normalizedPostalCode)
     }
 
     setGeoLoading(true)
     setGeoStatus('Buscando ubicación por código postal...')
 
     try {
+      let municipalityName = ''
+      let cityName = ''
+      let colonies = []
+
+      // Fuente principal para Mexico: contiene municipio, ciudad y colonias por CP.
+      const sepomexQuery = `https://sepomex.icalialabs.com/api/v1/zip_codes?zip_code=${encodeURIComponent(normalizedPostalCode)}`
+      const sepomexRes = await fetch(sepomexQuery)
+      const sepomexData = await sepomexRes.json()
+      const zipRows = Array.isArray(sepomexData?.zip_codes) ? sepomexData.zip_codes : []
+
+      if (zipRows.length > 0) {
+        municipalityName = zipRows[0]?.d_mnpio || ''
+        cityName = zipRows[0]?.d_ciudad || zipRows[0]?.d_mnpio || zipRows[0]?.d_estado || ''
+
+        const filteredRows = zipRows.filter((item) => {
+          if (!municipalityName) return true
+          return normalizeText(item?.d_mnpio) === normalizeText(municipalityName)
+        })
+
+        colonies = Array.from(
+          new Set(
+            filteredRows
+              .map((item) => (item?.d_asenta || '').trim())
+              .filter(Boolean)
+          )
+        )
+
+        setMunicipality(municipalityName)
+        setCity(cityName)
+        setColonyOptions(colonies)
+        setColony(colonies[0] || '')
+      }
+
+      // Respaldo con Nominatim para centrar el mapa y completar si Sepomex no devuelve datos.
       const countryCode = countryCodeByName[country] || ''
-      const directQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&postalcode=${encodeURIComponent(postalCode)}${countryCode ? `&countrycodes=${countryCode}` : ''}`
+      const directQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=25&postalcode=${encodeURIComponent(normalizedPostalCode)}${countryCode ? `&countrycodes=${countryCode}` : ''}`
       let res = await fetch(directQuery)
       let data = await res.json()
 
       if (!Array.isArray(data) || data.length === 0) {
-        const fallbackQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=${encodeURIComponent(`${postalCode}, ${country}`)}`
+        const fallbackQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=25&q=${encodeURIComponent(`${normalizedPostalCode}, ${country}`)}`
         res = await fetch(fallbackQuery)
         data = await res.json()
       }
 
-      if (!Array.isArray(data) || data.length === 0) {
-        setGeoStatus('No se encontró una ubicación para ese código postal.')
-        setGeoLoading(false)
+      if (Array.isArray(data) && data.length > 0) {
+        const primary = data[0]
+        applyLocationData(primary)
+
+        const nominatimMunicipality = buildMunicipality(primary.address)
+        const nominatimCity = buildCity(primary.address) || data.map((item) => buildCity(item.address)).find(Boolean) || ''
+
+        if (!municipalityName && nominatimMunicipality) {
+          municipalityName = nominatimMunicipality
+          setMunicipality(nominatimMunicipality)
+        }
+
+        if (!cityName && nominatimCity) {
+          cityName = nominatimCity
+          setCity(nominatimCity)
+        }
+
+        if (colonies.length === 0) {
+          const sourceForColonies = data.filter((item) => {
+            if (!municipalityName) return true
+            return normalizeText(buildMunicipality(item.address)) === normalizeText(municipalityName)
+          })
+
+          colonies = Array.from(
+            new Set(
+              sourceForColonies
+                .map((item) => {
+                  const addr = item.address || {}
+                  return addr.suburb || addr.neighbourhood || addr.quarter || addr.hamlet || ''
+                })
+                .filter(Boolean)
+            )
+          )
+
+          setColonyOptions(colonies)
+          setColony(colonies[0] || '')
+        }
+      }
+
+      if (!municipalityName && !cityName) {
+        setGeoStatus('No se encontró ubicación para ese código postal. Verifica el CP.')
+        setColonyOptions([])
+        setColony('')
         return
       }
 
-      applyLocationData(data[0])
-      setGeoStatus('Ubicación encontrada. Puedes ajustar haciendo click en el mapa.')
+      if (colonies.length === 0) {
+        setGeoStatus('Código postal encontrado. Se autocompletaron municipio y ciudad. No se encontraron colonias para ese CP.')
+      } else {
+        setGeoStatus('Código postal encontrado. Se autocompletaron municipio y ciudad, y se cargaron colonias del municipio.')
+      }
     } catch (error) {
       console.error('Error buscando por código postal:', error)
       setGeoStatus('No se pudo consultar la ubicación. Intenta nuevamente.')
@@ -129,27 +227,9 @@ export default function Shipping() {
     }
   }
 
-  const handleMapPick = async ({ lat, lng }) => {
-    setMapCenter([lat, lng])
-    setGeoLoading(true)
-    setGeoStatus('Obteniendo dirección del punto seleccionado...')
-
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&lat=${lat}&lon=${lng}`)
-      const data = await res.json()
-      applyLocationData(data)
-      setGeoStatus('Dirección autocompletada desde el mapa.')
-    } catch (error) {
-      console.error('Error en geocodificación inversa:', error)
-      setGeoStatus('No se pudo obtener dirección desde el mapa. Intenta otro punto.')
-    } finally {
-      setGeoLoading(false)
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!name || !email || !address || !city || !postalCode) return
+    if (!name || !email || !street || !externalNumber || !municipality || !city || !postalCode) return
 
     if (!order || (order.physical === 0 && order.digital === 0)) {
       alert('No hay productos en la orden')
@@ -161,12 +241,20 @@ export default function Shipping() {
 
     const orderId = localStorage.getItem('currentOrderId')
       || ('ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase())
+    const addressLine = `${street} ${externalNumber}${internalNumber ? ` Int ${internalNumber}` : ''}`.trim()
+
     const shippingInfo = {
       name,
       email,
-      address,
+      address: addressLine,
+      street,
+      externalNumber,
+      internalNumber,
+      municipality,
       city,
       postalCode,
+      colony,
+      references,
       country
     }
 
@@ -187,7 +275,8 @@ export default function Shipping() {
           physical: updatedOrder.physical,
           digital: updatedOrder.digital,
           total: updatedOrder.total,
-          orderId: orderId
+          orderId: orderId,
+          shipping: shippingInfo
         })
       })
 
@@ -280,16 +369,73 @@ export default function Shipping() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Dirección de Envío</label>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Código Postal</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
+                    placeholder="Ingresa tu código postal"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={handlePostalCodeLookup}
+                    disabled={geoLoading}
+                    className="px-4 py-3 bg-white/90 border border-gray-300 text-gray-700 rounded-lg text-xs uppercase tracking-[0.16em] hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Buscar
+                  </button>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Ingresa primero el CP para autocompletar municipio, ciudad y colonia.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Calle</label>
                 <input
                   type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
-                  placeholder="Ingresa tu dirección completa (usa el mapa para autocompletar)"
+                  placeholder="Calle"
                   required
                 />
-                <p className="text-sm text-gray-500 mt-1">💡 Usa el mapa interactivo para encontrar tu dirección exacta</p>
+              </div>
+
+              <div>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Numero Exterior</label>
+                <input
+                  type="text"
+                  value={externalNumber}
+                  onChange={(e) => setExternalNumber(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
+                  placeholder="Numero exterior"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Numero Interior</label>
+                <input
+                  type="text"
+                  value={internalNumber}
+                  onChange={(e) => setInternalNumber(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
+                  placeholder="Numero interior (opcional)"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Municipio</label>
+                <input
+                  type="text"
+                  value={municipality}
+                  onChange={(e) => setMunicipality(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
+                  placeholder="Municipio"
+                  required
+                />
               </div>
 
               <div>
@@ -304,46 +450,47 @@ export default function Shipping() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Código Postal</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
-                    placeholder="Código Postal"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={handlePostalCodeLookup}
-                    disabled={geoLoading}
-                    className="px-4 py-3 bg-white/90 border border-gray-300 text-gray-700 rounded-lg text-xs uppercase tracking-[0.16em] hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Buscar
-                  </button>
-                </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Referencias (Entre calles)</label>
+                <input
+                  type="text"
+                  value={references}
+                  onChange={(e) => setReferences(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
+                  placeholder="Ej: Entre Av. Juarez y Calle Hidalgo"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Colonia</label>
+                <select
+                  value={colony}
+                  onChange={(e) => setColony(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
+                >
+                  <option value="">Selecciona colonia</option>
+                  {colonyOptions.map((item) => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+                <p className="text-sm text-gray-500 mt-1">Si no aparece tu colonia, puedes dejarlo en blanco o editar municipio/ciudad manualmente.</p>
               </div>
 
               <div className="md:col-span-2">
                 <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">País</label>
-                <select
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
-                >
-                  <option value="México">México</option>
-                  <option value="Estados Unidos">Estados Unidos</option>
-                  <option value="Canadá">Canadá</option>
-                </select>
+                <input
+                  type="text"
+                  value="México"
+                  readOnly
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-700"
+                />
               </div>
 
               <div className="md:col-span-2">
                 <h3 className="text-sm text-gray-700 uppercase tracking-[0.16em] mb-2">Mapa de ubicación</h3>
-                <p className="text-sm text-gray-500 mb-2">Busca por código postal o haz click en el mapa para autocompletar dirección.</p>
+                <p className="text-sm text-gray-500 mb-2">Vista de referencia de la ubicación seleccionada.</p>
                 <div className="overflow-hidden rounded-lg border border-gray-300">
-                  <ShippingMap center={mapCenter} onPick={handleMapPick} />
+                  <ShippingMap center={mapCenter} interactive={false} />
                 </div>
                 {geoStatus && <p className="text-sm text-gray-600 mt-2">{geoStatus}</p>}
               </div>

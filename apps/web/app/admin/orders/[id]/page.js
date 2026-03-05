@@ -8,6 +8,8 @@ export default function OrderDetail() {
   const { id } = useParams()
   const [orderData, setOrderData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [nextStatus, setNextStatus] = useState('pending')
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   useEffect(() => {
     const loadOrder = async () => {
@@ -18,6 +20,7 @@ export default function OrderDetail() {
           const found = data.orders.find(order => order.id === id)
           if (found) {
             setOrderData(found)
+            setNextStatus(found.status || 'pending')
             setLoading(false)
             return
           }
@@ -32,6 +35,7 @@ export default function OrderDetail() {
         const found = orders.find(order => order.id === id)
         if (found) {
           setOrderData(found)
+          setNextStatus(found.status || 'pending')
         }
       }
       setLoading(false)
@@ -44,26 +48,31 @@ export default function OrderDetail() {
 
   if (loading) {
     return (
-      <div
-        className="container mx-auto px-4 py-8 min-h-[70vh]"
-        style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f6 55%, #d1d5db 100%)' }}
-      >
-        Cargando pedido...
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <div className="w-full max-w-2xl bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-lg border border-white/20 rounded-2xl shadow-[0_18px_48px_rgba(0,0,0,0.28)] p-8 text-center">
+          <p className="text-xs uppercase tracking-[0.18em] text-gray-400 mb-3">Panel de Pedidos</p>
+          <h2 className="text-2xl md:text-3xl font-semibold uppercase tracking-[0.2em] text-gray-100">Cargando pedido</h2>
+          <p className="mt-3 text-sm text-gray-300">Estamos preparando la información del pedido seleccionado.</p>
+        </div>
       </div>
     )
   }
 
   if (!orderData) {
     return (
-      <div
-        className="container mx-auto px-4 py-8 min-h-[70vh]"
-        style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f6 55%, #d1d5db 100%)' }}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Pedido no encontrado</h1>
-          <Link href="/admin/orders" className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Volver a Pedidos</Link>
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <div className="w-full max-w-3xl bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-lg border border-white/20 rounded-2xl shadow-[0_18px_48px_rgba(0,0,0,0.28)] p-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-5">
+            <h1 className="text-2xl md:text-3xl font-semibold uppercase tracking-[0.2em] text-gray-100">Pedido no encontrado</h1>
+            <Link
+              href="/admin/orders"
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-black/30 px-5 py-2 text-xs tracking-[0.18em] uppercase text-gray-200 hover:bg-black/45 transition"
+            >
+              Volver a Pedidos
+            </Link>
+          </div>
+          <p className="text-gray-300">No se encontró información para el pedido <span className="font-mono text-xs tracking-[0.08em]">{id}</span>.</p>
         </div>
-        <p className="text-gray-600">No se encontró información para el pedido #{id}.</p>
       </div>
     )
   }
@@ -88,76 +97,197 @@ export default function OrderDetail() {
             ? 'Entregado'
             : orderData.status || 'Pendiente'
 
+  const statusClasses = statusLabel === 'Pendiente'
+    ? 'bg-white/10 text-gray-200 border border-white/20'
+    : statusLabel === 'Procesando'
+      ? 'bg-white/20 text-white border border-white/25'
+      : statusLabel === 'Enviado'
+        ? 'bg-white/15 text-gray-100 border border-white/20'
+        : 'bg-black/30 text-gray-300 border border-white/10'
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'approved': return 'Aprobado'
+      case 'pending': return 'Pendiente'
+      case 'processing': return 'Procesando'
+      case 'shipped': return 'Enviado'
+      case 'delivered': return 'Entregado'
+      default: return status || 'Pendiente'
+    }
+  }
+
+  const handleChangeStatus = async () => {
+    if (!orderData?.id || !nextStatus || nextStatus === orderData.status) return
+
+    setIsUpdatingStatus(true)
+    let updatedOk = false
+    const historyEntry = {
+      at: new Date().toISOString(),
+      action: 'status_change',
+      fromStatus: orderData.status || 'pending',
+      toStatus: nextStatus,
+      by: 'Admin'
+    }
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderData.id, status: nextStatus, historyEntry })
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setOrderData(prev => ({
+          ...prev,
+          status: nextStatus,
+          statusHistory: [...(Array.isArray(prev?.statusHistory) ? prev.statusHistory : []), historyEntry]
+        }))
+        updatedOk = true
+      }
+    } catch (error) {
+      console.error('Error actualizando estado:', error)
+    } finally {
+      if (updatedOk) {
+        const storedOrders = localStorage.getItem('orders')
+        if (storedOrders) {
+          const parsed = JSON.parse(storedOrders)
+          const updated = parsed.map((order) =>
+            order.id === orderData.id
+              ? {
+                  ...order,
+                  status: nextStatus,
+                  statusHistory: [...(Array.isArray(order.statusHistory) ? order.statusHistory : []), historyEntry]
+                }
+              : order
+          )
+          localStorage.setItem('orders', JSON.stringify(updated))
+        }
+      }
+      setIsUpdatingStatus(false)
+    }
+  }
+
+  const statusHistory = Array.isArray(orderData.statusHistory) ? orderData.statusHistory : []
+
   return (
-    <div
-      className="min-h-[70vh] p-6 rounded-2xl"
-      style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f6 55%, #d1d5db 100%)' }}
-    >
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Detalle del Pedido #{id}</h1>
-        <Link href="/admin/orders" className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Volver a Pedidos</Link>
+    <div className="min-h-[70vh] py-4 text-gray-100">
+      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-semibold uppercase tracking-[0.22em]">Detalle del Pedido</h1>
+          <p className="mt-2 text-xs md:text-sm text-gray-300 tracking-[0.12em] uppercase">Vista completa del pedido y su historial</p>
+        </div>
+        <Link
+          href="/admin/orders"
+          className="inline-flex items-center justify-center rounded-full border border-white/20 bg-black/30 px-5 py-2 text-xs tracking-[0.18em] uppercase text-gray-200 hover:bg-black/45 transition"
+        >
+          Volver a Pedidos
+        </Link>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Información del pedido */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Información del Pedido</h2>
-          <div className="space-y-2">
-            <p><strong>ID:</strong> {orderData.id}</p>
-            <p><strong>Cliente:</strong> {orderData.shipping?.name || 'N/A'}</p>
-            <p><strong>Email:</strong> {orderData.shipping?.email || 'N/A'}</p>
-            <p><strong>Tipo:</strong> {orderType}</p>
-            <p><strong>Estado:</strong>
-              <span className={`ml-2 px-2 py-1 rounded text-sm ${
-                statusLabel === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' :
-                statusLabel === 'Procesando' ? 'bg-blue-100 text-blue-800' :
-                'bg-green-100 text-green-800'
-              }`}>
-                {statusLabel}
-              </span>
+        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-[0_18px_48px_rgba(0,0,0,0.28)]">
+          <h2 className="text-lg font-semibold mb-5 uppercase tracking-[0.16em] text-gray-100">Información del Pedido</h2>
+          <div className="space-y-3 text-sm text-gray-200">
+            <p>
+              <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">ID:</span>
+              <span className="font-mono text-xs tracking-[0.08em] break-all">{orderData.id}</span>
             </p>
-            <p><strong>Fecha:</strong> {orderData.createdAt ? new Date(orderData.createdAt).toLocaleString() : 'N/A'}</p>
-            <p><strong>Precio:</strong> ${Number(orderData.total || 0).toFixed(2)}</p>
+            <p><span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Cliente:</span>{orderData.shipping?.name || 'N/A'}</p>
+            <p><span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Email:</span>{orderData.shipping?.email || 'N/A'}</p>
+            <p><span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Tipo:</span>{orderType}</p>
+            <p>
+              <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Estado:</span>
+              <span className={`ml-1 px-3 py-1 rounded-full text-xs uppercase tracking-[0.14em] ${statusClasses}`}>{statusLabel}</span>
+            </p>
+            <p><span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Fecha:</span>{orderData.createdAt ? new Date(orderData.createdAt).toLocaleString() : 'N/A'}</p>
+            <p><span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Precio:</span>${Number(orderData.total || 0).toFixed(2)}</p>
             {hasPhysical && (
-              <p><strong>Dirección:</strong> {orderData.shipping?.address || 'N/A'}, {orderData.shipping?.city || 'N/A'}, {orderData.shipping?.postalCode || 'N/A'}, {orderData.shipping?.country || 'N/A'}</p>
+              <div>
+                <p>
+                  <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Direccion:</span>
+                  {orderData.shipping?.address || 'N/A'}
+                </p>
+                <p>
+                  <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Calle:</span>
+                  {orderData.shipping?.street || 'N/A'}
+                </p>
+                <p>
+                  <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Numero Exterior:</span>
+                  {orderData.shipping?.externalNumber || 'N/A'}
+                </p>
+                <p>
+                  <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Numero Interior:</span>
+                  {orderData.shipping?.internalNumber || 'N/A'}
+                </p>
+                <p>
+                  <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Ubicacion:</span>
+                  {orderData.shipping?.colony || 'N/A'}, {orderData.shipping?.municipality || 'N/A'}, {orderData.shipping?.city || 'N/A'}, {orderData.shipping?.postalCode || 'N/A'}, {orderData.shipping?.country || 'N/A'}
+                </p>
+                <p>
+                  <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Referencias:</span>
+                  {orderData.shipping?.references || 'N/A'}
+                </p>
+              </div>
             )}
-            <p><strong>Notas:</strong> {orderData.notes || 'N/A'}</p>
           </div>
         </div>
 
         {/* Acciones del pedido */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Acciones</h2>
+        <div className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-[0_18px_48px_rgba(0,0,0,0.28)]">
+          <h2 className="text-lg font-semibold mb-5 uppercase tracking-[0.16em] text-gray-100">Acciones</h2>
           <div className="space-y-3">
-            <button className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Cambiar Estado
-            </button>
-            <button className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+            <div className="space-y-2">
+              <label className="block text-xs uppercase tracking-[0.14em] text-gray-400">Cambiar estado</label>
+              <select
+                value={nextStatus}
+                onChange={(e) => setNextStatus(e.target.value)}
+                className="w-full bg-black/30 border border-white/20 text-gray-100 rounded-xl px-3 py-2 text-xs tracking-[0.12em] uppercase focus:outline-none focus:ring-2 focus:ring-gray-400/60"
+              >
+                <option value="pending">Pendiente</option>
+                <option value="processing">Procesando</option>
+                <option value="shipped">Enviado</option>
+                <option value="delivered">Entregado</option>
+                <option value="approved">Aprobado</option>
+              </select>
+              <button
+                onClick={handleChangeStatus}
+                disabled={isUpdatingStatus || nextStatus === orderData.status}
+                className="w-full bg-black/35 border border-white/15 text-gray-100 py-2 px-4 rounded-xl hover:bg-black/50 transition text-xs tracking-[0.14em] uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUpdatingStatus ? 'Guardando...' : 'Actualizar estado'}
+              </button>
+            </div>
+            <button className="w-full bg-black/35 border border-white/15 text-gray-100 py-2 px-4 rounded-xl hover:bg-black/50 transition text-xs tracking-[0.14em] uppercase">
               Enviar Confirmación por Email
-            </button>
-            <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600">
-              Generar Factura
-            </button>
-            <button className="w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">
-              Cancelar Pedido
             </button>
           </div>
         </div>
       </div>
 
       {/* Historial del pedido */}
-      <div className="mt-6 bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Historial del Pedido</h2>
+      <div className="mt-6 bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-[0_18px_48px_rgba(0,0,0,0.28)]">
+        <h2 className="text-lg font-semibold mb-4 uppercase tracking-[0.16em] text-gray-100">Historial del Pedido</h2>
         <div className="space-y-2">
-          <div className="flex justify-between items-center py-2 border-b">
-            <span>{orderData.createdAt ? new Date(orderData.createdAt).toLocaleString() : 'Fecha desconocida'} - Pedido creado</span>
-            <span className="text-sm text-gray-500">Sistema</span>
+          <div className="flex justify-between items-center py-2 border-b border-white/10">
+            <span className="text-sm text-gray-200">{orderData.createdAt ? new Date(orderData.createdAt).toLocaleString() : 'Fecha desconocida'} - Pedido creado</span>
+            <span className="text-xs uppercase tracking-[0.12em] text-gray-400">Sistema</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b">
-            <span>{orderData.status === 'approved' ? 'Pago confirmado' : 'Pago en proceso'}</span>
-            <span className="text-sm text-gray-500">Sistema</span>
+          <div className="flex justify-between items-center py-2 border-b border-white/10">
+            <span className="text-sm text-gray-200">{orderData.status === 'approved' ? 'Pago confirmado' : 'Pago en proceso'}</span>
+            <span className="text-xs uppercase tracking-[0.12em] text-gray-400">Sistema</span>
           </div>
-          {/* Más entradas del historial */}
+          {statusHistory
+            .slice()
+            .sort((a, b) => new Date(b.at || 0).getTime() - new Date(a.at || 0).getTime())
+            .map((entry, index) => (
+              <div key={`${entry.at || 'hist'}-${index}`} className="flex justify-between items-center py-2 border-b border-white/10">
+                <span className="text-sm text-gray-200">
+                  {entry.at ? new Date(entry.at).toLocaleString() : 'Fecha desconocida'} - Estado cambiado de {getStatusLabel(entry.fromStatus)} a {getStatusLabel(entry.toStatus)}
+                </span>
+                <span className="text-xs uppercase tracking-[0.12em] text-gray-400">{entry.by || 'Admin'}</span>
+              </div>
+            ))}
         </div>
       </div>
     </div>

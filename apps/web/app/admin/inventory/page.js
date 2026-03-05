@@ -215,9 +215,11 @@ export default function InventoryAdmin() {
                 </div>
                 <div>
                   <h5 className="font-semibold mb-2 text-gray-200">Dirección de Envío:</h5>
+                  <p className="text-sm text-gray-300">{order.shipping?.address || 'N/A'}</p>
                   <p className="text-sm text-gray-300">
-                    {order.shipping?.address}, {order.shipping?.city}, {order.shipping?.postalCode}, {order.shipping?.country}
+                    {order.shipping?.colony || 'N/A'}, {order.shipping?.municipality || 'N/A'}, {order.shipping?.city || 'N/A'}, {order.shipping?.postalCode || 'N/A'}, {order.shipping?.country || 'N/A'}
                   </p>
+                  <p className="text-sm text-gray-400">Referencias: {order.shipping?.references || 'N/A'}</p>
                 </div>
               </div>
             ))

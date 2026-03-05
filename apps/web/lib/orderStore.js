@@ -62,7 +62,7 @@ export const upsertOrder = async (order) => {
   return orders.find(item => item.id === order.id)
 }
 
-export const updateOrderStatus = async (id, status) => {
+export const updateOrderStatus = async (id, status, historyEntry) => {
   if (!id) {
     throw new Error('Order id requerido para actualizar')
   }
@@ -71,10 +71,33 @@ export const updateOrderStatus = async (id, status) => {
   if (targetIndex === -1) {
     return null
   }
+  const existingHistory = Array.isArray(orders[targetIndex].statusHistory)
+    ? orders[targetIndex].statusHistory
+    : []
+
   orders[targetIndex] = {
     ...orders[targetIndex],
-    status
+    status,
+    ...(historyEntry
+      ? {
+          statusHistory: [...existingHistory, historyEntry]
+        }
+      : {})
   }
   await writeOrders(orders)
   return orders[targetIndex]
+}
+
+export const deleteOrderById = async (id) => {
+  if (!id) {
+    throw new Error('Order id requerido para eliminar')
+  }
+  const orders = await readOrders()
+  const exists = orders.some(item => item.id === id)
+  if (!exists) {
+    return false
+  }
+  const filtered = orders.filter(item => item.id !== id)
+  await writeOrders(filtered)
+  return true
 }

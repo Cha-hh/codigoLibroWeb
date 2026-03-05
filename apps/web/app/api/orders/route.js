@@ -1,4 +1,4 @@
-import { readOrders, upsertOrder, updateOrderStatus } from '../../../lib/orderStore'
+import { readOrders, upsertOrder, updateOrderStatus, deleteOrderById } from '../../../lib/orderStore'
 
 const noStoreHeaders = { 'Cache-Control': 'no-store, max-age=0' }
 
@@ -34,8 +34,8 @@ export async function POST(request) {
 
 export async function PATCH(request) {
   try {
-    const { id, status } = await request.json()
-    const updated = await updateOrderStatus(id, status)
+    const { id, status, historyEntry } = await request.json()
+    const updated = await updateOrderStatus(id, status, historyEntry)
     if (!updated) {
       return Response.json(
         { ok: false, error: 'Pedido no encontrado' },
@@ -46,6 +46,25 @@ export async function PATCH(request) {
   } catch (error) {
     return Response.json(
       { ok: false, error: error.message || 'No se pudo actualizar el pedido' },
+      { status: 400, headers: noStoreHeaders }
+    )
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const { id } = await request.json()
+    const removed = await deleteOrderById(id)
+    if (!removed) {
+      return Response.json(
+        { ok: false, error: 'Pedido no encontrado' },
+        { status: 404, headers: noStoreHeaders }
+      )
+    }
+    return Response.json({ ok: true }, { headers: noStoreHeaders })
+  } catch (error) {
+    return Response.json(
+      { ok: false, error: error.message || 'No se pudo eliminar el pedido' },
       { status: 400, headers: noStoreHeaders }
     )
   }
