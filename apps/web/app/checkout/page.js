@@ -6,11 +6,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 const PHYSICAL_PRICE = 450
-const DIGITAL_PRICE = 300
 
 export default function Checkout() {
   const [physicalQuantity, setPhysicalQuantity] = useState(1)
-  const [digitalQuantity, setDigitalQuantity] = useState(0)
   const [stock, setStock] = useState(0)
   const [loading, setLoading] = useState(false)
   const [mpStatus, setMpStatus] = useState({ ok: true, message: '' })
@@ -43,38 +41,30 @@ export default function Checkout() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // Validar que haya al menos un producto seleccionado
-    if (physicalQuantity === 0 && digitalQuantity === 0) {
-      alert('Por favor, selecciona al menos un producto')
-      return
-    }
-
     // Verificar stock antes de proceder
-    if (physicalQuantity > 0) {
-      try {
-        const stockRes = await fetch('/api/stock')
-        const stock = await stockRes.json()
-        const availableStock = stock.book?.quantity || 0
-        if (physicalQuantity > availableStock) {
-          alert(`No hay suficiente stock. Disponible: ${availableStock} unidades.`)
-          return
-        }
-      } catch (error) {
-        console.error('Error al verificar stock:', error)
-        alert('Error al verificar stock. Inténtalo de nuevo.')
+    try {
+      const stockRes = await fetch('/api/stock')
+      const stock = await stockRes.json()
+      const availableStock = stock.book?.quantity || 0
+      if (physicalQuantity > availableStock) {
+        alert(`No hay suficiente stock. Disponible: ${availableStock} unidades.`)
         return
       }
+    } catch (error) {
+      console.error('Error al verificar stock:', error)
+      alert('Error al verificar stock. Inténtalo de nuevo.')
+      return
     }
 
     setLoading(true)
 
     try {
       const orderId = generateOrderId()
-      const total = (physicalQuantity * PHYSICAL_PRICE) + (digitalQuantity * DIGITAL_PRICE)
+      const total = physicalQuantity * PHYSICAL_PRICE
 
       const order = {
         physical: physicalQuantity,
-        digital: digitalQuantity,
+        digital: 0,
         total: total
       }
 
@@ -82,12 +72,7 @@ export default function Checkout() {
       localStorage.setItem('currentOrder', JSON.stringify(order))
       localStorage.setItem('currentOrderId', orderId)
 
-      // Redirigir según tipo de pedido
-      if (physicalQuantity === 0 && digitalQuantity > 0) {
-        router.push('/checkout/digital')
-      } else {
-        router.push('/checkout/shipping')
-      }
+      router.push('/checkout/shipping')
     } catch (error) {
       console.error('Error al preparar la orden:', error)
       alert('Error al preparar la orden. Por favor, intenta de nuevo.')
@@ -95,7 +80,7 @@ export default function Checkout() {
     }
   }
 
-  const total = (physicalQuantity * PHYSICAL_PRICE) + (digitalQuantity * DIGITAL_PRICE)
+  const total = physicalQuantity * PHYSICAL_PRICE
 
   return (
     <div
@@ -156,28 +141,6 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Libro Digital */}
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-4 uppercase tracking-[0.14em]">Libro Digital</h2>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-700">Precio: $300.00</p>
-                  <p className="text-sm text-gray-500">Descarga inmediata - Máximo 1 por usuario</p>
-                </div>
-                <div className="flex items-center">
-                  <label className="mr-2 text-xs uppercase tracking-[0.16em] text-gray-700">Cantidad:</label>
-                  <input
-                    type="number"
-                    value={digitalQuantity}
-                    onChange={(e) => setDigitalQuantity(Math.min(1, Math.max(0, parseInt(e.target.value) || 0)))}
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center bg-white/90 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
-                    min="0"
-                    max="1"
-                  />
-                </div>
-              </div>
-            </div>
-
             {/* Total */}
             <div className="border-t pt-4 mb-6">
               <div className="flex justify-between items-center text-xl font-bold">
@@ -190,7 +153,7 @@ export default function Checkout() {
             <button
               type="submit"
               className="w-full bg-gray-800 text-white py-3 px-6 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={physicalQuantity === 0 && digitalQuantity === 0 || physicalQuantity > stock || loading}
+              disabled={physicalQuantity === 0 || physicalQuantity > stock || loading}
             >
               {loading ? 'Procesando...' : physicalQuantity > stock ? 'Stock insuficiente' : 'Continuar al envío'}
             </button>

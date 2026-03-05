@@ -811,7 +811,10 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
       </section>
 
       {/* Sección Collage */}
-      <section className="relative py-0 bg-gray-900">
+      <section
+        className="relative py-0"
+        style={{ background: 'linear-gradient(180deg, #106069ff 0%, #074B54ff 45%, #0A323Bff 100%)' }}
+      >
         {/* Noise texture overlay */}
         <div
           className="absolute inset-0 opacity-40 pointer-events-none"
