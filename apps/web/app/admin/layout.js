@@ -42,7 +42,7 @@ export default function AdminLayout({ children }) {
             <div className="flex flex-wrap items-center gap-4 text-xs tracking-[0.2em] uppercase">
               <Link href="/admin/inventory" className="text-gray-300 hover:text-gray-100 transition">Inventario</Link>
               <Link href="/admin/orders" className="text-gray-300 hover:text-gray-100 transition">Pedidos</Link>
-              <Link href="/admin/tickets" className="text-gray-300 hover:text-gray-100 transition">Tickets</Link>
+              <Link href="/admin/tickets" className="text-gray-300 hover:text-gray-100 transition">Preguntas</Link>
               <Link href="/admin/change-password" className="text-gray-300 hover:text-gray-100 transition">Cambiar Contraseña</Link>
               <button
                 onClick={() => {
