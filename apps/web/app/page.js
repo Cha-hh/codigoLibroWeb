@@ -61,7 +61,7 @@ export default function Home() {
 
   useEffect(() => {
     const onResize = () => {
-      setHeroTitleMaxDistance(window.innerWidth < 768 ? 120 : 160);
+      setHeroTitleMaxDistance(window.innerWidth < 768 ? 180 : 280);
       if (window.innerWidth >= 768) {
         setIsMobileMenuOpen(false);
       }
@@ -94,9 +94,12 @@ export default function Home() {
     const onScroll = () => {
       if (!heroSectionRef.current) return;
 
-      // Inicia la animacion desde el primer scroll hacia abajo.
-      const triggerDistance = Math.max(heroSectionRef.current.offsetHeight * 0.35, 1);
-      const p = window.scrollY / triggerDistance;
+      const rect = heroSectionRef.current.getBoundingClientRect();
+      // Comienza en 0 cuando el hero esta en su posicion inicial y
+      // completa el recorrido cuando ya casi salio de pantalla.
+      const travel = Math.max(-rect.top, 0);
+      const total = Math.max(rect.height * 1.2, 1);
+      const p = travel / total;
 
       setHeroTitleProgress(Math.min(Math.max(p, 0), 1));
     };
@@ -109,7 +112,7 @@ export default function Home() {
   const introTextEase = introTextProgress * introTextProgress;
   const introTextTranslateX = 120 - introTextEase * 120;
   const introTextOpacity = 0.35 + introTextEase * 0.65;
-  const heroTitleEase = 1 - Math.pow(1 - heroTitleProgress, 2);
+  const heroTitleEase = Math.pow(heroTitleProgress, 1.15);
   const heroTitleTranslateX = -heroTitleEase * heroTitleMaxDistance;
 
   const handleNavItemClick = () => {
@@ -390,7 +393,7 @@ export default function Home() {
                     </span>
                   </a>
                 </div>
-                <div className="flex justify-center">
+                <div className="flex flex-col items-center md:items-start gap-4">
                   <Image
                     src="/images/autor-libro.jpg"
                     alt="Autor del libro"
@@ -399,6 +402,9 @@ export default function Home() {
                     className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg h-auto"
                     priority
                   />
+                  <p className="text-[10px] md:text-xs tracking-[0.18em] text-gray-100/90 font-sans font-medium uppercase text-center md:text-left">
+                    Sucesos paranormales basados en hechos reales
+                  </p>
                 </div>
               </div>
             </div>
