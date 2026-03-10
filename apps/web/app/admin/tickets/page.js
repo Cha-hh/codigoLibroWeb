@@ -20,10 +20,32 @@ export default function Tickets() {
     loadFaqs()
   }, [])
 
-  const loadQuestions = () => {
+  const loadQuestions = async () => {
     const storedQuestions = localStorage.getItem('bookQuestions')
     if (storedQuestions) {
-      setQuestions(JSON.parse(storedQuestions))
+      try {
+        const parsed = JSON.parse(storedQuestions)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          await Promise.all(
+            parsed.map((item) =>
+              fetch('/api/questions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
+              })
+            )
+          )
+        }
+        localStorage.removeItem('bookQuestions')
+      } catch (error) {
+        console.error('Error migrando preguntas locales:', error)
+      }
+    }
+
+    const res = await fetch('/api/questions', { cache: 'no-store' })
+    const data = await res.json()
+    if (data.ok) {
+      setQuestions(data.questions || [])
     }
   }
 
@@ -34,15 +56,19 @@ export default function Tickets() {
     setFaqDrafts(Object.fromEntries(data.map((item) => [item.id, item.answer || ''])))
   }
 
-  const updateQuestionStatus = (id, newStatus) => {
+  const updateQuestionStatus = async (id, newStatus) => {
     const updatedQuestions = questions.map(q =>
       q.id === id ? { ...q, status: newStatus } : q
     )
     setQuestions(updatedQuestions)
-    localStorage.setItem('bookQuestions', JSON.stringify(updatedQuestions))
+    await fetch('/api/questions', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, updates: { status: newStatus } })
+    })
   }
 
-  const closeQuestionWithAnswer = (id, adminAnswer) => {
+  const closeQuestionWithAnswer = async (id, adminAnswer) => {
     const updatedQuestions = questions.map((q) =>
       q.id === id
         ? {
@@ -54,7 +80,18 @@ export default function Tickets() {
         : q
     )
     setQuestions(updatedQuestions)
-    localStorage.setItem('bookQuestions', JSON.stringify(updatedQuestions))
+    await fetch('/api/questions', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id,
+        updates: {
+          status: 'cerrado',
+          adminAnswer,
+          answeredAt: new Date().toISOString()
+        }
+      })
+    })
   }
 
   const openAnswerModal = (question) => {
@@ -71,7 +108,7 @@ export default function Tickets() {
     setIsSubmittingAnswer(true)
 
     try {
-      closeQuestionWithAnswer(selectedQuestion.id, trimmedAnswer)
+      await closeQuestionWithAnswer(selectedQuestion.id, trimmedAnswer)
 
       setShowAnswerModal(false)
       setSelectedQuestion(null)
@@ -111,7 +148,11 @@ export default function Tickets() {
 
     const updatedQuestions = questions.filter(q => q.id !== questionToDelete.id)
     setQuestions(updatedQuestions)
-    localStorage.setItem('bookQuestions', JSON.stringify(updatedQuestions))
+    await fetch('/api/questions', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: questionToDelete.id })
+    })
 
     try {
       const questionText = (questionToDelete.question || '').trim().toLowerCase()

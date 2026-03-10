@@ -9,8 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/kv": "^3.0.0",
     "animate.css": "^4.1.1",
     "axios": "^1.13.2",
+    "bcryptjs": "^2.4.3",
     "daisyui": "^5.5.14",
     "leaflet": "^1.9.4",
     "mercadopago": "^2.12.0",

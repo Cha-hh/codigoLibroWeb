@@ -10,13 +10,6 @@ export default function AdminLayout({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('authenticated') === 'true'
-    if (!isAuthenticated && pathname !== '/admin/login') {
-      router.push('/admin/login')
-    }
-  }, [router, pathname])
-
-  useEffect(() => {
     setIsMobileMenuOpen(false)
   }, [pathname])
 
@@ -61,8 +54,9 @@ export default function AdminLayout({ children }) {
               <Link href="/admin/change-password" className="text-gray-300 hover:text-gray-100 transition">Cambiar Contraseña</Link>
               <button
                 onClick={() => {
-                  localStorage.removeItem('authenticated')
-                  router.push('/admin/login')
+                  fetch('/api/admin/logout', { method: 'POST' }).finally(() => {
+                    router.push('/admin/login')
+                  })
                 }}
                 className="text-gray-300 hover:text-gray-100 transition"
               >
@@ -80,8 +74,9 @@ export default function AdminLayout({ children }) {
                 <Link href="/admin/change-password" className="text-gray-300 hover:text-gray-100 transition">Cambiar Contraseña</Link>
                 <button
                   onClick={() => {
-                    localStorage.removeItem('authenticated')
-                    router.push('/admin/login')
+                    fetch('/api/admin/logout', { method: 'POST' }).finally(() => {
+                      router.push('/admin/login')
+                    })
                   }}
                   className="text-left text-gray-300 hover:text-gray-100 transition"
                 >

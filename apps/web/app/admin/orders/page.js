@@ -33,12 +33,14 @@ export default function Orders() {
       const res = await fetch('/api/orders', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: orderId, status: newStatus })
+        body: JSON.stringify({ id: orderId, fulfillmentStatus: newStatus })
       })
       const data = await res.json()
       if (data.ok) {
         setOrders(prev => prev.map(order =>
-          order.id === orderId ? { ...order, status: newStatus } : order
+          order.id === orderId
+            ? { ...order, fulfillmentStatus: newStatus, status: newStatus }
+            : order
         ))
         return
       }
@@ -46,7 +48,9 @@ export default function Orders() {
       console.error('Error actualizando pedido:', error)
     }
     const updatedOrders = orders.map(order =>
-      order.id === orderId ? { ...order, status: newStatus } : order
+      order.id === orderId
+        ? { ...order, fulfillmentStatus: newStatus, status: newStatus }
+        : order
     )
     setOrders(updatedOrders)
     localStorage.setItem('orders', JSON.stringify(updatedOrders))
@@ -78,13 +82,13 @@ export default function Orders() {
 
   const filteredOrders = orders.filter(order => {
     const matchesType = !filterType || (filterType === 'physical' && order.physical > 0) || (filterType === 'digital' && order.digital > 0)
-    const matchesStatus = !filterStatus || order.status === filterStatus
+    const currentStatus = order.fulfillmentStatus || order.status
+    const matchesStatus = !filterStatus || currentStatus === filterStatus
     return matchesType && matchesStatus
   })
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved': return 'bg-white/15 text-gray-100 border border-white/20'
       case 'pending': return 'bg-white/10 text-gray-200 border border-white/20'
       case 'processing': return 'bg-white/20 text-white border border-white/25'
       case 'shipped': return 'bg-white/15 text-gray-100 border border-white/20'
@@ -95,11 +99,25 @@ export default function Orders() {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'approved': return 'Aprobado'
       case 'pending': return 'Pendiente'
       case 'processing': return 'Procesando'
       case 'shipped': return 'Enviado'
       case 'delivered': return 'Entregado'
+      default: return status || 'Pendiente'
+    }
+  }
+
+  const getPaymentLabel = (status) => {
+    switch (status) {
+      case 'approved': return 'Aprobado'
+      case 'pending': return 'Pendiente'
+      case 'in_process': return 'En proceso'
+      case 'rejected': return 'Rechazado'
+      case 'cancelled': return 'Cancelado'
+      case 'refunded': return 'Reembolsado'
+      case 'charged_back': return 'Contracargo'
+      case 'in_mediation': return 'En mediación'
+      case 'authorized': return 'Autorizado'
       default: return status || 'Pendiente'
     }
   }
@@ -141,7 +159,6 @@ export default function Orders() {
             className="bg-black/25 border border-white/20 text-gray-100 rounded-xl px-4 py-2 text-xs tracking-[0.12em] uppercase focus:outline-none focus:ring-2 focus:ring-gray-400/60"
           >
             <option value="">Todos los estados</option>
-            <option value="approved">Aprobado</option>
             <option value="pending">Pendiente</option>
             <option value="processing">Procesando</option>
             <option value="shipped">Enviado</option>
@@ -184,16 +201,21 @@ export default function Orders() {
                       {formatShippingSummary(order.shipping)}
                     </td>
                     <td className="border border-white/10 px-4 py-2">
-                      <span className={`px-3 py-1 rounded-full text-xs uppercase tracking-[0.16em] ${getStatusColor(order.status)}`}>
-                        {getStatusLabel(order.status)}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`px-3 py-1 rounded-full text-xs uppercase tracking-[0.16em] ${getStatusColor(order.fulfillmentStatus || order.status)}`}>
+                          {getStatusLabel(order.fulfillmentStatus || order.status)}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-[0.12em] text-gray-400">
+                          Pago: {getPaymentLabel(order.paymentStatus)}
+                        </span>
+                      </div>
                     </td>
                     <td className="border border-white/10 px-4 py-2 text-gray-300">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </td>
                     <td className="border border-white/10 px-4 py-2">
                       <a href={`/admin/orders/${order.id}`} className="text-gray-200 hover:text-white mr-3 text-xs uppercase tracking-[0.14em]">Ver</a>
-                      {order.status === 'pending' && (
+                      {((order.fulfillmentStatus || order.status) === 'pending') && (
                         <button
                           onClick={() => updateOrderStatus(order.id, 'processing')}
                           className="text-gray-300 hover:text-gray-100 mr-3 text-xs uppercase tracking-[0.14em]"
@@ -201,7 +223,7 @@ export default function Orders() {
                           Procesar
                         </button>
                       )}
-                      {order.status === 'processing' && (
+                      {((order.fulfillmentStatus || order.status) === 'processing') && (
                         <button
                           onClick={() => updateOrderStatus(order.id, 'shipped')}
                           className="text-gray-300 hover:text-gray-100 mr-3 text-xs uppercase tracking-[0.14em]"
@@ -209,7 +231,7 @@ export default function Orders() {
                           Enviar
                         </button>
                       )}
-                      {order.status === 'shipped' && (
+                      {((order.fulfillmentStatus || order.status) === 'shipped') && (
                         <button
                           onClick={() => updateOrderStatus(order.id, 'delivered')}
                           className="text-gray-300 hover:text-gray-100 mr-3 text-xs uppercase tracking-[0.14em]"
@@ -219,9 +241,9 @@ export default function Orders() {
                       )}
                       <button
                         onClick={() => deleteOrder(order.id)}
-                        disabled={order.status !== 'delivered'}
+                        disabled={(order.fulfillmentStatus || order.status) !== 'delivered'}
                         className="text-gray-300 hover:text-gray-100 text-xs uppercase tracking-[0.14em] disabled:text-gray-500 disabled:cursor-not-allowed"
-                        title={order.status !== 'delivered' ? 'Solo puedes eliminar pedidos entregados' : 'Eliminar pedido'}
+                        title={(order.fulfillmentStatus || order.status) !== 'delivered' ? 'Solo puedes eliminar pedidos entregados' : 'Eliminar pedido'}
                       >
                         Eliminar
                       </button>
@@ -250,9 +272,14 @@ export default function Orders() {
                     <p className="text-[10px] uppercase tracking-[0.16em] text-gray-400">Pedido</p>
                     <p className="font-mono text-xs text-gray-100 break-all" title={order.id}>{order.id || 'N/A'}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] ${getStatusColor(order.status)}`}>
-                    {getStatusLabel(order.status)}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] ${getStatusColor(order.fulfillmentStatus || order.status)}`}>
+                      {getStatusLabel(order.fulfillmentStatus || order.status)}
+                    </span>
+                    <span className="text-[9px] uppercase tracking-[0.12em] text-gray-400">
+                      Pago: {getPaymentLabel(order.paymentStatus)}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-2 text-sm text-gray-200 mb-4">
@@ -269,7 +296,7 @@ export default function Orders() {
 
                 <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.14em]">
                   <a href={`/admin/orders/${order.id}`} className="text-gray-200 hover:text-white">Ver</a>
-                  {order.status === 'pending' && (
+                  {((order.fulfillmentStatus || order.status) === 'pending') && (
                     <button
                       onClick={() => updateOrderStatus(order.id, 'processing')}
                       className="text-gray-300 hover:text-gray-100"
@@ -277,7 +304,7 @@ export default function Orders() {
                       Procesar
                     </button>
                   )}
-                  {order.status === 'processing' && (
+                  {((order.fulfillmentStatus || order.status) === 'processing') && (
                     <button
                       onClick={() => updateOrderStatus(order.id, 'shipped')}
                       className="text-gray-300 hover:text-gray-100"
@@ -285,7 +312,7 @@ export default function Orders() {
                       Enviar
                     </button>
                   )}
-                  {order.status === 'shipped' && (
+                  {((order.fulfillmentStatus || order.status) === 'shipped') && (
                     <button
                       onClick={() => updateOrderStatus(order.id, 'delivered')}
                       className="text-gray-300 hover:text-gray-100"
@@ -295,9 +322,9 @@ export default function Orders() {
                   )}
                   <button
                     onClick={() => deleteOrder(order.id)}
-                    disabled={order.status !== 'delivered'}
+                    disabled={(order.fulfillmentStatus || order.status) !== 'delivered'}
                     className="text-gray-300 hover:text-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
-                    title={order.status !== 'delivered' ? 'Solo puedes eliminar pedidos entregados' : 'Eliminar pedido'}
+                    title={(order.fulfillmentStatus || order.status) !== 'delivered' ? 'Solo puedes eliminar pedidos entregados' : 'Eliminar pedido'}
                   >
                     Eliminar
                   </button>

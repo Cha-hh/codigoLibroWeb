@@ -14,12 +14,6 @@ export default function ChangePassword() {
     setError('')
     setSuccess('')
 
-    // Verificar contraseña actual (hardcoded)
-    if (currentPassword !== 'admin') {
-      setError('Contraseña actual incorrecta')
-      return
-    }
-
     if (newPassword !== confirmPassword) {
       setError('Las nuevas contraseñas no coinciden')
       return
@@ -30,12 +24,24 @@ export default function ChangePassword() {
       return
     }
 
-    // En un sistema real, aquí se enviaría a una API para cambiar la contraseña
-    // Por ahora, solo mostramos éxito
-    setSuccess('Contraseña cambiada exitosamente')
-    setCurrentPassword('')
-    setNewPassword('')
-    setConfirmPassword('')
+    fetch('/api/admin/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword })
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data?.error || 'No se pudo cambiar la contraseña')
+        }
+        setSuccess('Contraseña cambiada exitosamente')
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+      })
+      .catch((err) => {
+        setError(err.message || 'No se pudo cambiar la contraseña')
+      })
   }
 
   return (

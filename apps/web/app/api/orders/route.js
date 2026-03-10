@@ -1,9 +1,18 @@
+import { cookies } from 'next/headers'
 import { readOrders, upsertOrder, updateOrderStatus, deleteOrderById } from '../../../lib/orderStore'
+import { SESSION_COOKIE, verifyAdminSessionToken } from '../../../lib/adminAuth'
 
 const noStoreHeaders = { 'Cache-Control': 'no-store, max-age=0' }
 
 export async function GET() {
   try {
+    const token = cookies().get(SESSION_COOKIE)?.value
+    if (!verifyAdminSessionToken(token)) {
+      return Response.json(
+        { ok: false, error: 'No autorizado' },
+        { status: 401, headers: noStoreHeaders }
+      )
+    }
     const orders = await readOrders()
     const sorted = [...orders].sort((a, b) => {
       const aTime = new Date(a.createdAt || 0).getTime()
@@ -34,8 +43,16 @@ export async function POST(request) {
 
 export async function PATCH(request) {
   try {
-    const { id, status, historyEntry } = await request.json()
-    const updated = await updateOrderStatus(id, status, historyEntry)
+    const token = cookies().get(SESSION_COOKIE)?.value
+    if (!verifyAdminSessionToken(token)) {
+      return Response.json(
+        { ok: false, error: 'No autorizado' },
+        { status: 401, headers: noStoreHeaders }
+      )
+    }
+    const { id, status, fulfillmentStatus, historyEntry } = await request.json()
+    const resolvedStatus = fulfillmentStatus || status
+    const updated = await updateOrderStatus(id, resolvedStatus, historyEntry)
     if (!updated) {
       return Response.json(
         { ok: false, error: 'Pedido no encontrado' },
@@ -53,6 +70,13 @@ export async function PATCH(request) {
 
 export async function DELETE(request) {
   try {
+    const token = cookies().get(SESSION_COOKIE)?.value
+    if (!verifyAdminSessionToken(token)) {
+      return Response.json(
+        { ok: false, error: 'No autorizado' },
+        { status: 401, headers: noStoreHeaders }
+      )
+    }
     const { id } = await request.json()
     const removed = await deleteOrderById(id)
     if (!removed) {

@@ -76,7 +76,7 @@ export async function POST(request) {
         ...order,
         id: resolvedOrderId,
         paymentId: paymentDetails.id,
-        status: paymentDetails.status || 'pending',
+        paymentStatus: paymentDetails.status || 'pending',
         total: order?.total ?? paymentDetails.transaction_amount,
         updatedAt: new Date().toISOString(),
         source: order ? 'confirmation' : 'confirmation-min'

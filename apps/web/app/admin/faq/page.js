@@ -54,10 +54,17 @@ export default function FaqAdmin() {
     fetchFaq();
   };
 
+  const handleMigrate = async () => {
+    const confirmed = window.confirm('¿Migrar faq.json a KV? Esto agregará las preguntas del archivo si no existen.')
+    if (!confirmed) return
+    await fetch('/api/admin/migrate-faq', { method: 'POST' })
+    fetchFaq()
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-2 sm:px-4 py-8 text-gray-100">
       <h1 className="text-3xl font-bold mb-8 uppercase tracking-[0.2em]">Administrar FAQ</h1>
-      <form onSubmit={handleSubmit} className="mb-8 bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
+      <form onSubmit={handleSubmit} className="mb-6 bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg">
         <div className="mb-4">
           <label className="block text-xs font-medium tracking-[0.18em] uppercase mb-2 text-gray-200">Pregunta</label>
           <input
@@ -82,6 +89,14 @@ export default function FaqAdmin() {
           {editingId ? 'Actualizar' : 'Agregar'} FAQ
         </button>
       </form>
+      <div className="mb-8">
+        <button
+          onClick={handleMigrate}
+          className="bg-black/40 text-gray-200 px-6 py-3 rounded-full text-xs tracking-[0.25em] uppercase hover:bg-black/60 transition"
+        >
+          Migrar faq.json
+        </button>
+      </div>
       <div>
         <h2 className="text-2xl font-bold mb-4 uppercase tracking-[0.14em]">FAQ Existentes</h2>
         {faq.map((item) => (

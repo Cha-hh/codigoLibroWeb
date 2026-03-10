@@ -203,7 +203,8 @@ export default function InventoryAdmin() {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold text-gray-100">Total: ${order.total?.toFixed(2)}</p>
-                    <p className="text-sm text-gray-400">Estado: {order.status}</p>
+                    <p className="text-sm text-gray-400">Estado: {order.fulfillmentStatus || order.status}</p>
+                    <p className="text-xs text-gray-500">Pago: {order.paymentStatus || 'pending'}</p>
                   </div>
                 </div>
                 <div className="mb-4">

@@ -55,7 +55,7 @@ export function CheckoutRedirectClient() {
                 id: resolvedOrderId,
                 ...order,
                 paymentId: paymentId || confirmData.paymentId,
-                status: 'approved',
+                paymentStatus: 'approved',
                 createdAt: new Date().toISOString()
               }
 

@@ -166,9 +166,15 @@ export default function Home() {
       topic: selectedTopic || 'general',
     };
 
-    const existingQuestions = JSON.parse(localStorage.getItem('bookQuestions') || '[]');
-    existingQuestions.push(newTicket);
-    localStorage.setItem('bookQuestions', JSON.stringify(existingQuestions));
+    try {
+      await fetch('/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTicket)
+      });
+    } catch (error) {
+      console.error('Error guardando pregunta:', error);
+    }
 
     // Limpiar formulario
     setContactEmail('');

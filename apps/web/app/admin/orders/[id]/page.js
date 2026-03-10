@@ -20,7 +20,7 @@ export default function OrderDetail() {
           const found = data.orders.find(order => order.id === id)
           if (found) {
             setOrderData(found)
-            setNextStatus(found.status || 'pending')
+            setNextStatus(found.fulfillmentStatus || found.status || 'pending')
             setLoading(false)
             return
           }
@@ -35,7 +35,7 @@ export default function OrderDetail() {
         const found = orders.find(order => order.id === id)
         if (found) {
           setOrderData(found)
-          setNextStatus(found.status || 'pending')
+          setNextStatus(found.fulfillmentStatus || found.status || 'pending')
         }
       }
       setLoading(false)
@@ -85,17 +85,16 @@ export default function OrderDetail() {
       ? 'Libro Físico'
       : 'Libro Digital'
 
-  const statusLabel = orderData.status === 'approved'
-    ? 'Aprobado'
-    : orderData.status === 'pending'
-      ? 'Pendiente'
-      : orderData.status === 'processing'
-        ? 'Procesando'
-        : orderData.status === 'shipped'
-          ? 'Enviado'
-          : orderData.status === 'delivered'
-            ? 'Entregado'
-            : orderData.status || 'Pendiente'
+  const currentFulfillmentStatus = orderData.fulfillmentStatus || orderData.status
+  const statusLabel = currentFulfillmentStatus === 'pending'
+    ? 'Pendiente'
+    : currentFulfillmentStatus === 'processing'
+      ? 'Procesando'
+      : currentFulfillmentStatus === 'shipped'
+        ? 'Enviado'
+        : currentFulfillmentStatus === 'delivered'
+          ? 'Entregado'
+          : currentFulfillmentStatus || 'Pendiente'
 
   const statusClasses = statusLabel === 'Pendiente'
     ? 'bg-white/10 text-gray-200 border border-white/20'
@@ -107,7 +106,6 @@ export default function OrderDetail() {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'approved': return 'Aprobado'
       case 'pending': return 'Pendiente'
       case 'processing': return 'Procesando'
       case 'shipped': return 'Enviado'
@@ -116,15 +114,30 @@ export default function OrderDetail() {
     }
   }
 
+  const getPaymentLabel = (status) => {
+    switch (status) {
+      case 'approved': return 'Aprobado'
+      case 'pending': return 'Pendiente'
+      case 'in_process': return 'En proceso'
+      case 'rejected': return 'Rechazado'
+      case 'cancelled': return 'Cancelado'
+      case 'refunded': return 'Reembolsado'
+      case 'charged_back': return 'Contracargo'
+      case 'in_mediation': return 'En mediación'
+      case 'authorized': return 'Autorizado'
+      default: return status || 'Pendiente'
+    }
+  }
+
   const handleChangeStatus = async () => {
-    if (!orderData?.id || !nextStatus || nextStatus === orderData.status) return
+    if (!orderData?.id || !nextStatus || nextStatus === (orderData.fulfillmentStatus || orderData.status)) return
 
     setIsUpdatingStatus(true)
     let updatedOk = false
     const historyEntry = {
       at: new Date().toISOString(),
       action: 'status_change',
-      fromStatus: orderData.status || 'pending',
+      fromStatus: orderData.fulfillmentStatus || orderData.status || 'pending',
       toStatus: nextStatus,
       by: 'Admin'
     }
@@ -133,12 +146,13 @@ export default function OrderDetail() {
       const res = await fetch('/api/orders', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: orderData.id, status: nextStatus, historyEntry })
+        body: JSON.stringify({ id: orderData.id, fulfillmentStatus: nextStatus, historyEntry })
       })
       const data = await res.json()
       if (data.ok) {
         setOrderData(prev => ({
           ...prev,
+          fulfillmentStatus: nextStatus,
           status: nextStatus,
           statusHistory: [...(Array.isArray(prev?.statusHistory) ? prev.statusHistory : []), historyEntry]
         }))
@@ -155,6 +169,7 @@ export default function OrderDetail() {
             order.id === orderData.id
               ? {
                   ...order,
+                  fulfillmentStatus: nextStatus,
                   status: nextStatus,
                   statusHistory: [...(Array.isArray(order.statusHistory) ? order.statusHistory : []), historyEntry]
                 }
@@ -199,6 +214,10 @@ export default function OrderDetail() {
             <p>
               <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Estado:</span>
               <span className={`ml-1 px-3 py-1 rounded-full text-xs uppercase tracking-[0.14em] ${statusClasses}`}>{statusLabel}</span>
+            </p>
+            <p>
+              <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Pago:</span>
+              <span className="text-gray-200">{getPaymentLabel(orderData.paymentStatus)}</span>
             </p>
             <p><span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Fecha:</span>{orderData.createdAt ? new Date(orderData.createdAt).toLocaleString() : 'N/A'}</p>
             <p><span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Precio:</span>${Number(orderData.total || 0).toFixed(2)}</p>
@@ -248,11 +267,10 @@ export default function OrderDetail() {
                 <option value="processing">Procesando</option>
                 <option value="shipped">Enviado</option>
                 <option value="delivered">Entregado</option>
-                <option value="approved">Aprobado</option>
               </select>
               <button
                 onClick={handleChangeStatus}
-                disabled={isUpdatingStatus || nextStatus === orderData.status}
+                disabled={isUpdatingStatus || nextStatus === (orderData.fulfillmentStatus || orderData.status)}
                 className="w-full bg-black/35 border border-white/15 text-gray-100 py-2 px-4 rounded-xl hover:bg-black/50 transition text-xs tracking-[0.14em] uppercase disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isUpdatingStatus ? 'Guardando...' : 'Actualizar estado'}
@@ -274,7 +292,7 @@ export default function OrderDetail() {
             <span className="text-xs uppercase tracking-[0.12em] text-gray-400">Sistema</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-white/10">
-            <span className="text-sm text-gray-200">{orderData.status === 'approved' ? 'Pago confirmado' : 'Pago en proceso'}</span>
+            <span className="text-sm text-gray-200">{orderData.paymentStatus === 'approved' ? 'Pago confirmado' : 'Pago en proceso'}</span>
             <span className="text-xs uppercase tracking-[0.12em] text-gray-400">Sistema</span>
           </div>
           {statusHistory

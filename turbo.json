@@ -1,6 +1,20 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
+  "globalEnv": [
+    "KV_REST_API_URL",
+    "KV_REST_API_TOKEN",
+    "KV_REST_API_READ_ONLY_TOKEN",
+    "KV_URL",
+    "REDIS_URL",
+    "MERCADO_PAGO_ACCESS_TOKEN",
+    "NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY",
+    "NEXT_PUBLIC_MP_USE_SANDBOX",
+    "MP_PUBLIC_BASE_URL",
+    "ADMIN_USER",
+    "ADMIN_PASSWORD_HASH",
+    "ADMIN_SESSION_SECRET"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

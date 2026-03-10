@@ -12,13 +12,22 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Credenciales hardcoded para demo
-    if (username === 'admin' && password === 'admin') {
-      localStorage.setItem('authenticated', 'true')
-      router.push('/admin/tickets')
-    } else {
-      setError('Credenciales incorrectas')
-    }
+    setError('')
+    fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data?.error || 'Credenciales incorrectas')
+        }
+        router.push('/admin/tickets')
+      })
+      .catch((err) => {
+        setError(err.message || 'No se pudo iniciar sesión')
+      })
   }
 
   return (

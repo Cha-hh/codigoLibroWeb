@@ -1,82 +1,98 @@
-import fs from 'fs/promises'
-import path from 'path'
+import { kv } from '@vercel/kv'
 
-const resolveStorePath = () => {
-  const cwd = process.cwd()
-  const appsWebPath = path.join('apps', 'web')
-  const isInAppsWeb = cwd.endsWith(appsWebPath)
-  const baseDir = isInAppsWeb ? cwd : path.join(cwd, appsWebPath)
-  return path.join(baseDir, '.data', 'orders.json')
+const ORDER_KEY = (id) => `order:${id}`
+const ORDER_INDEX_KEY = 'orders:index'
+const MP_STATUSES = new Set([
+  'approved',
+  'pending',
+  'in_process',
+  'rejected',
+  'cancelled',
+  'refunded',
+  'charged_back',
+  'in_mediation',
+  'authorized'
+])
+
+const resolvePaymentStatus = (incoming, existing) => {
+  if (incoming?.paymentStatus) return incoming.paymentStatus
+  if (incoming?.status && MP_STATUSES.has(incoming.status)) return incoming.status
+  if (existing?.paymentStatus) return existing.paymentStatus
+  if (existing?.status && MP_STATUSES.has(existing.status)) return existing.status
+  return 'pending'
 }
 
-const ensureStoreFile = async () => {
-  const storePath = resolveStorePath()
-  await fs.mkdir(path.dirname(storePath), { recursive: true })
-  try {
-    await fs.access(storePath)
-  } catch {
-    await fs.writeFile(storePath, '[]', 'utf-8')
-  }
-  return storePath
+const resolveFulfillmentStatus = (incoming, existing) => {
+  if (incoming?.fulfillmentStatus) return incoming.fulfillmentStatus
+  if (incoming?.status && !MP_STATUSES.has(incoming.status)) return incoming.status
+  if (existing?.fulfillmentStatus) return existing.fulfillmentStatus
+  if (existing?.status && !MP_STATUSES.has(existing.status)) return existing.status
+  return 'pending'
 }
 
 export const readOrders = async () => {
-  const storePath = await ensureStoreFile()
-  const raw = await fs.readFile(storePath, 'utf-8')
-  try {
-    return JSON.parse(raw)
-  } catch {
+  const ids = await kv.zrange(ORDER_INDEX_KEY, 0, -1)
+  if (!Array.isArray(ids) || ids.length === 0) {
     return []
   }
+  const keys = ids.map((id) => ORDER_KEY(id))
+  const records = await kv.mget(...keys)
+  const orders = Array.isArray(records) ? records.filter(Boolean) : []
+  return orders.reverse()
 }
 
 export const writeOrders = async (orders) => {
-  const storePath = await ensureStoreFile()
-  await fs.writeFile(storePath, JSON.stringify(orders, null, 2), 'utf-8')
+  if (!Array.isArray(orders)) return
+  await kv.del(ORDER_INDEX_KEY)
+  for (const order of orders) {
+    if (!order?.id) continue
+    const createdAt = order.createdAt || new Date().toISOString()
+    const score = new Date(createdAt).getTime()
+    await kv.set(ORDER_KEY(order.id), { ...order, createdAt })
+    await kv.zadd(ORDER_INDEX_KEY, { score, member: order.id })
+  }
 }
 
 export const upsertOrder = async (order) => {
   if (!order?.id) {
     throw new Error('Order id requerido para guardar')
   }
-  const orders = await readOrders()
-  const existingIndex = orders.findIndex(item => item.id === order.id)
   const now = new Date().toISOString()
-
-  if (existingIndex >= 0) {
-    const existing = orders[existingIndex]
-    orders[existingIndex] = {
-      ...existing,
-      ...order,
-      createdAt: existing.createdAt || order.createdAt || now
-    }
-  } else {
-    orders.push({
-      status: 'pending',
-      createdAt: order.createdAt || now,
-      ...order
-    })
+  const existing = await kv.get(ORDER_KEY(order.id))
+  const createdAt = existing?.createdAt || order.createdAt || now
+  const paymentStatus = resolvePaymentStatus(order, existing)
+  const fulfillmentStatus = resolveFulfillmentStatus(order, existing)
+  const saved = {
+    ...(existing || {}),
+    ...order,
+    paymentStatus,
+    fulfillmentStatus,
+    status: fulfillmentStatus,
+    createdAt
   }
-
-  await writeOrders(orders)
-  return orders.find(item => item.id === order.id)
+  await kv.set(ORDER_KEY(order.id), saved)
+  await kv.zadd(ORDER_INDEX_KEY, {
+    score: new Date(createdAt).getTime(),
+    member: order.id
+  })
+  return saved
 }
 
 export const updateOrderStatus = async (id, status, historyEntry) => {
   if (!id) {
     throw new Error('Order id requerido para actualizar')
   }
-  const orders = await readOrders()
-  const targetIndex = orders.findIndex(item => item.id === id)
-  if (targetIndex === -1) {
+  const existing = await kv.get(ORDER_KEY(id))
+  if (!existing) {
     return null
   }
-  const existingHistory = Array.isArray(orders[targetIndex].statusHistory)
-    ? orders[targetIndex].statusHistory
+  const existingHistory = Array.isArray(existing.statusHistory)
+    ? existing.statusHistory
     : []
 
-  orders[targetIndex] = {
-    ...orders[targetIndex],
+  const updated = {
+    ...existing,
+    fulfillmentStatus: status,
     status,
     ...(historyEntry
       ? {
@@ -84,20 +100,19 @@ export const updateOrderStatus = async (id, status, historyEntry) => {
         }
       : {})
   }
-  await writeOrders(orders)
-  return orders[targetIndex]
+  await kv.set(ORDER_KEY(id), updated)
+  return updated
 }
 
 export const deleteOrderById = async (id) => {
   if (!id) {
     throw new Error('Order id requerido para eliminar')
   }
-  const orders = await readOrders()
-  const exists = orders.some(item => item.id === id)
-  if (!exists) {
+  const existing = await kv.get(ORDER_KEY(id))
+  if (!existing) {
     return false
   }
-  const filtered = orders.filter(item => item.id !== id)
-  await writeOrders(filtered)
+  await kv.del(ORDER_KEY(id))
+  await kv.zrem(ORDER_INDEX_KEY, id)
   return true
 }
