@@ -16,5 +16,8 @@
   "devDependencies": {
     "next": "^15.2.0",
     "turbo": "^2.7.3"
+  },
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
   }
 }

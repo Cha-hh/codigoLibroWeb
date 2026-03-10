@@ -150,7 +150,7 @@ export default function Home() {
     }
   };
 
-  const handleSubmitContact = (e) => {
+  const handleSubmitContact = async (e) => {
     e.preventDefault();
     if (!contactEmail || !contactMessage) return;
 
