@@ -298,11 +298,11 @@ export default function Home() {
               type="button"
               className="md:hidden ml-auto inline-flex items-center justify-center rounded-md border border-white/20 p-2 text-white hover:bg-white/10 transition"
               onClick={() => setIsMobileMenuOpen(prev => !prev)}
-              aria-label="Abrir menu"
+              aria-label="Abrir menú"
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-nav-menu"
             >
-              <span className="sr-only">Abrir menu</span>
+              <span className="sr-only">Abrir menú</span>
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="12" x2="21" y2="12" />
@@ -393,7 +393,7 @@ export default function Home() {
                     </span>
                   </a>
                 </div>
-                <div className="flex flex-col items-center md:items-start gap-4">
+                <div className="relative flex flex-col items-center md:items-start justify-center md:justify-start">
                   <Image
                     src="/images/autor-libro.jpg"
                     alt="Autor del libro"
@@ -402,8 +402,10 @@ export default function Home() {
                     className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg h-auto"
                     priority
                   />
-                  <p className="text-[10px] md:text-xs tracking-[0.18em] text-gray-100/90 font-sans font-medium uppercase text-center md:text-left">
-                    Sucesos paranormales basados en hechos reales
+                  <p className="mt-4 text-[10px] md:text-sm tracking-[0.18em] text-gray-100/90 font-sans font-medium text-center md:mt-0 md:absolute md:right-full md:mr-16 md:top-[84%] md:w-[260px]">
+                    Sucesos paranormales.
+                    <br />
+                    Basados en hechos reales.
                   </p>
                 </div>
               </div>
@@ -420,12 +422,12 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
             <div className="md:col-span-4">
               <div className="text-xs tracking-[0.25em] uppercase text-gray-300">
-                Introduccion
+                Introducción
               </div>
 
               <div className="relative mt-10 h-[340px] md:h-[520px] overflow-hidden">
                 <div className="absolute inset-0 rounded-xl border border-black/10" />
-                {/* Imagen paralax, efecto de desplazamiento*/}
+                {/* Imagen parallax, efecto de desplazamiento*/}
                 <div
                   className="absolute inset-0 flex items-center justify-center"
                   style={{
@@ -472,35 +474,35 @@ export default function Home() {
                 <p>
                   El mundo no se limita a lo que los ojos alcanzan a ver. Existe lo material: lo tangible,
                   lo comprobable, aquello que se sostiene en la certeza de lo visible y, sin embargo,
-                  esta condenado a desvanecerse con el tiempo.
+                  está condenado a desvanecerse con el tiempo.
                 </p>
 
                 <p>
-                  Pero hay otro mundo, uno que no se mide ni se pesa: el mundo espiritual. Un territorio
+                  Pero hay otro mundo, uno que no se mide ni se pesa. El mundo espiritual. Un territorio
                   invisible donde convergen fuerzas, creencias y voluntades; algunas deformadas por el error,
                   otras aferradas a verdades que trascienden al hombre.
                 </p>
 
                 <p>
-                  No importa como se le nombre o desde donde se le mire: esta ahi. Silencioso, constante,
-                  mas proximo de lo que quisieramos admitir.
+                  No importa cómo se le nombre o desde dónde se le mire: está ahí. Silencioso, constante,
+                  más próximo de lo que quisiéramos admitir.
                 </p>
 
                 <p>
-                  No siempre se manifiesta con claridad. A veces se insinua en la sombra, en el presentimiento,
-                  en el temor que no tiene explicacion. Otras, se revela con la contundencia de lo inevitable.
+                  No siempre se manifiesta con claridad. A veces se insinúa en la sombra, en el presentimiento,
+                  en el temor que no tiene explicación. Otras, se revela con la contundencia de lo inevitable.
                 </p>
 
                 <p>
                   Este libro no pretende revelarlo todo. Apenas abre una rendija: un instante fugaz, un susurro
                   en medio de la oscuridad. Un suspiro breve, pero cargado de verdad; tan profundo y real como
-                  la respiracion que, sin notarlo, nos mantiene con vida.
+                  la respiración que, sin notarlo, nos mantiene con vida.
                 </p>
               </div>
 
               <div className="mt-10 flex items-center justify-between max-w-2xl">
                 <div className="text-xs tracking-[0.25em] uppercase text-black/70">
-                  Leer mas
+                  Leer más
                 </div>
                 <div className="h-px flex-1 mx-6 bg-black/20" />
                 <a href="/checkout" className="text-xs tracking-[0.25em] text-black hover:opacity-70 transition uppercase">
@@ -639,7 +641,7 @@ export default function Home() {
                       único en toda tu existencia.
                     </p>
                     <p className="font-semibold text-gray-800">
-                      No temas mas... confia y sigue adelante.
+                      No temas más... confía y sigue adelante.
                     </p>
                   </div>
                 </div>
@@ -649,20 +651,20 @@ export default function Home() {
                 <div className="bg-white/15 backdrop-blur-lg border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
                   <div className="p-6 border-b border-black/10 flex-shrink-0">
                     <h3 className="text-xl font-bold text-center tracking-wide text-gray-800">
-                      HOY ES UN BUEN DIA
+                      HOY ES UN BUEN DÍA
                     </h3>
                   </div>
                   <div className="h-px w-full bg-black/5" />
                   <div className="card-scroll flex-1 px-8 sm:px-16 py-6 text-sm leading-relaxed overflow-y-auto text-center text-gray-300">
-                    <p className="font-semibold mb-4 text-gray-800">Hoy es un buen dia.</p>
+                    <p className="font-semibold mb-4 text-gray-800">Hoy es un buen día.</p>
                     <p className="mb-4">
-                      No porque todo este en orden, ni porque la vida haya decidido concedernos una tregua. Es porque
-                      estamos aqui, respirando, conscientes, con la posibilidad intacta de elegir como enfrentarlo.
+                      No porque todo esté en orden, ni porque la vida haya decidido concedernos una tregua. Es porque
+                      estamos aquí, respirando, conscientes, con la posibilidad intacta de elegir cómo enfrentarlo.
                     </p>
                     <p className="font-semibold mb-4 text-gray-800">A pesar de las circunstancias.</p>
                     <p className="mb-4">
-                      A pesar de los errores cometidos, de las decisiones que pesaron mas de lo esperado, de las palabras
-                      que no se dijeron o de aquellas que se dijeron de mas. El pasado no desaparece, pero tampoco gobierna
+                      A pesar de los errores cometidos, de las decisiones que pesaron más de lo esperado, de las palabras
+                      que no se dijeron o de aquellas que se dijeron de más. El pasado no desaparece, pero tampoco gobierna
                       este instante.
                     </p>
                     <p className="mb-4">
@@ -671,15 +673,15 @@ export default function Home() {
                       mantenerse en pie cuando todo invita a bajar la cabeza.
                     </p>
                     <p className="mb-4">
-                      Hoy es un buen dia porque aun hay margen para corregir, aprender, pedir perdon u otorgarlo. Porque mientras
+                      Hoy es un buen día porque aún hay margen para corregir, aprender, pedir perdón u otorgarlo. Porque mientras
                       el tiempo siga avanzando, existe la oportunidad de hacer algo distinto, aunque sea pequeño, un solo paso.
                     </p>
                     <p className="mb-4">
-                      La actitud positiva no cambia el mundo de inmediato, pero transforma la forma en que caminamos dentro de el.
+                      La actitud positiva no cambia el mundo de inmediato, pero transforma la forma en que caminamos dentro de él.
                       Nos permite mirar el error sin quedar atrapados en la culpa, enfrentar la adversidad sin convertirla en condena.
                     </p>
                     <p className="font-semibold mb-4 text-gray-800">
-                      Hoy es un buen dia. Ha sido mi filosofia de vida, en ella he decidido cada paso, cada decision.
+                      Hoy es un buen día. Ha sido mi filosofía de vida, en ella he decidido cada paso, cada decisión.
                     </p>
                     <p className="font-semibold text-gray-800">
                       Porque incluso en medio de la oscuridad, decidir avanzar ya es un acto de luz.
@@ -969,7 +971,7 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
         />
         <div className="relative container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-8 text-gray-800 uppercase">ATENCIÓN Y DUDAS</h2>
-          <p className="text-lg mb-6 text-gray-700">Selecciona la categoria:</p>
+          <p className="text-lg mb-6 text-gray-700">Selecciona la categoría:</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <button
               onClick={() => { setSelectedTopic('Envíos'); setContactMessage('Pregunta sobre envíos: '); }}
