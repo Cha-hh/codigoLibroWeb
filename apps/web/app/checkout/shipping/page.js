@@ -229,7 +229,19 @@ export default function Shipping() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!name || !email || !street || !externalNumber || !municipality || !city || !postalCode) return
+    
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
+      alert('Por favor ingresa un correo válido.')
+      return
+    }
+    
+    // Validar campos obligatorios
+    if (!name || !street || !externalNumber || !municipality || !city || !postalCode || !references) {
+      alert('Por favor completa todos los campos requeridos: nombre, calle, número exterior, municipio, ciudad, código postal y referencias (entre calles).')
+      return
+    }
 
     if (!order || (order.physical === 0 && order.digital === 0)) {
       alert('No hay productos en la orden')
@@ -357,19 +369,22 @@ export default function Shipping() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Correo Electrónico</label>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Correo Electrónico <span className="text-red-600">*</span></label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                   placeholder="tu@email.com"
+                  pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                  title="Por favor ingresa un correo válido"
                   required
                 />
+                <p className="text-sm text-gray-500 mt-1">Recibirás la confirmación de tu compra en este correo.</p>
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Código Postal</label>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Código Postal <span className="text-red-600">*</span></label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -377,6 +392,10 @@ export default function Shipping() {
                     onChange={(e) => setPostalCode(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                     placeholder="Ingresa tu código postal"
+                    minLength="5"
+                    maxLength="5"
+                    pattern="[0-9]{5}"
+                    title="El código postal debe tener exactamente 5 dígitos"
                     required
                   />
                   <button
@@ -392,7 +411,7 @@ export default function Shipping() {
               </div>
 
               <div>
-                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Calle</label>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Calle <span className="text-red-600">*</span></label>
                 <input
                   type="text"
                   value={street}
@@ -404,13 +423,13 @@ export default function Shipping() {
               </div>
 
               <div>
-                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Numero Exterior</label>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Número Exterior <span className="text-red-600">*</span></label>
                 <input
                   type="text"
                   value={externalNumber}
                   onChange={(e) => setExternalNumber(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
-                  placeholder="Numero exterior"
+                  placeholder="Número exterior"
                   required
                 />
               </div>
@@ -451,14 +470,16 @@ export default function Shipping() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Referencias (Entre calles)</label>
+                <label className="block text-xs text-gray-700 uppercase tracking-[0.16em] mb-2">Referencias (Entre calles) <span className="text-red-600">*</span></label>
                 <input
                   type="text"
                   value={references}
                   onChange={(e) => setReferences(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
-                  placeholder="Ej: Entre Av. Juarez y Calle Hidalgo"
+                  placeholder="Ej: Entre Av. Juárez y Calle Hidalgo"
+                  required
                 />
+                <p className="text-sm text-gray-500 mt-1">Ayuda al repartidor a localizar tu domicilio con exactitud.</p>
               </div>
 
               <div className="md:col-span-2">

@@ -27,7 +27,7 @@ export async function POST(request) {
         description: `${physical} unidad(es) - Envío nacional incluido`,
         quantity: physical,
         currency_id: 'MXN',
-        unit_price: 450
+        unit_price: 394
       });
     }
 

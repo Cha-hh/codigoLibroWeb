@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const PHYSICAL_PRICE = 450
+const PHYSICAL_PRICE = 394
 
 export default function Checkout() {
   const [physicalQuantity, setPhysicalQuantity] = useState(1)
@@ -99,19 +99,19 @@ export default function Checkout() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center uppercase tracking-[0.2em]">Carrito</h1>
 
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-          <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
-            <div className="md:w-1/2 flex-shrink-0 flex justify-center">
+        <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+          <div className="flex flex-col md:flex-row gap-12 items-center md:items-start">
+            <div className="w-full md:w-2/5 flex-shrink-0 flex justify-center">
               <Image
                 src="/images/MockupLibro.jpg"
                 alt="Libro"
                 width={500}
                 height={700}
-                className="w-full max-w-sm md:max-w-md h-auto rounded-lg shadow"
+                className="w-full max-w-sm md:max-w-xs lg:max-w-sm h-auto rounded-lg shadow"
                 priority
               />
             </div>
-            <div className="md:w-1/2">
+            <div className="w-full md:w-3/5">
               {!mpStatus.ok && (
                 <div className="mb-6 rounded border border-red-200 bg-red-50 p-4 text-red-700">
                   {mpStatus.message}
@@ -119,40 +119,46 @@ export default function Checkout() {
               )}
               <form onSubmit={handleSubmit}>
             {/* Libro Físico */}
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-4 uppercase tracking-[0.14em]">Libro Físico</h2>
-              <div className="flex items-center justify-between">
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-6 uppercase tracking-[0.14em]">Libro Físico</h2>
+              <div className="space-y-4">
                 <div>
-                  <p className="text-gray-700">Precio: $450.00</p>
-                  <p className="text-sm text-gray-500">Envío nacional incluido</p>
-                  <p className="text-sm text-gray-600">Stock disponible: {stock} unidades</p>
+                  <div className="flex flex-wrap items-baseline gap-2 mb-3">
+                    <p className="text-gray-400 line-through text-sm">$450.00</p>
+                    <p className="text-2xl font-bold text-red-600">$394.00</p>
+                    <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">Lanzamiento</span>
+                  </div>
+                  <p className="text-sm text-gray-500 leading-relaxed">Envío nacional incluido (todo México, zona urbana)</p>
+                  <p className="text-sm text-gray-600 mt-2">Stock disponible: <span className="font-semibold">{stock} unidades</span></p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <label className="mr-2 text-xs uppercase tracking-[0.16em] text-gray-700">Cantidad:</label>
-                  <input
-                    type="number"
-                    value={physicalQuantity}
-                    onChange={(e) => setPhysicalQuantity(Math.max(0, Math.min(stock, parseInt(e.target.value) || 0)))}
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center bg-white/90 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
-                    min="0"
-                    max={stock}
-                  />
+                <div className="pt-2 border-t">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <label className="text-xs uppercase tracking-[0.16em] text-gray-700 font-semibold">Cantidad:</label>
+                    <input
+                      type="number"
+                      value={physicalQuantity}
+                      onChange={(e) => setPhysicalQuantity(Math.max(0, Math.min(stock, parseInt(e.target.value) || 0)))}
+                      className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center bg-white/90 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
+                      min="0"
+                      max={stock}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Total */}
-            <div className="border-t pt-4 mb-6">
-              <div className="flex justify-between items-center text-xl font-bold">
-                <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
+            <div className="border-t py-6 mb-8">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-semibold text-gray-800">Total a pagar:</span>
+                <span className="text-3xl font-bold text-gray-800">${total.toFixed(2)}</span>
               </div>
             </div>
 
             {/* Botón de compra */}
             <button
               type="submit"
-              className="w-full bg-gray-800 text-white py-3 px-6 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gray-800 text-white py-4 px-6 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
               disabled={physicalQuantity === 0 || physicalQuantity > stock || loading}
             >
               {loading ? 'Procesando...' : physicalQuantity > stock ? 'Stock insuficiente' : 'Continuar al envío'}

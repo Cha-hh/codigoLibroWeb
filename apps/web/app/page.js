@@ -298,11 +298,11 @@ export default function Home() {
               type="button"
               className="md:hidden ml-auto inline-flex items-center justify-center rounded-md border border-white/20 p-2 text-white hover:bg-white/10 transition"
               onClick={() => setIsMobileMenuOpen(prev => !prev)}
-              aria-label="Abrir menú"
+              aria-label="Abrir menu"
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-nav-menu"
             >
-              <span className="sr-only">Abrir menú</span>
+              <span className="sr-only">Abrir menu</span>
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="12" x2="21" y2="12" />
@@ -813,8 +813,12 @@ Es tangible.
 Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
               
               <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-lg mb-6">
-                <p className="text-2xl font-bold mb-2 text-gray-800">Precio: $450.00</p>
-                <p className="text-base mb-2 text-gray-600">Incluye: Libro físico + envío gratuito</p>
+                <div className="flex items-baseline gap-3 mb-3">
+                  <p className="text-2xl font-bold text-gray-800 line-through">$450.00</p>
+                  <p className="text-3xl font-bold text-red-600">$394.00</p>
+                  <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold tracking-wide">Por lanzamiento</span>
+                </div>
+                <p className="text-base mb-2 text-gray-600">Incluye: Libro físico + envío gratuito (todo México, zona urbana)</p>
                 <p className="text-sm text-gray-500">Entrega en 5-7 días hábiles</p>
               </div>
               

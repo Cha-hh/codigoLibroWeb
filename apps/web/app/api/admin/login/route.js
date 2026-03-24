@@ -21,12 +21,16 @@ export async function POST(request) {
       )
     }
 
-    if (!adminPasswordHash && envPasswordHash) {
+    // Siempre preferir el hash del env como fuente de verdad
+    // Si el env tiene hash, úsalo y sincroniza KV si es necesario
+    if (envPasswordHash) {
+      if (adminPasswordHash !== envPasswordHash) {
+        await setAdminPasswordHash(envPasswordHash)
+      }
       adminPasswordHash = envPasswordHash
-      await setAdminPasswordHash(envPasswordHash)
     }
 
-    const isUserOk = username === adminUser
+    const isUserOk = (username || '').trim() === (adminUser || '').trim()
     const isPasswordOk = await bcrypt.compare(password || '', adminPasswordHash)
     if (!isUserOk || !isPasswordOk) {
       return NextResponse.json(

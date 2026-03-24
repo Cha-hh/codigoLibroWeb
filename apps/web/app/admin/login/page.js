@@ -8,11 +8,13 @@ export default function Login() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = (e) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
     fetch('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -27,6 +29,7 @@ export default function Login() {
       })
       .catch((err) => {
         setError(err.message || 'No se pudo iniciar sesión')
+        setLoading(false)
       })
   }
 
@@ -65,7 +68,7 @@ export default function Login() {
               <input
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => { setUsername(e.target.value); setError('') }}
                 className="w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                 placeholder="Tu usuario"
                 required
@@ -77,7 +80,7 @@ export default function Login() {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setError('') }}
                 className="w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/60"
                 placeholder="Tu contraseña"
                 required
@@ -86,8 +89,12 @@ export default function Login() {
 
             {error && <p className="text-red-300 text-sm">{error}</p>}
 
-            <button type="submit" className="w-full bg-gray-800 text-white px-6 py-3 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase">
-              Iniciar Sesión
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gray-800 text-white px-6 py-3 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Verificando...' : 'Iniciar Sesión'}
             </button>
           </form>
         </div>
