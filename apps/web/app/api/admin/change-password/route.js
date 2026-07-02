@@ -2,22 +2,38 @@ import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { SESSION_COOKIE, verifyAdminSessionToken } from '../../../../lib/adminAuth'
-import { getAdminPasswordHash, setAdminPasswordHash } from '../../../../lib/adminStore'
+import {
+  addStoredAdminUsername,
+  getAdminPasswordHash,
+  getAdminPasswordHashByUsername,
+  setAdminPasswordHash,
+  setAdminPasswordHashByUsername
+} from '../../../../lib/adminStore'
+import { getConfiguredAdminCredential } from '../../../../lib/adminCredentials'
 
 export async function POST(request) {
   const token = cookies().get(SESSION_COOKIE)?.value
-  if (!verifyAdminSessionToken(token)) {
+  const session = verifyAdminSessionToken(token)
+  if (!session) {
     return NextResponse.json({ ok: false, error: 'No autorizado' }, { status: 401 })
   }
 
   try {
     const { currentPassword, newPassword } = await request.json()
-    const envHash = process.env.ADMIN_PASSWORD_HASH
-    let storedHash = await getAdminPasswordHash()
+    const username = session.sub
+    const configuredCredential = await getConfiguredAdminCredential(username)
+    const envHash = configuredCredential?.passwordHash || ''
+    let storedHash = await getAdminPasswordHashByUsername(username)
 
     if (!storedHash && envHash) {
       storedHash = envHash
-      await setAdminPasswordHash(envHash)
+      await addStoredAdminUsername(username)
+      await setAdminPasswordHashByUsername(username, envHash)
+
+      const legacyHash = await getAdminPasswordHash()
+      if (!legacyHash) {
+        await setAdminPasswordHash(envHash)
+      }
     }
 
     if (!storedHash) {
@@ -36,7 +52,8 @@ export async function POST(request) {
     }
 
     const newHash = await bcrypt.hash(newPassword, 12)
-    await setAdminPasswordHash(newHash)
+    await addStoredAdminUsername(username)
+    await setAdminPasswordHashByUsername(username, newHash)
 
     return NextResponse.json({ ok: true })
   } catch (error) {

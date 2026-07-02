@@ -13,7 +13,7 @@ const sign = (payload, secret) => {
     .digest('base64url')
 }
 
-export const createAdminSessionToken = (username) => {
+export const createAdminSessionToken = (username, role = 'admin') => {
   const secret = process.env.ADMIN_SESSION_SECRET
   if (!secret) {
     throw new Error('ADMIN_SESSION_SECRET no configurado')
@@ -21,6 +21,7 @@ export const createAdminSessionToken = (username) => {
   const payload = base64url(
     JSON.stringify({
       sub: username,
+      role,
       exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS
     })
   )

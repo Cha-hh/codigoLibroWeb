@@ -8,9 +8,36 @@ export default function AdminLayout({ children }) {
   const router = useRouter()
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [currentRole, setCurrentRole] = useState('')
 
   useEffect(() => {
     setIsMobileMenuOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (pathname === '/admin/login') return
+
+    let cancelled = false
+
+    fetch('/api/admin/me', { cache: 'no-store' })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) {
+          throw new Error(data?.error || 'No autorizado')
+        }
+        if (!cancelled) {
+          setCurrentRole(data?.user?.role || 'admin')
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCurrentRole('admin')
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [pathname])
 
   if (pathname === '/admin/login') {
@@ -51,6 +78,9 @@ export default function AdminLayout({ children }) {
               <Link href="/admin/inventory" className="text-gray-300 hover:text-gray-100 transition">Inventario</Link>
               <Link href="/admin/orders" className="text-gray-300 hover:text-gray-100 transition">Pedidos</Link>
               <Link href="/admin/tickets" className="text-gray-300 hover:text-gray-100 transition">Preguntas</Link>
+              {currentRole === 'superadmin' && (
+                <Link href="/admin/users" className="text-gray-300 hover:text-gray-100 transition">Admins</Link>
+              )}
               <Link href="/admin/change-password" className="text-gray-300 hover:text-gray-100 transition">Cambiar Contraseña</Link>
               <button
                 onClick={() => {
@@ -71,6 +101,9 @@ export default function AdminLayout({ children }) {
                 <Link href="/admin/inventory" className="text-gray-300 hover:text-gray-100 transition">Inventario</Link>
                 <Link href="/admin/orders" className="text-gray-300 hover:text-gray-100 transition">Pedidos</Link>
                 <Link href="/admin/tickets" className="text-gray-300 hover:text-gray-100 transition">Preguntas</Link>
+                {currentRole === 'superadmin' && (
+                  <Link href="/admin/users" className="text-gray-300 hover:text-gray-100 transition">Admins</Link>
+                )}
                 <Link href="/admin/change-password" className="text-gray-300 hover:text-gray-100 transition">Cambiar Contraseña</Link>
                 <button
                   onClick={() => {

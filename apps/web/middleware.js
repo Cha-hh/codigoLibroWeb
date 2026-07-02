@@ -63,6 +63,12 @@ export async function middleware(request) {
     return NextResponse.redirect(url)
   }
 
+  if (pathname.startsWith('/admin/users') && session.role !== 'superadmin') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/admin/orders'
+    return NextResponse.redirect(url)
+  }
+
   return NextResponse.next()
 }
 

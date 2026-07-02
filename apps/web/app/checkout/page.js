@@ -16,7 +16,7 @@ export default function Checkout() {
 
   useEffect(() => {
     // Cargar stock disponible
-    fetch('/api/stock')
+    fetch('/api/stock', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => setStock(data.book?.quantity || 0))
       .catch(() => setStock(0))
@@ -43,7 +43,7 @@ export default function Checkout() {
     
     // Verificar stock antes de proceder
     try {
-      const stockRes = await fetch('/api/stock')
+      const stockRes = await fetch('/api/stock', { cache: 'no-store' })
       const stock = await stockRes.json()
       const availableStock = stock.book?.quantity || 0
       if (physicalQuantity > availableStock) {

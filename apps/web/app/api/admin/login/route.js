@@ -5,42 +5,82 @@ import {
   getAdminSessionCookieOptions,
   SESSION_COOKIE
 } from '../../../../lib/adminAuth'
-import { getAdminPasswordHash, setAdminPasswordHash } from '../../../../lib/adminStore'
+import {
+  addStoredAdminUsername,
+  getAdminPasswordHash,
+  getAdminPasswordHashByUsername,
+  setAdminPasswordHash,
+  setAdminPasswordHashByUsername
+} from '../../../../lib/adminStore'
+import {
+  getConfiguredAdminCredential,
+  getConfiguredAdminUsernames,
+  isSuperAdmin,
+  normalizeUsername
+} from '../../../../lib/adminCredentials'
 
 export async function POST(request) {
   try {
     const { username, password } = await request.json()
-    const adminUser = process.env.ADMIN_USER
-    const envPasswordHash = process.env.ADMIN_PASSWORD_HASH
-    let adminPasswordHash = await getAdminPasswordHash()
+    const normalizedUsername = normalizeUsername(username)
+    const configuredCredential = await getConfiguredAdminCredential(normalizedUsername)
 
-    if (!adminUser || (!adminPasswordHash && !envPasswordHash)) {
-      return NextResponse.json(
-        { ok: false, error: 'Credenciales de admin no configuradas' },
-        { status: 500 }
-      )
-    }
-
-    // Siempre preferir el hash del env como fuente de verdad
-    // Si el env tiene hash, úsalo y sincroniza KV si es necesario
-    if (envPasswordHash) {
-      if (adminPasswordHash !== envPasswordHash) {
-        await setAdminPasswordHash(envPasswordHash)
-      }
-      adminPasswordHash = envPasswordHash
-    }
-
-    const isUserOk = (username || '').trim() === (adminUser || '').trim()
-    const isPasswordOk = await bcrypt.compare(password || '', adminPasswordHash)
-    if (!isUserOk || !isPasswordOk) {
+    if (!configuredCredential) {
       return NextResponse.json(
         { ok: false, error: 'Credenciales incorrectas' },
         { status: 401 }
       )
     }
 
-    const token = createAdminSessionToken(adminUser)
-    const response = NextResponse.json({ ok: true })
+    let adminPasswordHash = await getAdminPasswordHashByUsername(normalizedUsername)
+    adminPasswordHash =
+      typeof adminPasswordHash === 'string' ? adminPasswordHash.trim() : ''
+    const envPasswordHash = configuredCredential.passwordHash
+
+    if ((await getConfiguredAdminUsernames()).length === 0) {
+      return NextResponse.json(
+        { ok: false, error: 'Credenciales de admin no configuradas' },
+        { status: 500 }
+      )
+    }
+
+    if (!adminPasswordHash && envPasswordHash) {
+      await addStoredAdminUsername(normalizedUsername)
+      await setAdminPasswordHashByUsername(normalizedUsername, envPasswordHash)
+      adminPasswordHash = envPasswordHash
+
+      const legacyPasswordHash = await getAdminPasswordHash()
+      if (!legacyPasswordHash) {
+        await setAdminPasswordHash(envPasswordHash)
+      }
+    }
+
+    if (!adminPasswordHash) {
+      return NextResponse.json(
+        { ok: false, error: 'Credenciales de admin no configuradas' },
+        { status: 500 }
+      )
+    }
+
+    const isPasswordOk = await bcrypt.compare(password || '', adminPasswordHash)
+    if (!isPasswordOk) {
+      return NextResponse.json(
+        { ok: false, error: 'Credenciales incorrectas' },
+        { status: 401 }
+      )
+    }
+
+    const token = createAdminSessionToken(
+      normalizedUsername,
+      isSuperAdmin(configuredCredential.role) ? 'superadmin' : 'admin'
+    )
+    const response = NextResponse.json({
+      ok: true,
+      user: {
+        username: normalizedUsername,
+        role: isSuperAdmin(configuredCredential.role) ? 'superadmin' : 'admin'
+      }
+    })
     response.cookies.set(SESSION_COOKIE, token, getAdminSessionCookieOptions())
     return response
   } catch (error) {

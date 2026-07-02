@@ -11,7 +11,7 @@ export default function InventoryAdmin() {
 
   const loadStock = async () => {
     try {
-      const res = await fetch('/api/stock')
+      const res = await fetch('/api/stock', { cache: 'no-store' })
       if (!res.ok) {
         console.error('Error en la respuesta de la API de stock')
         setStock({})
@@ -51,11 +51,23 @@ export default function InventoryAdmin() {
   }
 
   const updateStock = async (id, quantity) => {
-    await fetch('/api/stock', {
+    const parsedQuantity = parseInt(quantity, 10)
+    if (Number.isNaN(parsedQuantity) || parsedQuantity < 0) {
+      return
+    }
+
+    const response = await fetch('/api/stock', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, quantity: parseInt(quantity) }),
+      body: JSON.stringify({ id, quantity: parsedQuantity }),
     })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => null)
+      console.error('Error actualizando stock:', error?.message || response.statusText)
+      return
+    }
+
     loadStock()
     setEditingId(null)
     setNewQuantity('')

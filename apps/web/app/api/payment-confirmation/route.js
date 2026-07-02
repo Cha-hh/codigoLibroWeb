@@ -1,76 +1,74 @@
-import { MercadoPagoConfig, Payment } from 'mercadopago';
-import { upsertOrder } from '../../../lib/orderStore';
+import { Payment } from 'mercadopago'
+import { getMpClient } from '../../../lib/mercadopago'
+import { upsertOrder } from '../../../lib/orderStore'
+import { readStock, updateStockItemQuantity } from '../../../lib/stockStore'
 
-const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
-});
+const fetchMpJson = async (url, accessToken) => {
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: 'no-store'
+  })
+  if (!res.ok) return null
+  return res.json()
+}
+
+const resolvePaymentId = async (paymentId, merchantOrderId, orderId, accessToken) => {
+  if (paymentId) return paymentId
+
+  if (merchantOrderId) {
+    const data = await fetchMpJson(
+      `https://api.mercadopago.com/merchant_orders/${merchantOrderId}`,
+      accessToken
+    )
+    const payments = Array.isArray(data?.payments) ? data.payments : []
+    const approved = payments.find((p) => p?.status === 'approved')
+    const id = approved?.id || payments[payments.length - 1]?.id || null
+    if (id) return id
+  }
+
+  if (orderId) {
+    const data = await fetchMpJson(
+      `https://api.mercadopago.com/v1/payments/search?external_reference=${encodeURIComponent(orderId)}`,
+      accessToken
+    )
+    const results = Array.isArray(data?.results) ? data.results : []
+    const approved = results.find((p) => p?.status === 'approved')
+    return approved?.id || results[0]?.id || null
+  }
+
+  return null
+}
 
 export async function POST(request) {
   try {
-    const { paymentId, merchantOrderId, orderId, order } = await request.json();
+    const { paymentId, merchantOrderId, orderId, order } = await request.json()
 
-    const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+    const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN
     if (!accessToken) {
       return Response.json(
         { success: false, error: 'MERCADO_PAGO_ACCESS_TOKEN no configurado' },
         { status: 500 }
-      );
+      )
     }
 
-    const resolvePaymentIdFromMerchantOrder = async (id) => {
-      const response = await fetch(`https://api.mercadopago.com/merchant_orders/${id}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        cache: 'no-store'
-      });
-      if (!response.ok) {
-        return null;
-      }
-      const data = await response.json();
-      const payments = Array.isArray(data?.payments) ? data.payments : [];
-      const approved = payments.find(item => item?.status === 'approved');
-      return approved?.id || payments[payments.length - 1]?.id || null;
-    };
-
-    const resolvePaymentIdFromExternalReference = async (externalReference) => {
-      if (!externalReference) return null;
-      const response = await fetch(
-        `https://api.mercadopago.com/v1/payments/search?external_reference=${encodeURIComponent(externalReference)}`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          cache: 'no-store'
-        }
-      );
-      if (!response.ok) {
-        return null;
-      }
-      const data = await response.json();
-      const results = Array.isArray(data?.results) ? data.results : [];
-      const approved = results.find(item => item?.status === 'approved');
-      return approved?.id || results[0]?.id || null;
-    };
-
-    let resolvedPaymentId = paymentId;
-
-    if (!resolvedPaymentId && merchantOrderId) {
-      resolvedPaymentId = await resolvePaymentIdFromMerchantOrder(merchantOrderId);
-    }
-
-    if (!resolvedPaymentId && orderId) {
-      resolvedPaymentId = await resolvePaymentIdFromExternalReference(orderId);
-    }
+    const resolvedPaymentId = await resolvePaymentId(
+      paymentId,
+      merchantOrderId,
+      orderId,
+      accessToken
+    )
 
     if (!resolvedPaymentId) {
       return Response.json(
-        { success: false, error: 'paymentId requerido o no se pudo resolver' },
+        { success: false, error: 'No se pudo resolver el ID del pago' },
         { status: 400 }
-      );
+      )
     }
 
-    // Obtener detalles del pago desde Mercado Pago
-    const payment = new Payment(client);
-    const paymentDetails = await payment.get({ id: resolvedPaymentId });
+    const payment = new Payment(getMpClient())
+    const paymentDetails = await payment.get({ id: resolvedPaymentId })
 
-    const resolvedOrderId = orderId || paymentDetails.external_reference;
+    const resolvedOrderId = orderId || paymentDetails.external_reference
     if (resolvedOrderId) {
       await upsertOrder({
         ...order,
@@ -80,29 +78,39 @@ export async function POST(request) {
         total: order?.total ?? paymentDetails.transaction_amount,
         updatedAt: new Date().toISOString(),
         source: order ? 'confirmation' : 'confirmation-min'
-      });
+      })
     }
 
     if (paymentDetails.status === 'approved') {
+      if (order?.physical > 0) {
+        try {
+          const currentStock = await readStock()
+          const currentQty = currentStock.book?.quantity ?? 0
+          await updateStockItemQuantity('book', Math.max(0, currentQty - order.physical))
+        } catch (err) {
+          console.error('Error reduciendo stock:', err)
+        }
+      }
+
       return Response.json({
         success: true,
         status: 'approved',
         paymentId: paymentDetails.id,
         message: 'Pago procesado correctamente'
-      });
-    } else {
-      return Response.json({
-        success: false,
-        status: paymentDetails.status,
-        paymentId: paymentDetails.id,
-        message: 'El pago no fue aprobado'
-      });
+      })
     }
+
+    return Response.json({
+      success: false,
+      status: paymentDetails.status,
+      paymentId: paymentDetails.id,
+      message: 'El pago no fue aprobado'
+    })
   } catch (error) {
-    console.error('Error en confirmación de pago:', error);
+    console.error('Error en confirmación de pago:', error)
     return Response.json(
       { success: false, error: 'Error confirmando pago', details: error?.message },
       { status: 500 }
-    );
+    )
   }
 }

@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 export function CheckoutRedirectClient() {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('Procesando tu pago...')
-  const [showThankYouPopup, setShowThankYouPopup] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const searchParamsString = searchParams.toString()
@@ -18,29 +17,27 @@ export function CheckoutRedirectClient() {
       const paymentId = params.get('payment_id') || params.get('collection_id')
       const orderId = params.get('orderId') || params.get('external_reference')
       const merchantOrderId = params.get('merchant_order_id')
-      const statusParam = params.get('status')
-        || params.get('collection_status')
-        || params.get('payment_status')
-        || type
+      const statusParam =
+        params.get('status') ||
+        params.get('collection_status') ||
+        params.get('payment_status') ||
+        type
 
       try {
         if (statusParam === 'approved' || statusParam === 'success') {
           const currentOrder = localStorage.getItem('currentOrder')
           const currentOrderId = localStorage.getItem('currentOrderId')
           const resolvedOrderId = currentOrderId || orderId
-
           const order = currentOrder ? JSON.parse(currentOrder) : null
 
           const confirmResponse = await fetch('/api/payment-confirmation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              paymentId: paymentId,
-              merchantOrderId: merchantOrderId,
+              paymentId,
+              merchantOrderId,
               orderId: resolvedOrderId,
-              order: order
-                ? { ...order, id: resolvedOrderId }
-                : undefined
+              order: order ? { ...order, id: resolvedOrderId } : undefined
             })
           })
 
@@ -63,52 +60,18 @@ export function CheckoutRedirectClient() {
               existingOrders.push(completedOrder)
               localStorage.setItem('orders', JSON.stringify(existingOrders))
 
-              if (order.physical > 0) {
-                try {
-                  const stockRes = await fetch('/api/stock')
-                  const stock = await stockRes.json()
-                  const currentQuantity = stock.book?.quantity || 0
-                  const newQuantity = Math.max(0, currentQuantity - order.physical)
-                  await fetch('/api/stock', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: 'book', quantity: newQuantity })
-                  })
-                } catch (error) {
-                  console.error('Error al reducir stock:', error)
-                }
-              }
-
               if (order.shipping?.name && order.shipping?.email) {
-                localStorage.setItem('orderConfirmed', JSON.stringify({
-                  name: order.shipping.name,
-                  email: order.shipping.email
-                }))
+                localStorage.setItem(
+                  'orderConfirmed',
+                  JSON.stringify({ name: order.shipping.name, email: order.shipping.email })
+                )
               }
 
               localStorage.removeItem('currentOrder')
               localStorage.removeItem('currentOrderId')
-
-              if (order.digital > 0 && order.physical === 0) {
-                try {
-                  await fetch('/api/digital-delivery', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      orderId: resolvedOrderId,
-                      name: order.shipping?.name,
-                      email: order.shipping?.email
-                    })
-                  })
-                } catch (error) {
-                  console.error('Error solicitando entrega digital:', error)
-                }
-              }
             }
 
-            setTimeout(() => {
-              router.push('/')
-            }, 500)
+            setTimeout(() => router.push('/'), 500)
           } else {
             setStatus('declined')
             setMessage(confirmData?.message || 'El pago no fue aprobado. Por favor, intenta de nuevo.')
@@ -132,13 +95,6 @@ export function CheckoutRedirectClient() {
 
     processPayment()
   }, [router, searchParamsString])
-
-  const handleClosePopup = () => {
-    setShowThankYouPopup(false)
-    localStorage.removeItem('currentOrder')
-    localStorage.removeItem('currentOrderId')
-    router.push('/')
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -215,24 +171,6 @@ export function CheckoutRedirectClient() {
           </>
         )}
       </div>
-
-      {showThankYouPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md mx-auto text-center shadow-xl">
-            <div className="text-green-500 mb-4">
-              <svg className="w-20 h-20 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">¡Gracias por tu compra!</h2>
-            <p className="text-gray-600 mb-2">Tu libro digital está listo para descargar</p>
-            <p className="text-sm text-gray-500 mb-6">En breve recibirás un correo con los detalles de descarga</p>
-            <button onClick={handleClosePopup} className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition font-semibold">
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
