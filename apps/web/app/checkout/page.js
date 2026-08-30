@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const PHYSICAL_PRICE = 394
+const BOOK_PRICE = 369.80
+const SHIPPING_PRICE = 100
 
 export default function Checkout() {
   const [physicalQuantity, setPhysicalQuantity] = useState(1)
@@ -60,7 +61,7 @@ export default function Checkout() {
 
     try {
       const orderId = generateOrderId()
-      const total = physicalQuantity * PHYSICAL_PRICE
+      const total = physicalQuantity * BOOK_PRICE + SHIPPING_PRICE
 
       const order = {
         physical: physicalQuantity,
@@ -80,7 +81,8 @@ export default function Checkout() {
     }
   }
 
-  const total = physicalQuantity * PHYSICAL_PRICE
+  const subtotal = physicalQuantity * BOOK_PRICE
+  const total = subtotal + SHIPPING_PRICE
 
   return (
     <div
@@ -125,10 +127,13 @@ export default function Checkout() {
                 <div>
                   <div className="flex flex-wrap items-baseline gap-2 mb-3">
                     <p className="text-gray-400 line-through text-sm">$450.00</p>
-                    <p className="text-2xl font-bold text-red-600">$394.00</p>
+                    <p className="text-2xl font-bold text-red-600">$369.80</p>
                     <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">Lanzamiento</span>
                   </div>
-                  <p className="text-sm text-gray-500 leading-relaxed">Envío nacional incluido (todo México, zona urbana)</p>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span>+ Envío a toda la república</span>
+                    <span className="font-semibold text-gray-700">$100.00</span>
+                  </div>
                   <p className="text-sm text-gray-600 mt-2">Stock disponible: <span className="font-semibold">{stock} unidades</span></p>
                 </div>
                 <div className="pt-2 border-t">
@@ -148,8 +153,16 @@ export default function Checkout() {
             </div>
 
             {/* Total */}
-            <div className="border-t py-6 mb-8">
-              <div className="flex justify-between items-center">
+            <div className="border-t py-6 mb-8 space-y-2">
+              <div className="flex justify-between items-center text-sm text-gray-500">
+                <span>Libro × {physicalQuantity}</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-gray-500">
+                <span>Envío a toda la república</span>
+                <span>${SHIPPING_PRICE.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-lg font-semibold text-gray-800">Total a pagar:</span>
                 <span className="text-3xl font-bold text-gray-800">${total.toFixed(2)}</span>
               </div>

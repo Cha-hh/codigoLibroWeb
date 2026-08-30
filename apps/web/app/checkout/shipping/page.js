@@ -522,7 +522,7 @@ export default function Shipping() {
               className="w-full mt-8 bg-gray-800 text-white py-3 px-6 rounded-full text-xs tracking-[0.25em] hover:bg-gray-700 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
-              {loading ? 'Procesando...' : 'Pagar con Mercado Pago'}
+              {loading ? 'Procesando...' : 'Continuar al pago'}
             </button>
           </form>
         </div>

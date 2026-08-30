@@ -815,10 +815,14 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
               <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-lg mb-6">
                 <div className="flex items-baseline gap-3 mb-3">
                   <p className="text-2xl font-bold text-gray-800 line-through">$450.00</p>
-                  <p className="text-3xl font-bold text-red-600">$394.00</p>
+                  <p className="text-3xl font-bold text-red-600">$369.80</p>
                   <span className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold tracking-wide">Por lanzamiento</span>
                 </div>
-                <p className="text-base mb-2 text-gray-600">Incluye: Libro físico + envío gratuito (todo México, zona urbana)</p>
+                <div className="flex items-center gap-2 text-base mb-2 text-gray-600">
+                  <span>Libro físico</span>
+                  <span className="text-gray-400">+</span>
+                  <span>Envío $100.00 a toda la república</span>
+                </div>
                 <p className="text-sm text-gray-500">Entrega en 5-7 días hábiles</p>
               </div>
               
@@ -1023,18 +1027,6 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
           </form>
         </div>
       </section>
-
-      {/* Footer legal */}
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto px-4 text-center">
-          <div className="grid md:grid-cols-3 gap-4 mb-4">
-            <a href="#" className="hover:underline">Aviso de privacidad</a>
-            <a href="#" className="hover:underline">Términos y condiciones</a>
-            <a href="#" className="hover:underline">Datos de contacto</a>
-          </div>
-          <p>&copy; 2025 Nombre del Autor. Todos los derechos reservados.</p>
-        </div>
-      </footer>
     </div>
   )
 }

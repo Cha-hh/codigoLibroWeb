@@ -18,10 +18,18 @@ export async function POST(request) {
       items.push({
         id: 'book-physical',
         title: 'Libro Físico',
-        description: `${physical} unidad(es) - Envío nacional incluido`,
+        description: `${physical} unidad(es) - Precio de lanzamiento`,
         quantity: physical,
         currency_id: 'MXN',
-        unit_price: 394
+        unit_price: 369.80
+      })
+      items.push({
+        id: 'shipping',
+        title: 'Envío a toda la república',
+        description: 'Envío nacional (zona urbana)',
+        quantity: 1,
+        currency_id: 'MXN',
+        unit_price: 100
       })
     }
 
