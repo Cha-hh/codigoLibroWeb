@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { readOrders, upsertOrder, updateOrderStatus, deleteOrderById } from '../../../lib/orderStore'
+import { readOrders, updateOrderStatus, deleteOrderById } from '../../../lib/orderStore'
 import { SESSION_COOKIE, verifyAdminSessionToken } from '../../../lib/adminAuth'
 
 const noStoreHeaders = { 'Cache-Control': 'no-store, max-age=0' }
@@ -24,19 +24,6 @@ export async function GET() {
     return Response.json(
       { ok: false, error: 'No se pudieron cargar los pedidos' },
       { status: 500, headers: noStoreHeaders }
-    )
-  }
-}
-
-export async function POST(request) {
-  try {
-    const { order } = await request.json()
-    const saved = await upsertOrder(order)
-    return Response.json({ ok: true, order: saved }, { headers: noStoreHeaders })
-  } catch (error) {
-    return Response.json(
-      { ok: false, error: error.message || 'No se pudo guardar el pedido' },
-      { status: 400, headers: noStoreHeaders }
     )
   }
 }

@@ -197,7 +197,7 @@ export default function Home() {
         {recentFaq.map((item) => (
           <div key={item.id} className="bg-white/60 backdrop-blur-lg rounded-lg shadow-md overflow-hidden flex flex-col border border-gray-200">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-center break-words text-gray-800 uppercase">{item.question}</h3>
+              <h3 className="text-xl font-bold text-center break-words text-gray-800 uppercase tracking-wide">{item.question}</h3>
             </div>
             <div className="flex-1 p-6 text-sm leading-relaxed text-center">
               <p className="break-words text-gray-700">{item.answer}</p>
@@ -402,7 +402,7 @@ export default function Home() {
                     className="w-full max-w-md md:max-w-lg rounded-lg shadow-lg h-auto"
                     priority
                   />
-                  <p className="mt-4 text-[10px] md:text-sm tracking-[0.18em] text-gray-100/90 font-sans font-medium text-center md:mt-0 md:absolute md:right-full md:mr-16 md:top-[84%] md:w-[260px]">
+                  <p className="mt-4 text-[11px] md:text-sm tracking-[0.18em] text-gray-100/90 font-sans font-medium text-center md:mt-0 md:absolute md:right-full md:mr-16 md:top-[84%] md:w-[260px]">
                     Sucesos paranormales.
                     <br />
                     Basados en hechos reales.
@@ -470,7 +470,7 @@ export default function Home() {
                 </h2>
               </div>
 
-              <div className="mt-10 max-w-2xl space-y-6 text-[15px] md:text-base leading-relaxed text-gray-300">
+              <div className="mt-10 max-w-2xl space-y-6 text-sm md:text-base leading-relaxed text-gray-300">
                 <p>
                   El mundo no se limita a lo que los ojos alcanzan a ver. Existe lo material: lo tangible,
                   lo comprobable, aquello que se sostiene en la certeza de lo visible y, sin embargo,
@@ -600,8 +600,8 @@ export default function Home() {
                 <div className="bg-white/15 backdrop-blur-lg border border-black/10 rounded-lg shadow-sm overflow-hidden flex flex-col mx-auto h-[420px] sm:h-[460px]">
                   <div className="p-6 border-b border-black/10 flex-shrink-0">
                     <h3 className="text-center font-bold tracking-wide">
-                      <span className="text-2xl block text-gray-800">EL MIEDO</span>
-                      <span className="text-sm text-gray-800 tracking-[0.2em] block">
+                      <span className="text-xl block text-gray-800">EL MIEDO</span>
+                      <span className="text-xs text-gray-500 tracking-[0.2em] block mt-1">
                         UN SILENCIOSO ASESINO
                       </span>
                     </h3>
@@ -742,7 +742,7 @@ export default function Home() {
       <section id="autor" className="py-0 bg-white">
         <div className="flex flex-col md:flex-row items-stretch">
           <div className="md:w-1/3 py-16 px-4 flex flex-col justify-center">
-            <h2 className="text-2xl font-bold mb-8 text-black ml-6 md:ml-10">GERARDO ROMEH</h2>
+            <h2 className="text-3xl md:text-4xl font-bold uppercase tracking-wide mb-8 text-black ml-6 md:ml-10">GERARDO ROMEH</h2>
             <div className="bg-white/80 p-6 md:p-8 rounded-lg max-w-3xl">
               <p className="text-sm text-black text-justify leading-relaxed">
                 Presentación del autor.
@@ -798,8 +798,8 @@ export default function Home() {
               />
             </div>
             <div className="md:w-1/2">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800 uppercase">LIBRO FÍSICO</h2>
-              <p className="text-lg mb-4 text-gray-800">No es solo una historia.
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800 uppercase tracking-wide">LIBRO FÍSICO</h2>
+              <p className="text-base leading-relaxed mb-4 text-gray-800">No es solo una historia.
 Es un objeto que se siente.
 
 Edición impresa en pasta blanda resistente, con 200 páginas cuidadosamente maquetadas para una lectura fluida y envolvente.
@@ -808,7 +808,7 @@ Formato cómodo, pensado para sostenerse durante horas sin fatiga.
 El papel de tono cálido y textura suave permite que cada palabra respire.
 La encuadernación flexible facilita una apertura natural, conservando la integridad del ejemplar con el paso del tiempo.
 </p>
-              <p className="text-lg mb-6 text-gray-800">No es un archivo que se desliza y desaparece.
+              <p className="text-base leading-relaxed mb-6 text-gray-800">No es un archivo que se desliza y desaparece.
 Es tangible.
 Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
               
@@ -876,7 +876,7 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
           }}
         />
         <div className="relative container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 uppercase">PREGUNTAS FRECUENTES SOBRE EL LIBRO</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800 uppercase tracking-wide">PREGUNTAS FRECUENTES SOBRE EL LIBRO</h2>
           <div className="max-w-6xl mx-auto">
             <FaqGrid />
             <div className="text-center mt-8 space-y-4">
@@ -953,7 +953,7 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
               Gracias por tu compra <strong>{orderName}</strong>.<br />
               Te llegará un correo a <strong>{orderEmail}</strong> con información de tu compra.
             </p>
-            <p className="text-lg font-semibold text-blue-600">¡Gracias!</p>
+            <p className="text-lg font-semibold text-gray-800">¡Gracias!</p>
             <div className="mt-6">
               <button
                 onClick={() => setShowOrderModal(false)}
@@ -978,7 +978,7 @@ Se puede cerrar, subrayar, marcar… y volver a abrir.</p>
           }}
         />
         <div className="relative container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-8 text-gray-800 uppercase">ATENCIÓN Y DUDAS</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-gray-800 uppercase tracking-wide">ATENCIÓN Y DUDAS</h2>
           <p className="text-lg mb-6 text-gray-700">Selecciona la categoría:</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <button

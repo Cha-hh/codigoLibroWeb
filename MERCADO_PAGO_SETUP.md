@@ -1,102 +1,83 @@
-# Integración Mercado Pago - Guía de Configuración
+# Configuración
 
-## Variables de Entorno Requeridas
+## Variables de entorno
 
-Crea un archivo `.env.local` en `/apps/web/` con las siguientes variables:
+Archivo `apps/web/.env.local` (o variables de entorno del proyecto en Vercel). Ver `apps/web/.env.local.example` para la plantilla completa.
 
+### Mercado Pago
+
+```env
+MERCADO_PAGO_ACCESS_TOKEN=          # server-side, empieza con TEST- en sandbox
+NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY=  # client-side
+MERCADO_PAGO_WEBHOOK_SECRET=        # opcional; si se define, se valida la firma x-signature del webhook
+NEXT_PUBLIC_MP_USE_SANDBOX=true     # fuerza el uso de sandbox_init_point en el frontend
+MP_PUBLIC_BASE_URL=                 # URL pública (ngrok/dominio) para back_urls y notification_url en local
 ```
-# Mercado Pago API
-MERCADO_PAGO_ACCESS_TOKEN=tu_access_token_aqui
-NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY=tu_public_key_aqui
 
-# URL de la aplicación
+Obtén las credenciales en [mercadopago.com.mx/developers](https://www.mercadopago.com.mx/developers) → Credenciales (Sandbox para pruebas, Producción para el sitio real). `lib/mercadopago.js` detecta sandbox automáticamente si el access token empieza con `TEST-`.
+
+### App
+
+```env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# URL del webhook (opcional, para producción)
-MERCADO_PAGO_NOTIFICATION_URL=https://tudominio.com/api/payment
 ```
 
-## Cómo obtener las credenciales
+### Vercel KV
 
-1. Ve a [https://www.mercadopago.com.mx/developers](https://www.mercadopago.com.mx/developers)
-2. Inicia sesión o crea una cuenta
-3. Ve a "Credenciales" en tu panel
-4. Encontrarás:
-   - **Access Token**: Token para autenticación del servidor
-   - **Public Key**: Clave pública para el cliente
+```env
+KV_REST_API_URL=
+KV_REST_API_TOKEN=
+KV_REST_API_READ_ONLY_TOKEN=
+```
 
-## Flujo de Integración
+Es el almacenamiento real de la app (`@vercel/kv`): órdenes, FAQ, preguntas de soporte, contraseñas y roles de admin, e inventario. Sin esto configurado, casi nada funciona salvo el stock (que cae a `stock.json` local — ver [TROUBLESHOOTING.md](TROUBLESHOOTING.md)).
 
-### 1. Página de Checkout
-- Usuario selecciona cantidad de libros físicos y digitales
-- Usuario hace clic en "Proceder al Pago"
-- Se genera un `orderId` único
-- Se crea una preferencia de pago en Mercado Pago
-- Se redirige al usuario a Mercado Pago
+### Autenticación de admin
 
-### 2. Mercado Pago
-- Usuario completa el pago
-- Mercado Pago redirige de vuelta según el resultado
+```env
+ADMIN_USER=admin
+ADMIN_PASSWORD_HASH=       # hash bcrypt de la contraseña
+ADMIN_USERS_JSON=          # opcional, lista JSON de admins adicionales
+ADMIN_SESSION_SECRET=      # secreto para firmar el cookie de sesión (HMAC-SHA256)
+```
 
-### 3. Página de Redirección (checkout/redirect)
-- Recibe parámetros: `type` (success/failure/pending), `payment_id`, `external_reference`
-- Valida el pago con la API
-- Si `type === 'success'` y el pago se confirma:
-  - **Si es solo digital**: Muestra popup "Gracias por tu compra" y redirige al inicio
-  - **Si es físico**: Redirige a página de envío
-- Si no es aprobado: Muestra mensaje de error
+Genera el hash con bcryptjs:
 
-### 4. Descontar Inventario
-- Se descuenta automáticamente cuando el pago es aprobado
-- Solo para productos físicos
-- Llamada a `/api/stock` con método PUT
+```bash
+node -e "console.log(require('bcryptjs').hashSync('tu-contraseña', 12))"
+```
 
-### 5. Dirección de Envío (solo si hay producto físico)
-- Usuario ingresa datos de envío
-- Se guarda la orden completa
-- Se redirige al inicio
+`ADMIN_USERS_JSON` acepta varios admins con rol, por ejemplo:
 
-## Rutas API Creadas
+```json
+[{"username":"maria","passwordHash":"$2a$12$...","role":"superadmin"}]
+```
 
-### POST `/api/payment`
-Crea una preferencia de pago en Mercado Pago
-- **Body**: `{ physical, digital, total, orderId }`
-- **Response**: `{ id, init_point, sandbox_init_point }`
+Los admins definidos por variables de entorno se sincronizan a Vercel KV en el primer login; desde ahí también se pueden crear/eliminar admins vía el panel (`/admin/users`, solo visible para `role: superadmin`).
 
-### POST `/api/payment-confirmation`
-Confirma el pago y procesa la orden
-- **Body**: `{ paymentId, orderId, order }`
-- **Response**: `{ success, status, message }`
+## Cómo funciona el flujo de pago
 
-## Testing
+1. `/checkout` y `/checkout/shipping` arman la orden en el navegador (localStorage temporal) y la mandan a `POST /api/payment`, que crea una **Preference** en Mercado Pago con `back_urls` apuntando a `/checkout/redirect`.
+2. El usuario paga en el checkout hospedado por Mercado Pago.
+3. Mercado Pago redirige de vuelta a `/checkout/redirect?type=...&payment_id=...&orderId=...`. Esa página llama a `POST /api/payment-confirmation`, que **resuelve el pago consultando la API de Mercado Pago** (nunca confía en los query params), guarda la orden en KV con el estado real, y descuenta stock si el estado es `approved`.
+4. En paralelo, Mercado Pago notifica de forma server-to-server a `POST /api/payment/webhook`. Es el respaldo si el usuario cierra el navegador antes del paso 3 — también consulta la API de MP antes de guardar nada, y valida la firma HMAC (`x-signature`) cuando `MERCADO_PAGO_WEBHOOK_SECRET` está configurado.
 
-### Para Modo Sandbox (Pruebas)
-Usa estos números de tarjeta de prueba:
+Ninguna de las dos rutas confía en el `status` que manda el cliente: ambas piden el pago real a Mercado Pago con el `access_token` del servidor antes de marcar una orden como aprobada o tocar el inventario.
 
-- **Visa**: 4111 1111 1111 1111
-- **MasterCard**: 5555 5555 5555 4444
-- **American Express**: 3782 822463 10005
+## Rutas API principales
 
-**CVV**: Cualquier número de 3 dígitos
-**Fecha**: Cualquier fecha futura
+| Ruta | Método | Auth | Descripción |
+|---|---|---|---|
+| `/api/payment` | POST | — | Crea la preferencia de pago en Mercado Pago |
+| `/api/payment/webhook` | POST | firma HMAC opcional | Notificación server-to-server de Mercado Pago |
+| `/api/payment-confirmation` | POST | — | Confirma el pago al volver de Mercado Pago |
+| `/api/payment/health` | GET | — | Verifica que el access token de MP es válido |
+| `/api/orders` | GET/PATCH/DELETE | cookie admin | Listado y gestión de pedidos |
+| `/api/stock` | GET/PUT | PUT requiere cookie admin | Inventario del libro físico |
+| `/api/admin/login` | POST | — | Login de admin (bcrypt + cookie firmado) |
 
-## Moneda y Precios
+## Pendiente / fuera de alcance actual
 
-- **Moneda**: MXN (Pesos Mexicanos)
-- **Libro Físico**: $20.00
-- **Libro Digital**: $10.00
-
-## Notas Importantes
-
-1. El `external_reference` se usa para vincular la orden con el pago en Mercado Pago
-2. El webhook de notificación es opcional pero recomendado para producción
-3. En modo sandbox, usa URLs de localhost
-4. En producción, actualiza `NEXT_PUBLIC_APP_URL` con tu dominio real
-
-## Pendientes de Configuración Futura
-
-1. [ ] Implementar descarga de libro digital
-2. [ ] Configurar webhook para notificaciones de Mercado Pago
-3. [ ] Integrar base de datos para órdenes
-4. [ ] Configurar emails de confirmación
-5. [ ] Implementar sistema de tracking de envíos
+- No hay entrega de libro digital: el checkout digital está deshabilitado (`/checkout/digital` redirige a `/checkout`).
+- No hay envío de correos automáticos (confirmación, tracking, etc.).
+- El stock del libro físico vive en KV (o `stock.json` en local); no hay un sistema de inventario más robusto.

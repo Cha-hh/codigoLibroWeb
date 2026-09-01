@@ -1,154 +1,66 @@
-# ⚡ QUICKSTART - Mercado Pago Integration
+# Quickstart
 
-## 🚀 Comienza en 5 minutos
-
-### 1️⃣ Obtén tus Credenciales (2 min)
-
-1. Ve a https://www.mercadopago.com.mx/developers
-2. Inicia sesión
-3. Busca "Credenciales" → "Sandbox"
-4. Copia dos valores:
-   - **Access Token** (ej: TEST-123456789...)
-   - **Public Key** (ej: TEST-abcdef...)
-
-### 2️⃣ Configura Variables de Entorno (1 min)
+## 1. Instala dependencias
 
 ```bash
-# En: apps/web/.env.local
+npm install
+```
 
-MERCADO_PAGO_ACCESS_TOKEN=TEST-tu_access_token_aqui
-NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY=TEST-tu_public_key_aqui
+(Monorepo con workspaces; esto instala también las dependencias de `apps/web`.)
+
+## 2. Configura variables de entorno
+
+```bash
+cd apps/web
+cp .env.local.example .env.local
+```
+
+Como mínimo, para levantar el sitio en local necesitas:
+
+```env
+MERCADO_PAGO_ACCESS_TOKEN=TEST-xxxxx
+NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY=TEST-xxxxx
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_MP_USE_SANDBOX=true
+ADMIN_USER=admin
+ADMIN_PASSWORD_HASH=  # hash bcrypt, ver MERCADO_PAGO_SETUP.md
+ADMIN_SESSION_SECRET=cualquier-string-largo-y-aleatorio
 ```
 
-### 3️⃣ Instala Dependencias (1 min)
+Sin `KV_REST_API_URL` / `KV_REST_API_TOKEN`, el stock cae a `stock.json` local (solo sirve para desarrollo). Órdenes, FAQ, preguntas y usuarios admin **sí requieren** Vercel KV incluso en local — ver [MERCADO_PAGO_SETUP.md](MERCADO_PAGO_SETUP.md).
+
+## 3. Levanta el servidor
 
 ```bash
-cd /Volumes/WADEOW/PROYECTOS/LibroWeb/codigoLibroWeb/apps/web
-npm install mercadopago
-```
-
-### 4️⃣ Inicia el Servidor (1 min)
-
-```bash
-cd /Volumes/WADEOW/PROYECTOS/LibroWeb/codigoLibroWeb
 npm run dev
 ```
 
-### 5️⃣ Prueba 🎉
+Abre `http://localhost:3000`.
 
-```
-1. Ve a http://localhost:3000/checkout
-2. Selecciona productos
-3. Haz clic en "Proceder al Pago"
-4. Usa tarjeta: 4111 1111 1111 1111
-5. ¡Listo!
-```
+## 4. Prueba el flujo de compra
 
----
+1. `/checkout` → elige cantidad de libro físico → "Continuar al envío"
+2. `/checkout/shipping` → llena nombre, correo y dirección → "Continuar al pago"
+3. Te redirige a Mercado Pago (sandbox). Usa una tarjeta de prueba:
 
-## 📋 Lo que se Implementó
+| Resultado | Número | Vencimiento | CVV |
+|---|---|---|---|
+| Aprobada | 4111 1111 1111 1111 | cualquiera futuro | 123 |
+| Rechazada | 4000 0000 0000 0002 | cualquiera futuro | 123 |
 
-✅ **API de Pago** - Crea preferencias en Mercado Pago  
-✅ **Página de Checkout** - Integrada con Mercado Pago  
-✅ **Página de Redirección** - Maneja retorno de pago  
-✅ **Descuento de Stock** - Automático al aprobar  
-✅ **Popup de Gracias** - Para compras digitales  
-✅ **Página de Envío** - Para compras físicas  
-✅ **Validaciones** - Stock, montos, datos  
-✅ **Documentación** - Guías completas  
+4. Mercado Pago te regresa a `/checkout/redirect`, que confirma el pago contra la API de MP y (si fue aprobado) descuenta stock.
 
----
+> El libro digital está deshabilitado en el checkout actual (`/checkout/digital` solo redirige a `/checkout`). No lo pruebes esperando un flujo distinto.
 
-## 🔄 Flujo Rápido
+## 5. Entra al panel de administración
 
-```
-Checkout → Mercado Pago → Retorno → 
-├─ Digital → Popup Gracias
-└─ Físico → Envío → Descuento Stock
-```
+`/admin/login` con el usuario/contraseña que hayas configurado. Desde ahí: pedidos (`/admin/orders`), inventario (`/admin/inventory`), preguntas frecuentes, tickets de soporte y gestión de usuarios admin (solo rol `superadmin`).
 
----
+## Documentación relacionada
 
-## 🧪 Tarjetas de Prueba
-
-| Tipo | Número |
-|------|--------|
-| ✅ Aprobada | 4111 1111 1111 1111 |
-| ❌ Rechazada | 4000 0000 0000 0002 |
-
-**Vencimiento**: Cualquiera futuro (ej: 11/25)  
-**CVV**: Cualquier número (ej: 123)  
-
----
-
-## 📁 Archivos Principales
-
-| Archivo | Propósito |
-|---------|-----------|
-| `/apps/web/app/checkout/page.js` | Página principal de compra |
-| `/apps/web/app/api/payment/route.js` | Crea preferencia en MP |
-| `/apps/web/app/checkout/redirect/page.js` | Maneja retorno de pago |
-| `/apps/web/.env.local.example` | Plantilla de variables |
-
----
-
-## 📚 Documentación Disponible
-
-- **MERCADO_PAGO_SETUP.md** - Configuración detallada
-- **FLUJO_COMPRA.md** - Diagrama de flujo completo
-- **TESTING_GUIDE.md** - 6 casos de prueba
-- **TROUBLESHOOTING.md** - Errores y soluciones
-- **IMPLEMENTACION_MERCADO_PAGO.md** - Resumen completo
-
----
-
-## ✨ Características
-
-- ✅ Integración completa Mercado Pago
-- ✅ Manejo de pago aprobado/rechazado/pendiente
-- ✅ Descuento automático de stock
-- ✅ Popup de agradecimiento digital
-- ✅ Formulario de envío para físicos
-- ✅ Validaciones en todos los pasos
-- ✅ Manejo de errores robusto
-- ✅ Interfaz amigable
-
----
-
-## 🆘 ¿Problemas?
-
-1. **Error de credenciales** → Copia de nuevo desde panel MP
-2. **Stock no se descuenta** → Verifica `/api/stock` funciona
-3. **No se abre Mercado Pago** → Revisa `.env.local` existe
-4. **No redirige a envío** → Limpia localStorage e intenta nuevo
-
-Ver **TROUBLESHOOTING.md** para soluciones detalladas.
-
----
-
-## 🎯 Próximas Fases (Opcional)
-
-Una vez que todo funcione:
-
-1. **Base de Datos** - Guardar órdenes permanentemente
-2. **Emails** - Confirmación y descarga
-3. **Admin Panel** - Ver todas las órdenes
-4. **Sistema de Descargas** - Entregar libros digitales
-5. **Modo Producción** - Credenciales reales
-
----
-
-## 💡 Tips Importantes
-
-- En **Sandbox** (testing) usa las tarjetas proporcionadas
-- Limpia `localStorage` entre pruebas si hay problemas
-- El servidor debe reiniciarse después de cambiar `.env`
-- Las tarjetas de prueba NO cobran dinero real
-- Marca el URL de retorno es: `localhost:3000` NO `127.0.0.1`
-
----
-
-**¡Listo! Comienza en: http://localhost:3000/checkout**
-
-Para más detalles, revisa los archivos `.md` en la raíz del proyecto.
+- [MERCADO_PAGO_SETUP.md](MERCADO_PAGO_SETUP.md) — credenciales, variables de entorno, cómo funciona la autenticación de admin
+- [FLUJO_COMPRA.md](FLUJO_COMPRA.md) — diagrama detallado del flujo de compra
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) — casos de prueba
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — errores comunes
+- [IMPLEMENTACION_MERCADO_PAGO.md](IMPLEMENTACION_MERCADO_PAGO.md) — resumen técnico de la integración
+- [ESTRUCTURA_ARCHIVOS.md](ESTRUCTURA_ARCHIVOS.md) — mapa de archivos del proyecto

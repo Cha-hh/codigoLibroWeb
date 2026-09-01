@@ -1,197 +1,76 @@
-# Flujo de Compra con Mercado Pago
+# Flujo de Compra
 
-## Diagrama de Flujo Completo
+Solo existe venta de libro físico (el digital está deshabilitado en el checkout actual). El envío se captura **antes** del pago, no después.
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    PÁGINA DE CHECKOUT                               │
-│                  /checkout/page.js                                   │
-└─────────────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌─────────────────────────────────────┐
-        │ Usuario selecciona:                  │
-        │ - Cantidad de libros físicos         │
-        │ - Cantidad de libros digitales       │
-        │ - Total se calcula automáticamente   │
-        └─────────────────────────────────────┘
-                            │
-                            ▼
-        ┌─────────────────────────────────────┐
-        │ Validaciones:                        │
-        │ - Stock disponible (física)          │
-        │ - Al menos 1 producto seleccionado   │
-        └─────────────────────────────────────┘
-                            │
-                            ▼
-        ┌─────────────────────────────────────┐
-        │ Generar orderId único                │
-        │ Guardar orden en localStorage        │
-        └─────────────────────────────────────┘
-                            │
-                            ▼
-        ┌─────────────────────────────────────┐
-        │ Enviar a /api/payment                │
-        │ POST { physical, digital, total }    │
-        └─────────────────────────────────────┘
-                            │
-                            ▼
-        ┌─────────────────────────────────────┐
-        │ Mercado Pago crea preferencia        │
-        │ Retorna: init_point (URL checkout)   │
-        └─────────────────────────────────────┘
-                            │
-                            ▼
-        ┌─────────────────────────────────────┐
-        │ Redirigir a Mercado Pago            │
-        │ Usuario completa el pago            │
-        └─────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│              MERCADO PAGO PROCESA EL PAGO                            │
-│                                                                      │
-│  ┌──────────────────┐    ┌──────────────────┐    ┌──────────────┐  │
-│  │  PAGO APROBADO   │    │ PAGO RECHAZADO   │    │ PAGO PENDIENTE│  │
-│  └──────────────────┘    └──────────────────┘    └──────────────┘  │
-│          │                       │                      │           │
-│          ▼                       ▼                      ▼           │
-│  /redirect?type=     /redirect?type=      /redirect?type=         │
-│  success&payment_id= failure              pending                 │
-│  xxx&external_ref=yyy                                              │
-└─────────────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│           PÁGINA DE REDIRECCIÓN: /checkout/redirect                │
-│                  redirect/page.js                                   │
-└─────────────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-        ┌─────────────────────────────────────┐
-        │ Recibir parámetros de URL:          │
-        │ - type (success/failure/pending)     │
-        │ - payment_id (si success)            │
-        │ - external_reference (orderId)       │
-        └─────────────────────────────────────┘
-                            │
-                            ▼
-                ┌───────────────────────────┐
-                │    ¿type === success?     │
-                └───────────────────────────┘
-                        │           │
-                       SÍ           NO
-                        │           │
-        ┌───────────────┘           └────────────────┐
-        │                                            │
-        ▼                                            ▼
-    ┌──────────────────────────┐      ┌──────────────────────────┐
-    │ Llamar a               │      │ Mostrar error/rechazado  │
-    │ /api/payment-confirmation │      │ Opciones:                │
-    │ Confirmar pago          │      │ - Reintentar             │
-    │ Descontar inventario    │      │ - Volver al inicio       │
-    └──────────────────────────┘      └──────────────────────────┘
-            │
-            ▼
-    ┌──────────────────────────────────────┐
-    │ Validar pago aprobado en MP          │
-    │ Guardar orden completada             │
-    │ Descontar stock (si físico)          │
-    └──────────────────────────────────────┘
-            │
-            ▼
-    ┌──────────────────────┐
-    │ ¿Orden tiene física? │
-    └──────────────────────┘
-         │           │
-        SÍ           NO (Solo digital)
-         │           │
-         │           ▼
-         │    ┌──────────────────────────┐
-         │    │ Mostrar popup:           │
-         │    │ "¡Gracias por tu compra!"│
-         │    │ Después redirigir a "/"  │
-         │    └──────────────────────────┘
-         │
-         ▼
-    ┌──────────────────────────────────────┐
-    │  PÁGINA DE ENVÍO                     │
-    │  /checkout/shipping/page.js          │
-    └──────────────────────────────────────┘
-         │
-         ▼
-    ┌──────────────────────────────────────┐
-    │ Usuario ingresa:                     │
-    │ - Nombre completo                    │
-    │ - Email                              │
-    │ - Dirección                          │
-    │ - Ciudad                             │
-    │ - Código postal                      │
-    │ - País                               │
-    └──────────────────────────────────────┘
-         │
-         ▼
-    ┌──────────────────────────────────────┐
-    │ Guardar orden con envío              │
-    │ Guardar en localStorage (simulado)   │
-    │ Limpiar datos temporales             │
-    │ Redirigir a "/" (página principal)   │
-    └──────────────────────────────────────┘
+/checkout
+  Usuario elige cantidad de libro físico (valida contra /api/stock)
+  Guarda { physical, digital: 0, total } en localStorage
+      │
+      ▼
+/checkout/shipping
+  Usuario ingresa nombre, correo, dirección (con autocompletado
+  por código postal vía Sepomex + Nominatim, y mapa Leaflet)
+  Guarda la orden + datos de envío en localStorage
+      │
+      ▼
+  POST /api/payment  { physical, digital, total, orderId, shipping }
+  → crea una Preference en Mercado Pago
+  → responde con checkout_url (sandbox o producción)
+      │
+      ▼
+  Redirige al checkout hospedado de Mercado Pago
+  Usuario paga (o cancela)
+      │
+      ▼
+  Mercado Pago redirige a:
+  /checkout/redirect?type=success|failure|pending&payment_id=...&orderId=...
+      │
+      ▼
+  Si type=success:
+    POST /api/payment-confirmation { paymentId, orderId, order }
+    → resuelve el pago contra la API de Mercado Pago (fuente de verdad)
+    → guarda la orden en Vercel KV con el estado real
+    → si status === 'approved': descuenta stock del libro físico
+      │
+      ├─ approved → mensaje "Pago Aprobado" → redirige a "/"
+      ├─ no aprobado → mensaje de error, opción de reintentar
+      │
+  Si type=failure → "Pago Rechazado", opciones: reintentar o volver al inicio
+  Si type=pending → "Pago Pendiente", vuelve al inicio
+
+En paralelo (server-to-server, independiente del navegador):
+  Mercado Pago → POST /api/payment/webhook
+  → valida firma x-signature (si MERCADO_PAGO_WEBHOOK_SECRET está configurado)
+  → resuelve el pago contra la API de MP y guarda/actualiza la orden en KV
+  Este webhook es el respaldo si el usuario cierra la pestaña
+  antes de que /checkout/redirect termine de confirmar.
 ```
 
-## Estados Posibles
+## Estados de pago
 
-### PAGO APROBADO + SOLO DIGITAL
-1. ✅ Validar pago
-2. ✅ Descontar del inventario (no aplica)
-3. ✅ Mostrar popup "Gracias por tu compra"
-4. ✅ Enviar email de descarga
-5. ✅ Redirigir a inicio
+| Estado en Mercado Pago | Qué pasa en el sitio |
+|---|---|
+| `approved` | Orden guardada como aprobada, stock descontado, mensaje de éxito |
+| `pending` / `in_process` | Orden guardada como pendiente, mensaje "pago pendiente" |
+| `rejected` / `cancelled` | Mensaje "pago rechazado", opción de reintentar; **no** se toca el stock |
 
-### PAGO APROBADO + FÍSICO
-1. ✅ Validar pago
-2. ✅ Descontar del inventario
-3. ✅ Mostrar página de envío
-4. ✅ Usuario completa dirección
-5. ✅ Guardar orden con envío
-6. ✅ Enviar email de confirmación
-7. ✅ Redirigir a inicio
+## Validaciones
 
-### PAGO APROBADO + DIGITAL + FÍSICO
-1. ✅ Validar pago
-2. ✅ Descontar del inventario
-3. ✅ Mostrar página de envío (porque hay físico)
-4. ✅ Usuario completa dirección
-5. ✅ Guardar orden con envío
-6. ✅ Enviar emails de confirmación y descarga
-7. ✅ Redirigir a inicio
+**Antes de crear la preferencia** (`/checkout`, `/checkout/shipping`):
+- Al menos 1 unidad de libro físico seleccionada
+- Cantidad ≤ stock disponible (`GET /api/stock`)
+- Campos de envío completos y correo con formato válido
 
-### PAGO RECHAZADO
-1. ❌ Mostrar error
-2. ❌ Opción de reintentar
-3. ❌ Opción de volver al inicio
+**Al confirmar el pago** (`/api/payment-confirmation` y `/api/payment/webhook`):
+- El estado del pago se obtiene siempre de la API de Mercado Pago, nunca del query string ni del body que manda el navegador
+- El stock solo se descuenta si el estado resuelto es `approved`
 
-### PAGO PENDIENTE
-1. ⏳ Mostrar estado pendiente
-2. ⏳ Notificar cuando sea aprobado/rechazado
-3. ⏳ Opción de volver al inicio
+## Precios actuales
 
-## Validaciones Importantes
+| Producto | Precio | Moneda |
+|---|---|---|
+| Libro físico (lanzamiento) | $369.80 (antes $450.00) | MXN |
+| Envío nacional | $100.00 | MXN |
 
-### Antes de Crear Preferencia
-- [ ] Al menos 1 producto seleccionado
-- [ ] Stock suficiente para cantidad física
-- [ ] Total > 0
-
-### Después de Retornar de MP
-- [ ] Validar que el pago_id existe
-- [ ] Validar que el estado es "approved"
-- [ ] Validar que la orden existe en localStorage
-- [ ] Solo descontar stock si pago aprobado
-
-### Al Guardar Envío
-- [ ] Todos los campos requeridos completos
-- [ ] Email válido
-- [ ] Reducir stock solo si pago aprobado
-- [ ] Generar orderId único
-- [ ] Guardar timestamp de creación
+Definidos en [checkout/page.js](apps/web/app/checkout/page.js) (frontend) y replicados en [api/payment/route.js](apps/web/app/api/payment/route.js) al construir los ítems de la preferencia.
