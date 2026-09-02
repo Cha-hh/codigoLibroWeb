@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -13,27 +13,6 @@ const countryCodeByName = {
 
 const defaultCenter = [19.4326, -99.1332]
 
-const buildStreet = (address) => {
-  if (!address) return ''
-  return address.road || address.pedestrian || address.footway || ''
-}
-
-const buildExternalNumber = (address) => {
-  if (!address) return ''
-  return address.house_number || ''
-}
-
-const buildCity = (address) => {
-  if (!address) return ''
-  return address.city || address.town || address.village || address.municipality || address.state_district || ''
-}
-
-const buildMunicipality = (address) => {
-  if (!address) return ''
-  return address.municipality || address.county || address.state_district || ''
-}
-
-const normalizeText = (value) => (value || '').trim().toLowerCase()
 const normalizePostalCode = (value) => (value || '').replace(/\D/g, '').slice(0, 5)
 
 export default function Shipping() {
@@ -56,6 +35,7 @@ export default function Shipping() {
   const [geoStatus, setGeoStatus] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
   const router = useRouter()
+  const lastLookedUpPostalCodeRef = useRef('')
 
   useEffect(() => {
     // Cargar la orden actual
@@ -80,29 +60,6 @@ export default function Shipping() {
       })
   }, [router])
 
-  const applyLocationData = (result) => {
-    if (!result) return
-
-    const lat = Number(result.lat)
-    const lon = Number(result.lon)
-    if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
-      setMapCenter([lat, lon])
-    }
-
-    const addressData = result.address || {}
-    const cityName = buildCity(addressData)
-    const municipalityName = buildMunicipality(addressData)
-    const streetName = buildStreet(addressData)
-    const extNumber = buildExternalNumber(addressData)
-    const postal = addressData.postcode || ''
-
-    if (cityName) setCity(cityName)
-    if (municipalityName) setMunicipality(municipalityName)
-    if (streetName && !street) setStreet(streetName)
-    if (extNumber && !externalNumber) setExternalNumber(extNumber)
-    if (postal) setPostalCode(postal)
-  }
-
   const handlePostalCodeLookup = async () => {
     const normalizedPostalCode = normalizePostalCode(postalCode)
     if (!normalizedPostalCode) {
@@ -123,101 +80,45 @@ export default function Shipping() {
     setGeoStatus('Buscando ubicación por código postal...')
 
     try {
-      let municipalityName = ''
-      let cityName = ''
-      let colonies = []
+      // Catálogo propio (SEPOMEX) embebido en el servidor: fuente autoritativa
+      // de municipio, ciudad y colonias por CP.
+      const res = await fetch(`/api/postal-code/${normalizedPostalCode}`)
+      const data = await res.json()
 
-      // Fuente principal para Mexico: contiene municipio, ciudad y colonias por CP.
-      const sepomexQuery = `https://sepomex.icalialabs.com/api/v1/zip_codes?zip_code=${encodeURIComponent(normalizedPostalCode)}`
-      const sepomexRes = await fetch(sepomexQuery)
-      const sepomexData = await sepomexRes.json()
-      const zipRows = Array.isArray(sepomexData?.zip_codes) ? sepomexData.zip_codes : []
+      if (data?.found) {
+        if (data.municipio) setMunicipality(data.municipio)
+        if (data.ciudad) setCity(data.ciudad)
 
-      if (zipRows.length > 0) {
-        municipalityName = zipRows[0]?.d_mnpio || ''
-        cityName = zipRows[0]?.d_ciudad || zipRows[0]?.d_mnpio || zipRows[0]?.d_estado || ''
-
-        const filteredRows = zipRows.filter((item) => {
-          if (!municipalityName) return true
-          return normalizeText(item?.d_mnpio) === normalizeText(municipalityName)
-        })
-
-        colonies = Array.from(
-          new Set(
-            filteredRows
-              .map((item) => (item?.d_asenta || '').trim())
-              .filter(Boolean)
-          )
-        )
-
-        setMunicipality(municipalityName)
-        setCity(cityName)
+        const colonies = Array.isArray(data.colonias) ? data.colonias : []
         setColonyOptions(colonies)
         setColony(colonies[0] || '')
-      }
 
-      // Respaldo con Nominatim para centrar el mapa y completar si Sepomex no devuelve datos.
-      const countryCode = countryCodeByName[country] || ''
-      const directQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=25&postalcode=${encodeURIComponent(normalizedPostalCode)}${countryCode ? `&countrycodes=${countryCode}` : ''}`
-      let res = await fetch(directQuery)
-      let data = await res.json()
-
-      if (!Array.isArray(data) || data.length === 0) {
-        const fallbackQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=25&q=${encodeURIComponent(`${normalizedPostalCode}, ${country}`)}`
-        res = await fetch(fallbackQuery)
-        data = await res.json()
-      }
-
-      if (Array.isArray(data) && data.length > 0) {
-        const primary = data[0]
-        applyLocationData(primary)
-
-        const nominatimMunicipality = buildMunicipality(primary.address)
-        const nominatimCity = buildCity(primary.address) || data.map((item) => buildCity(item.address)).find(Boolean) || ''
-
-        if (!municipalityName && nominatimMunicipality) {
-          municipalityName = nominatimMunicipality
-          setMunicipality(nominatimMunicipality)
-        }
-
-        if (!cityName && nominatimCity) {
-          cityName = nominatimCity
-          setCity(nominatimCity)
-        }
-
-        if (colonies.length === 0) {
-          const sourceForColonies = data.filter((item) => {
-            if (!municipalityName) return true
-            return normalizeText(buildMunicipality(item.address)) === normalizeText(municipalityName)
-          })
-
-          colonies = Array.from(
-            new Set(
-              sourceForColonies
-                .map((item) => {
-                  const addr = item.address || {}
-                  return addr.suburb || addr.neighbourhood || addr.quarter || addr.hamlet || ''
-                })
-                .filter(Boolean)
-            )
-          )
-
-          setColonyOptions(colonies)
-          setColony(colonies[0] || '')
-        }
-      }
-
-      if (!municipalityName && !cityName) {
-        setGeoStatus('No se encontró ubicación para ese código postal. Verifica el CP.')
+        setGeoStatus(
+          colonies.length > 0
+            ? 'Código postal encontrado. Se autocompletaron municipio, ciudad y colonias.'
+            : 'Código postal encontrado. Se autocompletaron municipio y ciudad. No se encontraron colonias para ese CP.'
+        )
+      } else {
         setColonyOptions([])
         setColony('')
-        return
+        setGeoStatus('No se encontró ese código postal en el catálogo. Verifica el CP o completa municipio y ciudad manualmente.')
       }
 
-      if (colonies.length === 0) {
-        setGeoStatus('Código postal encontrado. Se autocompletaron municipio y ciudad. No se encontraron colonias para ese CP.')
-      } else {
-        setGeoStatus('Código postal encontrado. Se autocompletaron municipio y ciudad, y se cargaron colonias del municipio.')
+      // Respaldo solo visual: centra el mapa de referencia. Si falla, no afecta
+      // el resto del formulario (el catálogo propio ya hizo su trabajo arriba).
+      try {
+        const countryCode = countryCodeByName[country] || ''
+        const mapQuery = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&postalcode=${encodeURIComponent(normalizedPostalCode)}${countryCode ? `&countrycodes=${countryCode}` : ''}`
+        const mapRes = await fetch(mapQuery)
+        const mapData = await mapRes.json()
+        const primary = Array.isArray(mapData) ? mapData[0] : null
+        const lat = Number(primary?.lat)
+        const lon = Number(primary?.lon)
+        if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
+          setMapCenter([lat, lon])
+        }
+      } catch {
+        // el mapa es solo referencia visual
       }
     } catch (error) {
       console.error('Error buscando por código postal:', error)
@@ -226,6 +127,18 @@ export default function Shipping() {
       setGeoLoading(false)
     }
   }
+
+  // Autocompleta municipio, ciudad y colonias en cuanto el CP tiene 5 dígitos,
+  // sin esperar a que el usuario haga clic en "Buscar".
+  useEffect(() => {
+    const normalizedPostalCode = normalizePostalCode(postalCode)
+    if (normalizedPostalCode.length !== 5) return
+    if (normalizedPostalCode === lastLookedUpPostalCodeRef.current) return
+
+    lastLookedUpPostalCodeRef.current = normalizedPostalCode
+    handlePostalCodeLookup()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postalCode])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -407,7 +320,7 @@ export default function Shipping() {
                     Buscar
                   </button>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">Ingresa primero el CP para autocompletar municipio, ciudad y colonia.</p>
+                <p className="text-sm text-gray-500 mt-1">Al completar tus 5 dígitos, autocompletamos municipio, ciudad y colonia. Usa "Buscar" si necesitas repetir la búsqueda.</p>
               </div>
 
               <div>
