@@ -184,6 +184,53 @@ export default function OrderDetail() {
 
   const statusHistory = Array.isArray(orderData.statusHistory) ? orderData.statusHistory : []
 
+  const customerEmail = orderData.shipping?.email || ''
+
+  const buildConfirmationMailto = () => {
+    const customerName = orderData.shipping?.name || 'cliente'
+    const total = Number(orderData.total || 0).toFixed(2)
+    const subject = `Confirmación de tu pedido ${orderData.id} - En el agua oscura`
+
+    const addressLines = hasPhysical
+      ? [
+          '',
+          'Dirección de envío:',
+          orderData.shipping?.address || '',
+          [
+            orderData.shipping?.colony,
+            orderData.shipping?.municipality,
+            orderData.shipping?.city,
+            orderData.shipping?.state
+          ].filter(Boolean).join(', '),
+          [orderData.shipping?.postalCode, orderData.shipping?.country].filter(Boolean).join(', ')
+        ]
+      : []
+
+    const bodyLines = [
+      `Hola ${customerName},`,
+      '',
+      '¡Gracias por tu compra! Este es un correo para confirmarte los detalles de tu pedido.',
+      '',
+      `Número de pedido: ${orderData.id}`,
+      `Producto: ${orderType}`,
+      `Total: $${total} MXN`,
+      ...addressLines,
+      '',
+      'Cualquier duda, responde directamente a este correo.',
+      '',
+      'Saludos,',
+      'En el agua oscura'
+    ]
+
+    const body = bodyLines.join('\n')
+    return `mailto:${customerEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+
+  const handleSendEmailConfirmation = () => {
+    if (!customerEmail) return
+    window.location.href = buildConfirmationMailto()
+  }
+
   return (
     <div className="min-h-[70vh] py-4 text-gray-100">
       <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-8">
@@ -276,9 +323,15 @@ export default function OrderDetail() {
                 {isUpdatingStatus ? 'Guardando...' : 'Actualizar estado'}
               </button>
             </div>
-            <button className="w-full bg-black/35 border border-white/15 text-gray-100 py-2 px-4 rounded-xl hover:bg-black/50 transition text-xs tracking-[0.14em] uppercase">
+            <button
+              onClick={handleSendEmailConfirmation}
+              disabled={!customerEmail}
+              title={!customerEmail ? 'Este pedido no tiene un correo registrado' : undefined}
+              className="w-full bg-black/35 border border-white/15 text-gray-100 py-2 px-4 rounded-xl hover:bg-black/50 transition text-xs tracking-[0.14em] uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Enviar Confirmación por Email
             </button>
+            <p className="text-xs text-gray-400">Abre tu app de correo con el mensaje ya redactado; tú revisas y das enviar.</p>
           </div>
         </div>
       </div>
