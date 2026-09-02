@@ -96,6 +96,7 @@ export async function POST(request) {
       const metadata = {
         order_id: orderId,
         address_line: shipping.address || '',
+        state: shipping.state || '',
         municipality: shipping.municipality || '',
         city: shipping.city || '',
         colony: shipping.colony || '',

@@ -241,7 +241,7 @@ export default function OrderDetail() {
                 </p>
                 <p>
                   <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Ubicacion:</span>
-                  {orderData.shipping?.colony || 'N/A'}, {orderData.shipping?.municipality || 'N/A'}, {orderData.shipping?.city || 'N/A'}, {orderData.shipping?.postalCode || 'N/A'}, {orderData.shipping?.country || 'N/A'}
+                  {orderData.shipping?.colony || 'N/A'}, {orderData.shipping?.municipality || 'N/A'}, {orderData.shipping?.city || 'N/A'}, {orderData.shipping?.state || 'N/A'}, {orderData.shipping?.postalCode || 'N/A'}, {orderData.shipping?.country || 'N/A'}
                 </p>
                 <p>
                   <span className="text-gray-400 uppercase tracking-[0.12em] mr-2">Referencias:</span>
